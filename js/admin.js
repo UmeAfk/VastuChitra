@@ -2080,7 +2080,7 @@
     });
     form.addEventListener('submit', e => {
       e.preventDefault();
-      if (input.value !== 'Veil'){
+      if (input.value !== '0575'){
         error.textContent = 'Incorrect password. Please try again.';
         form.classList.remove('shake');
         void form.offsetWidth;
