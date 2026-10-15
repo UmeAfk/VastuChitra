@@ -1,6 +1,9 @@
 // Meeting mode is a separate presentation; the saved studio catalogue stays intact.
 (() => {
-  if (!new URLSearchParams(location.search).has('demo') && document.documentElement.dataset.meeting !== 'true') return;
+  // Static hosting also serves index.html directly. A rewrite for / cannot
+  // reliably override that file, so select the bundled showcase on remote hosts.
+  const hosted = /^https?:$/.test(location.protocol) && !['localhost', '127.0.0.1', '[::1]'].includes(location.hostname);
+  if (!hosted && !new URLSearchParams(location.search).has('demo') && document.documentElement.dataset.meeting !== 'true') return;
   const image = n => ({ src: `public/demo/project-${n}.webp`, pos: '50% 50%' });
   const card = (id, title, cat, sub, size, slides, extra = {}) => ({
     id, title, cat, sub, size, slides, icon: 'frames', accent: 'cyan',

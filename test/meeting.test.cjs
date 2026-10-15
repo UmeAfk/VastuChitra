@@ -5,10 +5,10 @@ const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
 const code = fs.readFileSync(path.join(__dirname, '../js/meeting.js'), 'utf8');
-function load(search, meeting) {
+function load(search, meeting, hostname = 'localhost', protocol = 'http:') {
   const original = { settings: { columns: 4 }, projects: [{ id: 'saved' }] };
   const sandbox = {
-    URLSearchParams, location: { search }, window: { VASTUCHITRA: original },
+    URLSearchParams, location: { search, hostname, protocol }, window: { VASTUCHITRA: original },
     document: { documentElement: { dataset: { meeting } }, body: { classList: { add() {} } },
       createElement: () => ({}), querySelector: () => ({ appendChild() {} }) }
   };
@@ -16,8 +16,18 @@ function load(search, meeting) {
   return { config: sandbox.window.VASTUCHITRA, original };
 }
 test('normal launcher keeps its saved catalogue', () => {
-  const { config, original } = load('', undefined);
-  assert.equal(config, original);
+  for (const host of ['localhost', '127.0.0.1', '[::1]']) {
+    const { config, original } = load('', undefined, host);
+    assert.equal(config, original);
+  }
+});
+test('remote index pages automatically use bundled images without PC helper calls', () => {
+  for (const host of ['vastuchitraa.vercel.app', 'vastuchitra-meeting.vercel.app', 'showcase.example.com']) {
+    const { config } = load('', undefined, host, 'https:');
+    assert.equal(config.settings.meetingPreview, true);
+    assert.equal(config.projects.length, 18);
+    assert.ok(config.projects.flatMap(p => p.slides).every(s => s.src.startsWith('public/demo/')));
+  }
 });
 test('local and hosted meeting modes use the full image collection and safe detail actions', () => {
   for (const [search, flag] of [['?demo=1', undefined], ['', 'true']]) {
