@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Vastuchitra — Interactive Experience Launcher</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="is-intro">
+
+<div class="shell" id="shell">
+  <!-- Top Navigation & Status Bar -->
+  <header class="topbar">
+    <div class="brand" id="brand" role="button" tabindex="0" aria-pressed="false" aria-label="Hold to show or hide launcher controls">
+      <img class="brand-logo-image launcher-logo" src="public/logo-ui.png" alt="">
+    </div>
+
+    <div class="tools" id="tools" aria-hidden="true" inert>
+      <a class="secret-tool admin-btn" id="adminBtn" href="admin.html" aria-label="Open admin panel">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </a>
+      <button class="secret-tool edit-toggle" id="editToggle" type="button" aria-pressed="false" aria-label="Customize launcher layout">
+        <span class="ic">
+          <svg class="grip" viewBox="0 0 16 16" fill="currentColor"><circle cx="5" cy="3" r="1.3"/><circle cx="11" cy="3" r="1.3"/><circle cx="5" cy="8" r="1.3"/><circle cx="11" cy="8" r="1.3"/><circle cx="5" cy="13" r="1.3"/><circle cx="11" cy="13" r="1.3"/></svg>
+          <svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+        </span>
+      </button>
+    </div>
+
+    <div class="status">
+      <div class="now-playing" id="nowPlaying" aria-live="polite">
+        <span class="live"></span>
+        <span class="np-text">Playing <b id="npTitle">-</b></span>
+        <button type="button" id="npStop">Stop</button>
+      </div>
+      <div class="clock">
+        <svg class="clock-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.2 2"/></svg>
+        <span id="clock">-</span>
+      </div>
+      <div class="project-count" id="projectCount" aria-label="Available projects">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg>
+        <span id="projectCountValue">0</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Interactive Experience Cards Grid (populated via js/projects.js) -->
+  <main class="grid" id="grid"></main>
+</div>
+
+<!-- ============================================================== -->
+<!-- Overlays (Launch Progress, Details Showcase, Web Tour)         -->
+<!-- ============================================================== -->
+<div class="overlay" id="overlay" data-view="launch" role="dialog" aria-modal="true" aria-hidden="true">
+  <div class="ov-bg" id="ovBg"></div>
+
+  <button class="close-btn" id="closeBtn" type="button" aria-label="Back to launcher">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+  </button>
+
+  <!-- View 1: Starting a program / Running / Error -->
+  <section class="view view-launch">
+    <div class="launch-panel" id="launchPanel" data-state="working">
+      <div class="state-ic">
+        <div class="dot-ring"></div>
+        <svg class="ic-ok" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" opacity=".35"/><path d="M7.5 12.5l3 3 6-6.5"/></svg>
+        <svg class="ic-err" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" opacity=".35"/><path d="M12 7.5v5.5M12 16.4v.1"/></svg>
+      </div>
+      <h2 id="ovTitle">Launching...</h2>
+      <p id="ovSub">Preparing scene on Main Display</p>
+      <div class="barwrap" id="barwrap"><div class="bar"></div></div>
+      <div class="launch-actions">
+        <button class="btn primary" id="btnStop" type="button" hidden>
+          <svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2.5"/></svg>Stop and return
+        </button>
+        <button class="btn primary" id="btnRetry" type="button" hidden>Try again</button>
+        <button class="btn" id="btnBack" type="button" hidden>Back to launcher</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- View 2: Project Details Showcase -->
+  <section class="view view-detail">
+    <div class="detail" data-layout="focus">
+      <div class="detail-media">
+        <div class="detail-hero" id="detailHero" tabindex="0" aria-label="Project media preview"></div>
+        <div class="detail-thumbs" id="detailThumbs"></div>
+      </div>
+      <div class="detail-copy">
+        <span class="detail-tag" id="detailTag"></span>
+        <h2 id="detailTitle"></h2>
+        <p class="desc" id="detailDesc"></p>
+        <dl class="specs" id="detailSpecs"></dl>
+        <div class="detail-actions">
+          <button class="btn primary" id="btnDetailLaunch" type="button" hidden>
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg>Launch on Main Display
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- View 3: Web Tour / Interactive Page Inside Launcher -->
+  <section class="view view-viewer">
+    <div class="viewer-bar">
+      <h2 id="viewerTitle"></h2>
+      <button class="btn" id="btnViewerMain" type="button" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>Open on Main Display
+      </button>
+    </div>
+    <div class="viewer-frame" id="viewerFrame">
+      <div class="viewer-load"><div class="dot-ring"></div></div>
+      <iframe id="viewerIframe" title="Website" allow="fullscreen; autoplay; xr-spatial-tracking; gyroscope; accelerometer" referrerpolicy="no-referrer-when-downgrade"></iframe>
+    </div>
+  </section>
+</div>
+
+<script src="js/projects.js"></script>
+<script src="js/script.js"></script>
+</body>
+</html>

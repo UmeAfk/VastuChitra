@@ -1,0 +1,17 @@
+node_modules/
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+.idea/
+.vs/
+*.tmp
+*.temp
+*.upload-*
+media-config.json
+assets/**
+!assets/.gitkeep
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+coverage/

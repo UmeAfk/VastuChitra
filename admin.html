@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vastuchitra Admin — Experience Launcher Manager</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL@20..48,300..600,0..1" rel="stylesheet">
+<link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+
+<div class="admin-lock" id="adminLock" role="dialog" aria-modal="true" aria-label="Admin access">
+  <form class="admin-lock-card" id="adminLoginForm">
+    <img class="brand-logo-image admin-lock-logo" src="public/logo-ui.png" alt="">
+    <div class="admin-password-field">
+      <span class="material-symbols-outlined">key</span>
+      <input type="password" id="adminPassword" aria-label="Admin password" placeholder="Admin password" autocomplete="current-password" required autofocus>
+      <button type="button" id="toggleAdminPassword" aria-label="Show password"><span class="material-symbols-outlined">visibility</span></button>
+    </div>
+    <span class="admin-lock-error" id="adminLockError" role="alert"></span>
+    <button type="submit" class="btn primary admin-unlock-btn"><span class="material-symbols-outlined">lock_open</span><span>Unlock Admin</span></button>
+    <a href="index.html" class="admin-back-link"><span class="material-symbols-outlined">arrow_back</span> Return to launcher</a>
+  </form>
+</div>
+
+<div class="admin-shell">
+  <!-- Top Navigation Bar -->
+  <header class="admin-topbar">
+    <div class="admin-brand" aria-label="Vastuchitra Admin">
+      <img class="brand-logo-image admin-header-logo" src="public/logo-ui.png" alt="">
+    </div>
+
+    <!-- Tab navigation -->
+    <nav class="admin-tabs" role="tablist">
+      <button type="button" class="tab-btn active" data-tab="projects">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>
+        <span>Cards & Projects</span>
+        <span class="badge" id="projectCountBadge">0</span>
+      </button>
+      <button type="button" class="tab-btn" data-tab="assets">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+        <span>Media Library</span>
+        <span class="badge" id="assetCountBadge">0</span>
+      </button>
+      <button type="button" class="tab-btn" data-tab="settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span>Launcher Settings</span>
+      </button>
+    </nav>
+
+    <!-- Header Actions -->
+    <div class="admin-actions">
+      <a href="index.html" class="btn secondary btn-launcher" target="_blank" title="View live launcher in new tab">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        <span>Open Launcher</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Content Areas -->
+  <main class="admin-main">
+    
+    <!-- Tab 1: Projects / Cards -->
+    <section class="admin-tab-pane active" id="tab-projects">
+      
+      <!-- Metrics Dashboard Overview -->
+      <div class="metrics-row" id="metricsRow">
+        <div class="metric-card">
+          <div class="metric-icon violet">
+            <span class="material-symbols-outlined">deployed_code</span>
+          </div>
+          <div class="metric-data">
+            <span class="metric-label">Programs</span>
+            <span class="metric-value" id="statExeCards">0</span>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-icon amber">
+            <span class="material-symbols-outlined">360</span>
+          </div>
+          <div class="metric-data">
+            <span class="metric-label">360° Tours & Web</span>
+            <span class="metric-value" id="statWebCards">0</span>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-icon rose">
+            <span class="material-symbols-outlined">photo_library</span>
+          </div>
+          <div class="metric-data">
+            <span class="metric-label">Galleries</span>
+            <span class="metric-value" id="statTotalSlides">0</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="pane-header">
+        <div class="pane-headline">
+          <h2>Interactive Experience Cards</h2>
+          <p>Arrange, edit, and configure touch-screen cards displayed on the launcher.</p>
+        </div>
+
+        <div class="pane-toolbar">
+          <!-- View switcher -->
+          <div class="view-switcher">
+            <button type="button" class="view-btn active" id="btnViewGrid" title="Big Cards Grid View">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>
+            </button>
+            <button type="button" class="view-btn" id="btnViewList" title="Compact List View">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+            </button>
+          </div>
+
+          <div class="search-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="projectSearch" placeholder="Search cards by title, category, action...">
+          </div>
+
+          <button type="button" class="btn primary" id="btnNewProject">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span>Add New Card</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Project Cards Grid/List View -->
+      <div class="cards-grid-view" id="projectsList">
+        <!-- Dynamically rendered as Big Nice Cards -->
+      </div>
+    </section>
+
+    <!-- Tab 2: Media Assets -->
+    <section class="admin-tab-pane" id="tab-assets">
+      <div class="pane-header">
+        <div class="pane-headline">
+          <h2>Media Library</h2>
+          <p>Manage images, large videos, folders, and mirrored media from one live library.</p>
+        </div>
+      </div>
+      <input type="file" id="assetFileInput" accept="image/*,video/*,application/pdf,.tif,.tiff,.pdf,.mkv,.avi,.m4v,.ogv" multiple hidden>
+
+      <section class="media-library-toolbar" aria-labelledby="mediaStorageTitle">
+        <div class="media-library-summary">
+          <span class="media-library-icon material-symbols-outlined">perm_media</span>
+          <div><h3 id="mediaStorageTitle">Live media library</h3><p id="mediaStorageStatus">Watching assets</p></div>
+        </div>
+        <div class="media-library-primary-actions">
+          <button type="button" class="btn secondary sm media-edit-toggle" id="btnToggleMediaEdit" aria-pressed="false"><span class="material-symbols-outlined">edit</span><span>Edit</span></button>
+          <button type="button" class="btn secondary sm" id="btnToggleMediaStorage" aria-expanded="false"><span class="material-symbols-outlined">hard_drive</span><span>Storage</span></button>
+          <button type="button" class="btn secondary sm" id="btnNewMediaFolder"><span class="material-symbols-outlined">create_new_folder</span><span>New folder</span></button>
+          <button type="button" class="btn secondary sm" id="btnRefreshMedia"><span class="material-symbols-outlined">sync</span><span>Sync</span></button>
+        </div>
+      </section>
+
+      <section class="media-storage-drawer" id="mediaStorageDrawer" aria-hidden="true">
+        <div class="media-storage-drawer-head">
+          <div><strong>Library locations</strong><p>Folders are watched live and update automatically.</p></div>
+          <button type="button" class="modal-close" id="btnCloseMediaStorage" aria-label="Close storage settings"><span class="material-symbols-outlined">close</span></button>
+        </div>
+        <div class="media-storage-grid">
+          <label><span>Library folder</span><input class="form-input" id="mediaRootPath" placeholder="assets or D:\Media\Vastuchitra"></label>
+          <label><span>Optional mirror / backup</span><input class="form-input" id="mediaMirrorPath" placeholder="D:\Backups\Vastuchitra Media"></label>
+          <button type="button" class="btn primary" id="btnSaveMediaConfig"><span class="material-symbols-outlined">check</span><span>Apply locations</span></button>
+        </div>
+      </section>
+
+      <!-- Drag & Drop Zone -->
+      <div class="drop-zone" id="assetDropZone">
+        <div class="drop-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+        </div>
+        <h3>Drop images, videos or PDFs here</h3>
+        <p>Streams directly to disk — TIF/TIFF files receive lossless PNG previews while the original stays untouched.</p>
+      </div>
+
+      <div class="media-selection-toolbar" id="mediaSelectionToolbar" aria-hidden="true">
+        <span class="media-selection-count" id="mediaSelectionCount">0 selected</span>
+        <button type="button" class="btn secondary sm" id="btnSelectAllMedia"><span class="material-symbols-outlined">select_all</span><span>Select all</span></button>
+        <button type="button" class="btn secondary sm" id="btnMoveSelectedMedia" disabled><span class="material-symbols-outlined">drive_file_move</span><span>Move</span></button>
+        <button type="button" class="btn danger sm" id="btnDeleteSelectedMedia" disabled><span class="material-symbols-outlined">delete</span><span>Delete</span></button>
+        <button type="button" class="media-selection-done" id="btnDoneMediaEdit">Done</button>
+      </div>
+
+      <!-- Assets Grid -->
+      <div class="assets-grid" id="assetsGrid">
+        <!-- Dynamically rendered -->
+      </div>
+    </section>
+
+    <!-- Tab 3: Settings -->
+    <section class="admin-tab-pane" id="tab-settings">
+      <div class="pane-header">
+        <div class="pane-headline">
+          <h2>Launcher & Kiosk Settings</h2>
+          <p>Configure screen layout grid dimensions, inactivity timeouts, and presentation defaults.</p>
+        </div>
+      </div>
+
+      <div class="settings-layout">
+        <section class="settings-section-card">
+          <div class="settings-section-head">
+            <span class="settings-section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 3v18"/></svg></span>
+            <div><h3>Layout & spacing</h3><p>Control the launcher grid and card proportions.</p></div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info"><label for="cfgColumns">Grid columns</label><p>Number of horizontal grid units.</p></div>
+            <div class="setting-ctrl"><input type="number" id="cfgColumns" min="2" max="12" value="6" class="form-input num-input"></div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info"><label for="cfgRows">Rows per screen</label><p>Visible rows fitted into the display height.</p></div>
+            <div class="setting-ctrl"><input type="number" id="cfgRows" min="2" max="8" value="4" class="form-input num-input"></div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info"><label for="cfgCardGap">Card gap</label><p>Space between experience cards, in pixels.</p></div>
+            <div class="setting-ctrl unit-input"><input type="number" id="cfgCardGap" min="6" max="40" value="16" class="form-input num-input"><span>px</span></div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info"><label for="cfgCardRadius">Card corners</label><p>Corner radius used across launcher cards.</p></div>
+            <div class="setting-ctrl unit-input"><input type="number" id="cfgCardRadius" min="4" max="40" value="22" class="form-input num-input"><span>px</span></div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info"><label for="cfgCardRowHeight">Minimum row height</label><p>Prevents launcher card rows from becoming too short.</p></div>
+            <div class="setting-ctrl unit-input"><input type="number" id="cfgCardRowHeight" min="90" max="220" value="130" class="form-input num-input"><span>px</span></div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info"><label for="cfgPagePadding">Screen padding</label><p>Outer breathing room around the launcher.</p></div>
+            <div class="setting-ctrl unit-input"><input type="number" id="cfgPagePadding" min="12" max="64" value="32" class="form-input num-input"><span>px</span></div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info"><label for="cfgTitleScale">Project title scale</label><p>Resize project titles without changing cards.</p></div>
+            <div class="setting-ctrl unit-input"><input type="number" id="cfgTitleScale" min="80" max="140" value="100" class="form-input num-input"><span>%</span></div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info"><label for="cfgHeaderGap">Header spacing</label><p>Space between the logo bar and project grid.</p></div>
+            <div class="setting-ctrl unit-input"><input type="number" id="cfgHeaderGap" min="8" max="48" value="20" class="form-input num-input"><span>px</span></div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info"><label for="cfgCardContentPadding">Title inset</label><p>Distance between project titles and card edges.</p></div>
+            <div class="setting-ctrl unit-input"><input type="number" id="cfgCardContentPadding" min="12" max="32" value="20" class="form-input num-input"><span>px</span></div>
+          </div>
+        </section>
+
+        <section class="settings-section-card">
+          <div class="settings-section-head">
+            <span class="settings-section-icon violet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></span>
+            <div><h3>Visible interface</h3><p>Choose what visitors see on the launcher.</p></div>
+          </div>
+          <div class="setting-row"><div class="setting-info"><label for="cfgShowClock">Clock</label><p>Show the current time in the header.</p></div><div class="setting-ctrl"><label class="switch"><input type="checkbox" id="cfgShowClock" checked><span class="slider"></span></label></div></div>
+          <div class="setting-row"><div class="setting-info"><label for="cfgShowAdmin">Admin shortcut</label><p>Show the Admin button on the public launcher.</p></div><div class="setting-ctrl"><label class="switch"><input type="checkbox" id="cfgShowAdmin" checked><span class="slider"></span></label></div></div>
+          <div class="setting-row"><div class="setting-info"><label for="cfgShowDescriptions">Card descriptions</label><p>Show short descriptions over card artwork.</p></div><div class="setting-ctrl"><label class="switch"><input type="checkbox" id="cfgShowDescriptions" checked><span class="slider"></span></label></div></div>
+          <div class="setting-row"><div class="setting-info"><label for="cfgShowCategories">Category labels</label><p>Show the category and experience type on cards.</p></div><div class="setting-ctrl"><label class="switch"><input type="checkbox" id="cfgShowCategories" checked><span class="slider"></span></label></div></div>
+          <div class="setting-row"><div class="setting-info"><label for="cfgShowGridDots">Night grid texture</label><p>Display the subtle dotted launcher background.</p></div><div class="setting-ctrl"><label class="switch"><input type="checkbox" id="cfgShowGridDots" checked><span class="slider"></span></label></div></div>
+          <div class="setting-row"><div class="setting-info"><label for="cfgClock24Hour">24-hour clock</label><p>Use 18:30 instead of 06:30 PM.</p></div><div class="setting-ctrl"><label class="switch"><input type="checkbox" id="cfgClock24Hour"><span class="slider"></span></label></div></div>
+          <div class="setting-row"><div class="setting-info"><label for="cfgShowClockIcon">Clock icon</label><p>Show the small clock symbol beside the time.</p></div><div class="setting-ctrl"><label class="switch"><input type="checkbox" id="cfgShowClockIcon" checked><span class="slider"></span></label></div></div>
+          <div class="setting-row"><div class="setting-info"><label for="cfgShowSlidePager">Slide indicators</label><p>Show slideshow progress dots on project cards.</p></div><div class="setting-ctrl"><label class="switch"><input type="checkbox" id="cfgShowSlidePager" checked><span class="slider"></span></label></div></div>
+          <div class="setting-row"><div class="setting-info"><label for="cfgShowProjectCount">Project count</label><p>Show the number of available experiences beside the clock.</p></div><div class="setting-ctrl"><label class="switch"><input type="checkbox" id="cfgShowProjectCount" checked><span class="slider"></span></label></div></div>
+        </section>
+
+        <section class="settings-section-card">
+          <div class="settings-section-head">
+            <span class="settings-section-icon amber"><span class="material-symbols-outlined">animation</span></span>
+            <div><h3>Motion & media</h3><p>Tune card movement and slideshow playback.</p></div>
+          </div>
+          <div class="setting-row"><div class="setting-info"><label for="cfgMotion">Smooth animations</label><p>Enable card motion, animated transitions, and intro effects.</p></div><div class="setting-ctrl"><label class="switch"><input type="checkbox" id="cfgMotion" checked><span class="slider"></span></label></div></div>
+          <div class="setting-row"><div class="setting-info"><label for="cfgIntroAnimation">Entrance animation</label><p>Animate project cards when the launcher opens.</p></div><div class="setting-ctrl"><label class="switch"><input type="checkbox" id="cfgIntroAnimation" checked><span class="slider"></span></label></div></div>
+          <div class="setting-row"><div class="setting-info"><label for="cfgCardTilt">Interactive card tilt</label><p>Let cards react softly to mouse movement.</p></div><div class="setting-ctrl"><label class="switch"><input type="checkbox" id="cfgCardTilt" checked><span class="slider"></span></label></div></div>
+          <div class="setting-row"><div class="setting-info"><label for="cfgTiltStrength">Tilt strength</label><p>Set how far cards lean toward the pointer.</p></div><div class="setting-ctrl unit-input"><input type="number" id="cfgTiltStrength" min="0" max="14" value="7" class="form-input num-input"><span>deg</span></div></div>
+          <div class="setting-row"><div class="setting-info"><label for="cfgHoverZoom">Artwork hover zoom</label><p>Control the image zoom when a card is hovered.</p></div><div class="setting-ctrl unit-input"><input type="number" id="cfgHoverZoom" min="100" max="115" value="107" class="form-input num-input"><span>%</span></div></div>
+          <div class="setting-row"><div class="setting-info"><label for="cfgTransitionSpeed">Animation speed</label><p>Speed up or slow down card and slideshow movement.</p></div><div class="setting-ctrl unit-input"><input type="number" id="cfgTransitionSpeed" min="50" max="180" value="100" class="form-input num-input"><span>%</span></div></div>
+          <div class="setting-row"><div class="setting-info"><label for="cfgAutoplaySlides">Auto-play slides</label><p>Cycle through multi-image project artwork automatically.</p></div><div class="setting-ctrl"><label class="switch"><input type="checkbox" id="cfgAutoplaySlides" checked><span class="slider"></span></label></div></div>
+        </section>
+
+        <section class="settings-section-card">
+          <div class="settings-section-head">
+            <span class="settings-section-icon rose"><span class="material-symbols-outlined">display_settings</span></span>
+            <div><h3>Kiosk & session</h3><p>Control unattended-display and reset behavior.</p></div>
+          </div>
+          <div class="setting-row"><div class="setting-info"><label for="cfgIdleSeconds">Inactivity timeout</label><p>Return home after this many seconds; 0 disables it.</p></div><div class="setting-ctrl unit-input"><input type="number" id="cfgIdleSeconds" min="0" max="1800" step="10" value="120" class="form-input num-input"><span>sec</span></div></div>
+          <div class="setting-row"><div class="setting-info"><label for="cfgKiosk">Kiosk presentation</label><p>Keep the launcher focused and suppress browser context menus.</p></div><div class="setting-ctrl"><label class="switch"><input type="checkbox" id="cfgKiosk"><span class="slider"></span></label></div></div>
+          <div class="setting-row"><div class="setting-info"><label for="cfgKioskHoldSeconds">Admin reveal hold</label><p>How long the launcher logo must be held.</p></div><div class="setting-ctrl unit-input"><input type="number" id="cfgKioskHoldSeconds" min="0.5" max="5" step="0.1" value="2" class="form-input num-input"><span>sec</span></div></div>
+          <div class="setting-row"><div class="setting-info"><label for="cfgToolRevealSeconds">Controls auto-hide</label><p>How long the two hidden launcher controls stay visible.</p></div><div class="setting-ctrl unit-input"><input type="number" id="cfgToolRevealSeconds" min="5" max="60" step="1" value="15" class="form-input num-input"><span>sec</span></div></div>
+          <div class="setting-row"><div class="setting-info"><label for="cfgHideIdleCursor">Hide idle pointer</label><p>Fade the mouse pointer after three seconds without movement.</p></div><div class="setting-ctrl"><label class="switch"><input type="checkbox" id="cfgHideIdleCursor" checked><span class="slider"></span></label></div></div>
+          <div class="setting-row"><div class="setting-info"><label for="cfgResetSlidesOnIdle">Reset slides on idle</label><p>Return every project card to its first image after timeout.</p></div><div class="setting-ctrl"><label class="switch"><input type="checkbox" id="cfgResetSlidesOnIdle" checked><span class="slider"></span></label></div></div>
+          <div class="setting-row"><div class="setting-info"><label for="cfgDisableSelection">Touch-safe text</label><p>Prevent accidental text selection during kiosk interaction.</p></div><div class="setting-ctrl"><label class="switch"><input type="checkbox" id="cfgDisableSelection" checked><span class="slider"></span></label></div></div>
+        </section>
+      </div>
+
+    </section>
+
+  </main>
+
+  <footer class="admin-credit">Made With <span aria-hidden="true">💙</span> By <a href="https://venusapp.in" target="_blank" rel="noopener noreferrer">Veil</a></footer>
+</div>
+
+<!-- ============================================================== -->
+<!-- Project Editor Modal Dialog                                    -->
+<!-- ============================================================== -->
+<div class="modal-overlay project-editor-modal" id="editorModal" role="dialog" aria-hidden="true">
+  <div class="modal-card project-editor-card">
+    
+    <!-- Modal Header -->
+    <div class="modal-header">
+      <div class="modal-title-wrap">
+        <span class="modal-tag" id="modalTag">CARD CONFIGURATION</span>
+        <h2 id="modalHeading">Edit Card Details</h2>
+      </div>
+
+      <!-- Editor Step / Section Tabs -->
+      <div class="editor-nav-pills">
+        <button type="button" class="editor-pill active" data-sec="general" aria-label="General and style" data-label="General & Style">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        </button>
+        <button type="button" class="editor-pill" data-sec="media" aria-label="Media and slides" data-label="Media & Slides">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+        </button>
+        <button type="button" class="editor-pill" data-sec="action" aria-label="Tap action" data-label="Tap Action">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        </button>
+        <button type="button" class="editor-pill" data-sec="specs" aria-label="Specifications and details" data-label="Specs & Details">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        </button>
+      </div>
+
+      <button type="button" class="modal-close" id="btnModalClose" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <!-- Modal Body with Split Form & Live Card Preview -->
+    <div class="modal-body-split">
+      
+      <!-- Left: Clean Tabbed Form Pane -->
+      <div class="form-pane">
+        
+        <!-- ==================== TAB 1: General & Style ==================== -->
+        <div class="editor-section active" id="sec-general">
+          
+          <div class="clean-card">
+            <div class="card-sec-head">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <span>Card Information</span>
+            </div>
+
+            <div class="form-row col-2">
+              <div class="form-group">
+                <label for="fTitle">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7V4h16v3M9 20h6M12 4v16"/></svg>
+                  <span>Title <span class="req">*</span></span>
+                </label>
+                <input type="text" id="fTitle" class="form-input" placeholder="e.g. Meridian Residence" required>
+              </div>
+
+              <div class="form-group">
+                <label for="fId">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                  <span>App / Card ID <span class="req">*</span></span>
+                </label>
+                <input type="text" id="fId" class="form-input" placeholder="e.g. meridian" required>
+              </div>
+            </div>
+
+            <div class="form-row col-2">
+              <div class="form-group">
+                <label for="fCat">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+                  <span>Category / Type</span>
+                </label>
+                <input type="text" id="fCat" class="form-input" placeholder="e.g. Archviz Interactive · UE5">
+              </div>
+
+              <div class="form-group">
+                <label for="fSub">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="14" y2="15"/></svg>
+                  <span>Subtitle Description</span>
+                </label>
+                <input type="text" id="fSub" class="form-input" placeholder="e.g. Coastal home walkthrough">
+              </div>
+            </div>
+          </div>
+
+          <div class="clean-card">
+            <div class="card-sec-head">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/></svg>
+              <span>Visual Appearance & Size</span>
+            </div>
+
+            <div class="appearance-layout">
+              <!-- Icon picker -->
+              <div class="appearance-panel icon-panel">
+                <div class="appearance-label"><span class="material-symbols-outlined">interests</span><span>Category Icon</span></div>
+                <div class="icon-selector" id="iconSelector">
+                  <button type="button" class="icon-opt active" data-icon="cube" aria-label="Architecture"><span class="material-symbols-outlined">deployed_code</span></button>
+                  <button type="button" class="icon-opt" data-icon="orbit" aria-label="360 tour"><span class="material-symbols-outlined">360</span></button>
+                  <button type="button" class="icon-opt" data-icon="ar" aria-label="Augmented reality"><span class="material-symbols-outlined">view_in_ar</span></button>
+                  <button type="button" class="icon-opt" data-icon="vr" aria-label="Virtual reality"><span class="material-symbols-outlined">vrpano</span></button>
+                  <button type="button" class="icon-opt" data-icon="projector" aria-label="Presentation"><span class="material-symbols-outlined">video_camera_front</span></button>
+                  <button type="button" class="icon-opt" data-icon="reel" aria-label="Film"><span class="material-symbols-outlined">movie</span></button>
+                  <button type="button" class="icon-opt" data-icon="frames" aria-label="Gallery"><span class="material-symbols-outlined">photo_library</span></button>
+                  <button type="button" class="icon-opt" data-icon="building" aria-label="Building"><span class="material-symbols-outlined">apartment</span></button>
+                  <button type="button" class="icon-opt" data-icon="home" aria-label="Residence"><span class="material-symbols-outlined">home_work</span></button>
+                  <button type="button" class="icon-opt" data-icon="landscape" aria-label="Landscape"><span class="material-symbols-outlined">landscape</span></button>
+                  <button type="button" class="icon-opt" data-icon="lighting" aria-label="Lighting"><span class="material-symbols-outlined">lightbulb</span></button>
+                  <button type="button" class="icon-opt" data-icon="model" aria-label="3D model"><span class="material-symbols-outlined">view_in_ar</span></button>
+                  <button type="button" class="icon-opt" data-icon="blueprint" aria-label="Blueprint"><span class="material-symbols-outlined">architecture</span></button>
+                  <button type="button" class="icon-opt" data-icon="garden" aria-label="Garden"><span class="material-symbols-outlined">park</span></button>
+                  <button type="button" class="icon-opt" data-icon="hospitality" aria-label="Hospitality"><span class="material-symbols-outlined">king_bed</span></button>
+                  <button type="button" class="icon-opt" data-icon="museum" aria-label="Museum"><span class="material-symbols-outlined">museum</span></button>
+                  <button type="button" class="icon-opt" data-icon="retail" aria-label="Retail"><span class="material-symbols-outlined">storefront</span></button>
+                  <button type="button" class="icon-opt" data-icon="wellness" aria-label="Wellness"><span class="material-symbols-outlined">spa</span></button>
+                  <button type="button" class="icon-opt" data-icon="cinema" aria-label="Cinema"><span class="material-symbols-outlined">theaters</span></button>
+                  <button type="button" class="icon-opt" data-icon="map" aria-label="Site map"><span class="material-symbols-outlined">map</span></button>
+                </div>
+              </div>
+
+              <!-- Accent color -->
+              <div class="appearance-panel accent-panel">
+                <div class="appearance-label"><span class="material-symbols-outlined">palette</span><span>Accent Glow</span></div>
+                <div class="accent-selector" id="accentSelector">
+                  <button type="button" class="accent-opt cyan active" data-accent="cyan" aria-label="Sand gold"></button>
+                  <button type="button" class="accent-opt violet" data-accent="violet" aria-label="Sage green"></button>
+                  <button type="button" class="accent-opt amber" data-accent="amber" aria-label="Ember orange"></button>
+                  <button type="button" class="accent-opt rose" data-accent="rose" aria-label="Coral red"></button>
+                  <button type="button" class="accent-opt ocean" data-accent="ocean" aria-label="Ocean blue"></button>
+                  <button type="button" class="accent-opt orchid" data-accent="orchid" aria-label="Orchid purple"></button>
+                  <button type="button" class="accent-opt aqua" data-accent="aqua" aria-label="Electric aqua"></button>
+                  <button type="button" class="accent-opt lime" data-accent="lime" aria-label="Lime green"></button>
+                  <button type="button" class="accent-opt cobalt" data-accent="cobalt" aria-label="Cobalt blue"></button>
+                  <button type="button" class="accent-opt indigo" data-accent="indigo" aria-label="Indigo"></button>
+                  <button type="button" class="accent-opt plum" data-accent="plum" aria-label="Plum"></button>
+                  <button type="button" class="accent-opt magenta" data-accent="magenta" aria-label="Magenta"></button>
+                  <button type="button" class="accent-opt coral" data-accent="coral" aria-label="Coral"></button>
+                  <button type="button" class="accent-opt tangerine" data-accent="tangerine" aria-label="Tangerine"></button>
+                  <button type="button" class="accent-opt gold" data-accent="gold" aria-label="Champagne gold"></button>
+                  <button type="button" class="accent-opt mint" data-accent="mint" aria-label="Mint"></button>
+                  <button type="button" class="accent-opt emerald" data-accent="emerald" aria-label="Emerald"></button>
+                  <button type="button" class="accent-opt glacier" data-accent="glacier" aria-label="Glacier blue"></button>
+                  <button type="button" class="accent-opt slate" data-accent="slate" aria-label="Silver slate"></button>
+                  <button type="button" class="accent-opt pearl" data-accent="pearl" aria-label="Pearl white"></button>
+                </div>
+              </div>
+
+              <!-- Size selector -->
+              <div class="appearance-panel size-panel">
+                <div class="appearance-label"><span class="material-symbols-outlined">aspect_ratio</span><span>Card Dimensions</span></div>
+                <div class="size-picker">
+                  <div class="size-input-wrap">
+                    <label class="dimension-field"><span>Columns</span><input type="number" id="fSizeCols" min="1" max="6" value="2" class="form-input num-input"></label>
+                    <span class="dimension-times">×</span>
+                    <label class="dimension-field"><span>Rows</span><input type="number" id="fSizeRows" min="1" max="4" value="1" class="form-input num-input"></label>
+                  </div>
+                  <div class="size-presets">
+                    <button type="button" class="preset-btn" data-size="1,1"><span class="preset-shape square"></span><span>Compact</span><small>1×1</small></button>
+                    <button type="button" class="preset-btn" data-size="2,1"><span class="preset-shape wide"></span><span>Wide</span><small>2×1</small></button>
+                    <button type="button" class="preset-btn" data-size="3,1"><span class="preset-shape banner"></span><span>Banner</span><small>3×1</small></button>
+                    <button type="button" class="preset-btn" data-size="2,2"><span class="preset-shape feature"></span><span>Feature</span><small>2×2</small></button>
+                    <button type="button" class="preset-btn" data-size="3,2"><span class="preset-shape hero"></span><span>Hero</span><small>3×2</small></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="tile-treatment-editor">
+              <div class="appearance-label"><span class="material-symbols-outlined">dashboard_customize</span><span>Tile Treatment</span></div>
+              <div class="tile-treatment-controls">
+                <label class="tile-control-field" for="fTileStyle"><span>Artwork style</span>
+                  <select id="fTileStyle" class="form-select">
+                    <option value="image">Image / gallery</option>
+                    <option value="gradient">Gradient art</option>
+                    <option value="video">Video tile</option>
+                    <option value="logo">Logo tile</option>
+                  </select>
+                </label>
+                <label class="tile-control-field tile-style-panel" data-style="gradient" for="fTileGradient"><span>Gradient preset</span>
+                  <select id="fTileGradient" class="form-select">
+                    <option value="ember">Ember glow</option>
+                    <option value="ocean">Deep ocean</option>
+                    <option value="forest">Forest glass</option>
+                    <option value="orchid">Orchid dusk</option>
+                    <option value="sand">Warm sandstone</option>
+                    <option value="aurora">Aurora light</option>
+                  </select>
+                </label>
+                <div class="tile-style-panel tile-logo-picker" data-style="logo">
+                  <span class="tile-control-label">Logo artwork</span>
+                  <button type="button" class="btn secondary sm" id="btnPickTileLogo"><span class="material-symbols-outlined">image_search</span><span>Choose from media</span></button>
+                  <small id="tileLogoName">No logo selected</small>
+                </div>
+                <div class="tile-style-panel tile-video-hint" data-style="video">
+                  <span class="tile-control-label">Video source</span>
+                  <small>Choose a video in Media & Slides; the first video is used as a muted looping tile preview.</small>
+                </div>
+              </div>
+              <div class="tile-toggles">
+                <label><input type="checkbox" id="fTileFrame" checked><span class="material-symbols-outlined">frame_inspect</span><span>Card frame</span></label>
+                <label><input type="checkbox" id="fTileShowCategory" checked><span class="material-symbols-outlined">sell</span><span>Category</span></label>
+                <label><input type="checkbox" id="fTileShowTitle" checked><span class="material-symbols-outlined">title</span><span>Title</span></label>
+                <label><input type="checkbox" id="fTileShowDescription" checked><span class="material-symbols-outlined">notes</span><span>Description</span></label>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ==================== TAB 2: Media & Slides ==================== -->
+        <div class="editor-section" id="sec-media">
+          
+          <div class="clean-card">
+            <div class="card-sec-head">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+              <span>Card Cover Mode</span>
+            </div>
+
+            <div class="seg-ctrl" id="mediaModeSeg">
+              <button type="button" class="seg-btn" data-mode="none">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                <span>No Image (Color Art)</span>
+              </button>
+              <button type="button" class="seg-btn" data-mode="single">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/></svg>
+                <span>Single Still Image</span>
+              </button>
+              <button type="button" class="seg-btn active" data-mode="multi">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="16" height="13" rx="2"/><rect x="6" y="8" width="16" height="13" rx="2"/></svg>
+                <span>Multi-Image Carousel</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="clean-card" id="slidesEditor">
+            <div class="card-sec-head" style="justify-content: space-between;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                <span>Slide Images</span>
+              </div>
+              <button type="button" class="btn primary sm" id="btnAddSlide">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <span>Add Image Slide</span>
+              </button>
+            </div>
+
+            <div class="slides-list" id="slidesList">
+              <!-- Dynamically populated slide items -->
+            </div>
+
+            <!-- Carousel Settings -->
+            <div class="carousel-cfg" id="carouselCfg">
+              <div class="form-row col-3">
+                <div class="form-group">
+                  <label for="fFx">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/></svg>
+                    <span>Transition Effect</span>
+                  </label>
+                  <select id="fFx" class="form-select">
+                    <option value="push">Push (Horizontal glide)</option>
+                    <option value="lift">Lift (Vertical glide)</option>
+                    <option value="wipe">Wipe (Smooth curtain)</option>
+                    <option value="fade">Fade (Cross-dissolve)</option>
+                    <option value="zoom">Zoom (Scale dissolve)</option>
+                    <option value="kenburns">Ken Burns (Cinematic pan & zoom)</option>
+                    <option value="slideup">Slide Up (From bottom)</option>
+                    <option value="slidedown">Slide Down (From top)</option>
+                    <option value="blur">Depth Blur (Lens blur dissolve)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="fInterval">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    <span>Slide Interval (ms)</span>
+                  </label>
+                  <input type="number" id="fInterval" min="1000" max="30000" step="200" value="5000" class="form-input">
+                </div>
+                <div class="form-group">
+                  <label for="fDir">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m18 8 4 4-4 4M2 12h20"/></svg>
+                    <span>Direction</span>
+                  </label>
+                  <select id="fDir" class="form-select">
+                    <option value="1">Forward (Standard)</option>
+                    <option value="-1">Reverse (Opposite)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ==================== TAB 3: Tap Action & Target ==================== -->
+        <div class="editor-section" id="sec-action">
+          
+          <div class="clean-card">
+            <div class="card-sec-head">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              <span>What happens when the card is tapped?</span>
+            </div>
+
+            <div class="action-grid" id="actionTypeGrid">
+              
+              <label class="action-card active">
+                <input type="radio" name="actionType" value="exe" checked>
+                <div class="ac-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg></div>
+                <div class="ac-text">
+                  <strong>Start Local PC Program (.exe)</strong>
+                  <span>Launches Unreal Engine 5, Unity, or Windows executable on Main Display</span>
+                </div>
+              </label>
+
+              <label class="action-card">
+                <input type="radio" name="actionType" value="url-iframe">
+                <div class="ac-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
+                <div class="ac-text">
+                  <strong>Embed Web Tour in Launcher</strong>
+                  <span>Opens Matterport, Kuula 360, or website inside launcher with overlay</span>
+                </div>
+              </label>
+
+              <label class="action-card">
+                <input type="radio" name="actionType" value="url-main">
+                <div class="ac-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
+                <div class="ac-text">
+                  <strong>Open Web Page on Main Display</strong>
+                  <span>Opens URL in a dedicated browser window on external screen</span>
+                </div>
+              </label>
+
+              <label class="action-card">
+                <input type="radio" name="actionType" value="detail">
+                <div class="ac-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+                <div class="ac-text">
+                  <strong>Open Project Details Showcase</strong>
+                  <span>Opens high-resolution image gallery, rich description, and spec table</span>
+                </div>
+              </label>
+
+              <label class="action-card">
+                <input type="radio" name="actionType" value="detail-launch">
+                <div class="ac-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3l14 9-14 9V3z"/></svg></div>
+                <div class="ac-text">
+                  <strong>Details Showcase + Launch Button</strong>
+                  <span>Details page with a prominent "Launch on Main Display" action button</span>
+                </div>
+              </label>
+
+            </div>
+          </div>
+
+          <!-- Conditional EXE Configuration -->
+          <div class="clean-card" id="exeConfigBox">
+            <div class="card-sec-head">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+              <span>Local Program (.exe) Configuration</span>
+            </div>
+
+            <div class="form-group">
+              <label>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+                <span>Choose an executable</span>
+              </label>
+              <input type="text" id="fExePath" class="form-input exe-path-value" readonly aria-label="Selected executable path" placeholder="No .exe selected yet">
+              <div class="exe-dropzone" id="exeDropzone" tabindex="0" role="group" aria-label="Drop an executable here or browse this PC">
+                <span class="material-symbols-outlined" aria-hidden="true">upload_file</span>
+                <div><strong>Drop an .exe here</strong><small>or browse this PC to select the program</small></div>
+                <button type="button" class="btn secondary sm" id="btnBrowseExe">Browse this PC</button>
+              </div>
+              <div class="exe-file-actions">
+                <button type="button" class="btn secondary sm" id="btnVerifyPath">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 12 2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
+                  <span>Check selected app</span>
+                </button>
+                <span class="path-status" id="pathVerifyStatus" aria-live="polite"></span>
+              </div>
+            </div>
+
+            <div class="launch-options-grid">
+              <div class="form-group">
+                <label for="fWindowMode"><span class="material-symbols-outlined">open_in_full</span><span>Window behavior</span></label>
+                <select id="fWindowMode" class="form-select">
+                  <option value="maximized">Maximized</option>
+                  <option value="normal">Windowed</option>
+                  <option value="minimized">Start minimized</option>
+                </select>
+                <small class="field-hint">Applied when its window opens. Maximized uses the display’s current work area.</small>
+              </div>
+              <div class="form-group">
+                <label for="fResolution"><span class="material-symbols-outlined">aspect_ratio</span><span>Window size</span></label>
+                <select id="fResolution" class="form-select">
+                  <option value="native">Use app / display default</option>
+                  <option value="1280x720">1280 × 720 · HD</option>
+                  <option value="1920x1080">1920 × 1080 · Full HD</option>
+                  <option value="2560x1440">2560 × 1440 · QHD</option>
+                  <option value="3840x2160">3840 × 2160 · 4K</option>
+                  <option value="custom">Custom size</option>
+                </select>
+              </div>
+              <div class="form-group" id="customResolutionGroup" hidden>
+                <label><span class="material-symbols-outlined">tune</span><span>Custom width × height</span></label>
+                <div class="resolution-inputs">
+                  <input type="number" id="fResolutionWidth" class="form-input" min="640" max="7680" step="1" value="1920" aria-label="Custom width">
+                  <span>×</span>
+                  <input type="number" id="fResolutionHeight" class="form-input" min="480" max="4320" step="1" value="1080" aria-label="Custom height">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="fDisplayTarget"><span class="material-symbols-outlined">display_settings</span><span>Display</span></label>
+                <select id="fDisplayTarget" class="form-select">
+                  <option value="primary">Main display</option>
+                  <option value="secondary">Second display</option>
+                </select>
+              </div>
+            </div>
+
+            <details class="advanced-launch-options">
+              <summary><span class="material-symbols-outlined" aria-hidden="true">code</span>Advanced options</summary>
+              <div class="form-row col-2">
+                <div class="form-group">
+                  <label for="fExeArgs"><span>App-specific command-line arguments</span></label>
+                  <input type="text" id="fExeArgs" class="form-input" placeholder="Only if required by this app">
+                  <small class="field-hint">Window behavior and resolution above are managed by the launcher.</small>
+                </div>
+                <div class="form-group">
+                  <label for="fStopImage"><span>Process name to stop (optional)</span></label>
+                  <input type="text" id="fStopImage" class="form-input" placeholder="e.g. MyApp-Win64-Shipping.exe">
+                </div>
+              </div>
+            </details>
+
+            <div class="test-launch-row">
+              <button type="button" class="btn secondary sm" id="btnTestLaunch">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg>
+                <span>Test Launch Program</span>
+              </button>
+              <button type="button" class="btn danger sm" id="btnTestStop">
+                <svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+                <span>Stop Program</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Conditional URL Configuration -->
+          <div class="clean-card" id="urlConfigBox" style="display:none;">
+            <div class="card-sec-head">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
+              <span>Target Web URL</span>
+            </div>
+            <div class="form-group">
+              <label for="fUrl">Website / Virtual Tour URL</label>
+              <input type="url" id="fUrl" class="form-input" placeholder="https://my-virtual-tour.com/">
+            </div>
+            <div class="form-group" id="urlMainArgsGroup" style="display:none;">
+              <label for="fUrlArgs">Chrome Window Arguments</label>
+              <input type="text" id="fUrlArgs" class="form-input" placeholder="--kiosk --window-position=1920,0">
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ==================== TAB 4: Specs & Details ==================== -->
+        <div class="editor-section" id="sec-specs">
+          
+          <div class="clean-card">
+            <div class="card-sec-head">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+              <span>Showcase Description</span>
+            </div>
+            <div class="form-group">
+              <textarea id="fDesc" class="form-textarea" rows="4" placeholder="Full descriptive paragraph explaining the project experience..."></textarea>
+            </div>
+          </div>
+
+          <div class="clean-card">
+            <div class="card-sec-head" style="justify-content:space-between;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/></svg>
+                <span>Key Specifications</span>
+              </div>
+              <button type="button" class="btn secondary sm" id="btnAddSpec">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <span>Add Spec Row</span>
+              </button>
+            </div>
+            <div class="specs-list" id="specsList">
+              <!-- Dynamically populated spec rows -->
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Right: Real-time Live Interactive Preview -->
+      <div class="preview-pane">
+        <div class="preview-sticky">
+          <div class="preview-header">
+            <span class="preview-tag">LIVE REAL-TIME PREVIEW</span>
+            <span class="preview-dim" id="previewDim">2 × 1</span>
+          </div>
+
+          <div class="preview-stage">
+            <!-- Simulated Launcher Card -->
+            <div class="card preview-card" id="cardPreview" data-accent="cyan" data-cs="2" data-rs="1">
+              <div class="thumb" id="previewThumb"></div>
+              <div class="scrim"></div>
+              <div class="arrow">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9"/></svg>
+              </div>
+              <div class="content">
+                <span class="tag" id="previewTagBadge">
+                  <span id="previewIconWrap"></span>
+                  <span id="previewCatText">Category</span>
+                </span>
+                <h3 id="previewTitleText">Project Title</h3>
+                <p class="sub" id="previewSubText">Subtitle description</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="preview-tips">
+            <p>Apply saves this card to the launcher immediately.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Modal Footer Actions -->
+    <div class="modal-footer">
+      <button type="button" class="btn secondary" id="btnCancelModal">Cancel</button>
+      <button type="button" class="btn primary" id="btnApplyModal">Apply & Auto-Save Card</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================================== -->
+<!-- Asset Picker Dialog                                            -->
+<!-- ============================================================== -->
+<div class="modal-overlay sm-dialog" id="assetPickerModal" role="dialog" aria-hidden="true">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div class="modal-title-wrap">
+        <h2>Select Media Asset</h2>
+      </div>
+      <button type="button" class="modal-close" id="btnAssetPickerClose" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="picker-upload-bar">
+        <label class="btn secondary sm" for="pickerUploadInput">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <span>Upload Media</span>
+        </label>
+        <input type="file" id="pickerUploadInput" accept="image/*,video/*,.tif,.tiff,.mkv,.avi,.m4v,.ogv" hidden>
+        <span class="hint">Or select from existing assets below:</span>
+      </div>
+      <div class="asset-picker-grid" id="assetPickerGrid">
+        <!-- Dynamically rendered -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Media Preview Dialog -->
+<div class="modal-overlay media-preview-modal" id="mediaPreviewModal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="mediaPreviewName">
+  <div class="media-preview-card">
+    <div class="media-preview-stage">
+      <img id="mediaPreviewImage" alt="">
+      <video id="mediaPreviewVideo" controls playsinline preload="metadata"></video>
+      <iframe id="mediaPreviewPdf" title="PDF preview" hidden></iframe>
+      <button type="button" class="media-nav prev" id="btnMediaPrev" aria-label="Previous image"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg></button>
+      <button type="button" class="media-nav next" id="btnMediaNext" aria-label="Next image"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg></button>
+      <button type="button" class="modal-close media-preview-close" id="btnMediaPreviewClose" aria-label="Close preview"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="media-preview-info">
+      <div><h2 id="mediaPreviewName">Image preview</h2><p id="mediaPreviewMeta"></p></div>
+    </div>
+  </div>
+</div>
+
+<!-- Media context menu -->
+<div class="media-context-menu" id="mediaContextMenu" role="menu" aria-hidden="true">
+  <button type="button" data-media-action="open"><span class="material-symbols-outlined">open_in_full</span><span>Open / preview</span></button>
+  <button type="button" data-media-action="select-all"><span class="material-symbols-outlined">select_all</span><span>Select all here</span></button>
+  <div class="context-separator"></div>
+  <button type="button" data-media-action="move"><span class="material-symbols-outlined">drive_file_move</span><span>Move selected</span><kbd id="ctxMoveCount">0</kbd></button>
+  <button type="button" data-media-action="new-folder"><span class="material-symbols-outlined">create_new_folder</span><span>New folder</span></button>
+  <div class="context-separator"></div>
+  <button type="button" class="danger" data-media-action="delete"><span class="material-symbols-outlined">delete</span><span>Delete selected</span><kbd id="ctxDeleteCount">0</kbd></button>
+</div>
+
+<!-- Upload destination and duplicate handling -->
+<div class="modal-overlay media-import-modal" id="mediaImportModal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="mediaImportTitle">
+  <div class="media-import-card">
+    <div class="media-import-head">
+      <span class="media-action-icon material-symbols-outlined">upload_file</span>
+      <div><h2 id="mediaImportTitle">Add to media library</h2><p>Choose where these files should be saved before uploading.</p></div>
+      <button type="button" class="modal-close" id="btnCloseMediaImport" aria-label="Close upload options"><span class="material-symbols-outlined">close</span></button>
+    </div>
+    <div class="media-import-summary" id="mediaImportSummary"></div>
+    <div class="media-import-options">
+      <label class="media-dialog-label">Save to folder<select class="form-input" id="mediaImportDestination"></select></label>
+      <label class="media-dialog-label">When a filename already exists<select class="form-input" id="mediaImportCollision"><option value="rename">Keep both and add _1</option><option value="replace">Replace existing file</option><option value="skip">Skip the duplicate</option></select></label>
+    </div>
+    <div class="media-import-conflicts" id="mediaImportConflicts"></div>
+    <div class="media-action-buttons">
+      <button type="button" class="btn secondary" id="btnCancelMediaImport">Cancel</button>
+      <button type="button" class="btn primary" id="btnConfirmMediaImport"><span class="material-symbols-outlined">upload</span><span>Upload files</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- Folder / move / delete dialog -->
+<div class="modal-overlay media-action-modal" id="mediaActionModal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="mediaActionTitle">
+  <div class="media-action-card">
+    <div class="media-action-icon"><span class="material-symbols-outlined" id="mediaActionIcon">folder</span></div>
+    <h2 id="mediaActionTitle">Media action</h2>
+    <p id="mediaActionDescription"></p>
+    <div id="mediaActionField"></div>
+    <div class="media-action-buttons">
+      <button type="button" class="btn secondary" id="btnCancelMediaAction">Cancel</button>
+      <button type="button" class="btn primary" id="btnConfirmMediaAction">Continue</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="js/admin.js"></script>
+</body>
+</html>

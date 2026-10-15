@@ -1,0 +1,17 @@
+{
+  "name": "vastuchitra-launcher",
+  "version": "3.0.0",
+  "description": "Touch-screen launcher for interactive experiences",
+  "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "check": "node --check server.js && node --check js/admin.js && node --check js/script.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "sharp": "^0.35.5"
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "meridian": {
+    "exe": "D:\\Apps\\Upscayl\\Upscayl.exe",
+    "args": [
+      "-windowed",
+      "-WinX=1920",
+      "-WinY=0",
+      "-ResX=3840",
+      "-ResY=2160"
+    ],
+    "stopImage": "Meridian-Win64-Shipping.exe",
+    "windowMode": "maximized",
+    "resolution": "1920x1080",
+    "resolutionWidth": 1920,
+    "resolutionHeight": 1080,
+    "displayTarget": "primary"
+  },
+  "facade-show": {
+    "exe": "C:\\Vastuchitra\\FacadeShow\\FacadeShow.exe",
+    "stopImage": "FacadeShow-Win64-Shipping.exe"
+  },
+  "skyline-lobby": {
+    "exe": "C:\\Vastuchitra\\SkylineLobby\\SkylineLobby.exe",
+    "stopImage": "SkylineLobby-Win64-Shipping.exe"
+  },
+  "vr-walkthrough": {
+    "exe": "D:\\Apps\\Upscayl\\Upscayl.exe"
+  },
+  "room-mapping": {
+    "exe": "C:\\Vastuchitra\\RoomMapping\\RoomMapping.exe"
+  },
+  "_example-website-on-main-display": {
+    "url": "https://example.com/",
+    "args": [
+      "--kiosk",
+      "--window-position=1920,0"
+    ]
+  }
+}
