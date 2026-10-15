@@ -3,6 +3,7 @@
 // ================================================================
 (() => {
   'use strict';
+  const hostedShowcase = !!window.VASTUCHITRA?.settings?.meetingPreview;
 
   // ---------------------------------------------------------------- State
   const state = {
@@ -203,6 +204,21 @@
 
   // ---------------------------------------------------------------- API
   async function api(path, method = 'GET', body = null){
+    if (hostedShowcase){
+      const assets = Array.from({ length:18 }, (_, i) => ({
+        name:`project-${i + 1}.webp`, relativePath:`project-${i + 1}.webp`,
+        path:`/public/demo/project-${i + 1}.webp`, kind:'file', mediaType:'image'
+      }));
+      if (path === '/api/config' && method === 'POST'){
+        const config = { settings: { ...body.settings, meetingPreview:true, showAdmin:true, showTools:true }, projects:body.projects, apps:body.apps || {} };
+        localStorage.setItem('vastuchitra-showcase-config-v1', JSON.stringify(config));
+        window.VASTUCHITRA = config;
+        return { success:true };
+      }
+      if (path === '/api/config') return { ...window.VASTUCHITRA, assets, mediaConfig:{ rootPath:'Bundled showcase images', mirrorPath:'', collisionPolicy:'rename' } };
+      if (path === '/api/assets') return { assets };
+      throw new Error('This feature needs the local PC server. Open Admin at http://localhost:4000/admin.html.');
+    }
     const opts = {
       method,
       headers: {
@@ -685,6 +701,7 @@
   }
 
   async function uploadFile(file, folder, collisionPolicy){
+    if (hostedShowcase) throw new Error('Uploads need the local PC server. The web editor can use the bundled image library.');
     const response = await fetch('/api/upload-media', {
       method:'POST', body:file,
       headers:{
@@ -1553,6 +1570,7 @@
       size: [cols, rows]
     };
     projectData.tile = {
+      ...activeTile,
       style: $('fTileStyle')?.value || 'image',
       gradient: $('fTileGradient')?.value || 'ember',
       frame: $('fTileFrame')?.checked !== false,
@@ -1561,6 +1579,7 @@
       showDescription: $('fTileShowDescription')?.checked !== false,
       ...(activeTile.logoSrc ? { logoSrc: activeTile.logoSrc } : {})
     };
+    if (state.currentEdit?.team) projectData.team = state.currentEdit.team;
 
     if (activeSlideList.length > 0){
       projectData.slides = activeSlideList;
@@ -2020,6 +2039,13 @@
     adminInitialized = true;
     setupEvents();
     loadConfig();
+    if (hostedShowcase){
+      const note = document.createElement('p');
+      note.className = 'hosted-admin-note';
+      note.textContent = 'Web editor: changes save in this browser. Use the local PC Admin for shared configuration, uploads, and application controls.';
+      document.querySelector('.admin-main').prepend(note);
+      return;
+    }
     const mediaEvents = new EventSource('/api/events');
     let mediaRefreshTimer = 0;
     mediaEvents.addEventListener('assets-updated', () => {

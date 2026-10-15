@@ -15,7 +15,7 @@
   });
   window.VASTUCHITRA = {
     settings: {
-      ...window.VASTUCHITRA?.settings, columns: 8, rows: 5, showAdmin: false,
+      ...window.VASTUCHITRA?.settings, columns: 8, rows: 5, showAdmin: true, showTools: true,
       meetingPreview: true, autoplaySlides: true, motion: true, introAnimation: true,
       showClock: true, showProjectCount: false, cardTilt: false, cardGap: 10,
       cardRadius: 4, pagePadding: 28, cardContentPadding: 16, cardRowHeight: 100
@@ -89,10 +89,15 @@
       })
     ]
   };
-  document.title = 'VastuChitra — Studio Showcase';
+  // Hosted administration saves a browser-local copy; the PC server keeps its
+  // existing configuration API and saved catalogue.
+  try {
+    const saved = JSON.parse(localStorage.getItem('vastuchitra-showcase-config-v1'));
+    if (saved && Array.isArray(saved.projects) && saved.settings){
+      window.VASTUCHITRA = saved;
+      Object.assign(saved.settings, { meetingPreview: true, showAdmin: true, showTools: true });
+    }
+  } catch {}
+  if (!/\/admin(?:\.html)?\/?$/.test(location.pathname || '')) document.title = 'VastuChitra — Studio Showcase';
   document.body.classList.add('meeting-preview');
-  const note = document.createElement('span');
-  note.className = 'meeting-note';
-  note.textContent = 'STUDIO SHOWCASE · MEETING PREVIEW';
-  document.querySelector('.brand').appendChild(note);
 })();

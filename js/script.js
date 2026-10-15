@@ -16,7 +16,7 @@
 const CONFIG = window.VASTUCHITRA || { settings: {}, projects: [] };
 const CFG = Object.assign({
   columns: 6, rows: 4, idleSeconds: 120, kiosk: false,
-  cardGap: 16, cardRadius: 22, showClock: true, showAdmin: true,
+  cardGap: 16, cardRadius: 22, showClock: true, showAdmin: true, showTools: true,
   cardRowHeight: 130, pagePadding: 32, titleScale: 100, showBrandSubtitle: true, showDescriptions: true,
   showCategories: true, showGridDots: true, clock24Hour: false,
   showClockIcon: true, showSlidePager: true, motion: true, cardTilt: true,
@@ -26,6 +26,9 @@ const CFG = Object.assign({
   tiltStrength: 7, hoverZoom: 107, transitionSpeed: 100
 }, CONFIG.settings);
 const PROJECTS = CONFIG.projects || [];
+if (CFG.meetingPreview) window.addEventListener('storage', event => {
+  if (event.key === 'vastuchitra-showcase-config-v1') location.reload();
+});
 const KIOSK = !!CFG.kiosk || /[?&]kiosk(=|&|$)/.test(location.search);
 
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches || CFG.motion === false;
@@ -102,7 +105,6 @@ const ICONS = {
 };
 const GRIP = `<svg viewBox="0 0 16 16" fill="currentColor"><circle cx="5" cy="3" r="1.3"/><circle cx="11" cy="3" r="1.3"/><circle cx="5" cy="8" r="1.3"/><circle cx="11" cy="8" r="1.3"/><circle cx="5" cy="13" r="1.3"/><circle cx="11" cy="13" r="1.3"/></svg>`;
 const CORNER = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M13 3 3 13"/><path d="M13 8 8 13"/></svg>`;
-const ARROW = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9"/></svg>`;
 
 // ---------------------------------------------------------------- 2. cards
 const grid = $('grid');
@@ -136,7 +138,6 @@ function buildCard(p){
   card.innerHTML = `
     <div class="thumb"></div>
     <div class="scrim"></div>
-    <div class="arrow">${ARROW}</div>
     <div class="handle-drag">${GRIP}</div>
     <div class="handle-resize" title="Drag to resize">${CORNER}</div>
     <div class="content">
@@ -1154,6 +1155,8 @@ window.addEventListener('keydown', e => {
 const brand = $('brand');
 let holdT = 0, toolHideT = 0;
 function setToolsVisible(visible, autoHide = true){
+  const pinned = CFG.showTools === true && !KIOSK;
+  visible = visible || pinned;
   const tools = $('tools');
   if (!visible && tools.contains(document.activeElement)) brand.focus({ preventScroll:true });
   document.body.classList.toggle('tools-open', visible);
@@ -1161,12 +1164,13 @@ function setToolsVisible(visible, autoHide = true){
   tools.setAttribute('aria-hidden', String(!visible));
   tools.inert = !visible;
   clearTimeout(toolHideT);
-  if (visible && autoHide){
+  if (visible && autoHide && !pinned){
     toolHideT = setTimeout(() => {
       if (!editing) setToolsVisible(false, false);
     }, clamp(parseInt(CFG.toolRevealSeconds, 10) || 15, 5, 60) * 1000);
   }
 }
+setToolsVisible(CFG.showTools === true && !KIOSK, false);
 function toggleTools(){
   const visible = !document.body.classList.contains('tools-open');
   if (!visible && editing) setEditing(false);

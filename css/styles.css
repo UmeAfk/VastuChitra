@@ -1,4 +1,3 @@
-.meeting-note{font-size:10px;letter-spacing:.18em;color:var(--muted);max-width:150px;line-height:1.7;margin-left:18px;}
 .detail-team{margin:24px 0;}
 .detail-hero .detail-team{position:absolute;inset:0;overflow:auto;margin:0;padding:36px;}
 .detail-wordmark{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:65%;max-width:420px;object-fit:contain;}
@@ -6,7 +5,6 @@
 .detail-team>ul{padding-left:0;border:0;}
 .detail-team li{margin:8px 0;}
 .detail-team li>span{display:inline-block;padding:10px 14px;border:1px solid var(--line);border-radius:10px;background:var(--panel-2);font-size:13px;}
-@media(max-width:700px){.meeting-note{display:none;}}
 /* ================================================================
    Vastuchitra launcher
    ================================================================ */
