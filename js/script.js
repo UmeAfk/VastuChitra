@@ -16,7 +16,7 @@
 const CONFIG = window.VASTUCHITRA || { settings: {}, projects: [] };
 const CFG = Object.assign({
   columns: 6, rows: 4, idleSeconds: 120, kiosk: false,
-  cardGap: 16, cardRadius: 22, showClock: true, showAdmin: true, showTools: true,
+  cardGap: 16, cardRadius: 22, showClock: true, showAdmin: true, showTools: false,
   cardRowHeight: 130, pagePadding: 32, titleScale: 100, showBrandSubtitle: true, showDescriptions: true,
   showCategories: true, showGridDots: true, clock24Hour: false,
   showClockIcon: true, showSlidePager: true, motion: true, cardTilt: true,
@@ -1155,8 +1155,6 @@ window.addEventListener('keydown', e => {
 const brand = $('brand');
 let holdT = 0, toolHideT = 0;
 function setToolsVisible(visible, autoHide = true){
-  const pinned = CFG.showTools === true && !KIOSK;
-  visible = visible || pinned;
   const tools = $('tools');
   if (!visible && tools.contains(document.activeElement)) brand.focus({ preventScroll:true });
   document.body.classList.toggle('tools-open', visible);
@@ -1164,13 +1162,13 @@ function setToolsVisible(visible, autoHide = true){
   tools.setAttribute('aria-hidden', String(!visible));
   tools.inert = !visible;
   clearTimeout(toolHideT);
-  if (visible && autoHide && !pinned){
+  if (visible && autoHide){
     toolHideT = setTimeout(() => {
       if (!editing) setToolsVisible(false, false);
     }, clamp(parseInt(CFG.toolRevealSeconds, 10) || 15, 5, 60) * 1000);
   }
 }
-setToolsVisible(CFG.showTools === true && !KIOSK, false);
+setToolsVisible(false, false);
 function toggleTools(){
   const visible = !document.body.classList.contains('tools-open');
   if (!visible && editing) setEditing(false);

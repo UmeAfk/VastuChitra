@@ -15,7 +15,7 @@
   });
   window.VASTUCHITRA = {
     settings: {
-      ...window.VASTUCHITRA?.settings, columns: 8, rows: 5, showAdmin: true, showTools: true,
+      ...window.VASTUCHITRA?.settings, columns: 8, rows: 5, showAdmin: true, showTools: false,
       meetingPreview: true, autoplaySlides: true, motion: true, introAnimation: true,
       showClock: true, showProjectCount: false, cardTilt: false, cardGap: 10,
       cardRadius: 4, pagePadding: 28, cardContentPadding: 16, cardRowHeight: 100
@@ -95,7 +95,7 @@
     const saved = JSON.parse(localStorage.getItem('vastuchitra-showcase-config-v1'));
     if (saved && Array.isArray(saved.projects) && saved.settings){
       window.VASTUCHITRA = saved;
-      Object.assign(saved.settings, { meetingPreview: true, showAdmin: true, showTools: true });
+      Object.assign(saved.settings, { meetingPreview: true, showAdmin: true, showTools: false });
     }
   } catch {}
   if (!/\/admin(?:\.html)?\/?$/.test(location.pathname || '')) document.title = 'VastuChitra — Studio Showcase';

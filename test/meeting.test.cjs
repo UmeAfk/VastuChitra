@@ -27,18 +27,18 @@ test('remote index pages automatically use bundled images without PC helper call
     const { config } = load('', undefined, host, 'https:');
     assert.equal(config.settings.meetingPreview, true);
     assert.equal(config.settings.showAdmin, true);
-    assert.equal(config.settings.showTools, true);
+    assert.equal(config.settings.showTools, false);
     assert.equal(config.projects.length, 18);
     assert.ok(config.projects.flatMap(p => p.slides).every(s => s.src.startsWith('public/demo/')));
   }
 });
-test('web Admin edits reload without hiding the header controls', () => {
-  const saved = { settings: { showAdmin:false, showTools:false }, projects:[{ id:'edited', title:'Updated studio title' }] };
+test('web Admin edits preserve logo-hold access to the header controls', () => {
+  const saved = { settings: { showAdmin:false, showTools:true }, projects:[{ id:'edited', title:'Updated studio title' }] };
   const { config } = load('', undefined, 'vastuchitraa.vercel.app', 'https:', saved);
   assert.equal(config.projects[0].title, 'Updated studio title');
   assert.equal(config.settings.meetingPreview, true);
   assert.equal(config.settings.showAdmin, true);
-  assert.equal(config.settings.showTools, true);
+  assert.equal(config.settings.showTools, false);
 });
 test('local and hosted meeting modes use the full image collection and safe detail actions', () => {
   for (const [search, flag] of [['?demo=1', undefined], ['', 'true']]) {

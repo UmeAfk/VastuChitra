@@ -210,7 +210,7 @@
         path:`/public/demo/project-${i + 1}.webp`, kind:'file', mediaType:'image'
       }));
       if (path === '/api/config' && method === 'POST'){
-        const config = { settings: { ...body.settings, meetingPreview:true, showAdmin:true, showTools:true }, projects:body.projects, apps:body.apps || {} };
+        const config = { settings: { ...body.settings, meetingPreview:true, showAdmin:true, showTools:false }, projects:body.projects, apps:body.apps || {} };
         localStorage.setItem('vastuchitra-showcase-config-v1', JSON.stringify(config));
         window.VASTUCHITRA = config;
         return { success:true };
