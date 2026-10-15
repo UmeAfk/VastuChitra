@@ -125,6 +125,11 @@ function buildCard(p){
   card.dataset.id = p.id;
   card.dataset.accent = accent;
   card.dataset.gradient = gradient;
+  if (/^#[0-9a-f]{6}$/i.test(tile.color || '')){
+    card.classList.add('tile-solid');
+    card.style.setProperty('--tile-color', tile.color);
+  }
+  if (tile.showTitle === false && tile.showCategory === false && tile.showDescription === false) card.classList.add('tile-minimal');
   card.dataset.cs = clamp(parseInt(size[0]) || 2, 1, CFG.columns);
   card.dataset.rs = clamp(parseInt(size[1]) || 1, 1, CFG.rows);
   card.style.setProperty('--glow', ACCENT[accent]);
@@ -143,6 +148,13 @@ function buildCard(p){
   // images: every card gets .slide layers; 2+ become a carousel below
   const thumb = card.querySelector('.thumb');
   const list = normSlides(p);
+  if (tileStyle === 'logo' && tile.logoIcon && ICONS[tile.logoIcon]){
+    const mark = document.createElement('div');
+    mark.className = 'tile-symbol';
+    mark.setAttribute('aria-hidden', 'true');
+    mark.innerHTML = ICONS[tile.logoIcon];
+    thumb.appendChild(mark);
+  }
   if (tileStyle === 'logo' && tile.logoSrc){
     const logo = document.createElement('img');
     logo.className = 'card-logo'; logo.src = tile.logoSrc; logo.alt = `${p.title} logo`; logo.loading = 'lazy';
@@ -209,7 +221,7 @@ document.addEventListener('visibilitychange', () => videoCards.forEach(card => {
 }));
 
 // ---------------------------------------------------------------- 3. layout
-const LAYOUT_KEY = 'vastuchitra-layout-v3';
+const LAYOUT_KEY = CFG.meetingPreview ? 'vastuchitra-meeting-layout-v2' : 'vastuchitra-layout-v3';
 const CS_MIN = 1, CS_MAX = CFG.columns, RS_MIN = 1, RS_MAX = CFG.rows;
 const gapPx = () => parseFloat(getComputedStyle(grid).rowGap) || 16;
 
@@ -874,7 +886,7 @@ const appKey = p => (p.action && p.action.app) || p.id;
 const accentOf = p => ACCENT[p.accent] || ACCENT.cyan;
 
 // ---- talking to the PC helper (server.js) — programs can't be started by a web page alone
-const HELPER = /^https?:$/.test(location.protocol);
+const HELPER = !CFG.meetingPreview && /^https?:$/.test(location.protocol);
 async function api(path, method = 'GET'){
   if (!HELPER) throw new Error('no-helper');
   const res = await fetch(path, { method, headers: { 'X-Requested-With': 'vastuchitra' }, cache: 'no-store' });
@@ -1010,9 +1022,39 @@ function openDetail(p){
   $('detailTitle').textContent = p.title;
   $('detailDesc').textContent = p.desc || p.sub || '';
   $('detailSpecs').innerHTML = (p.specs || []).map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('');
+  document.querySelector('.detail-team')?.remove();
+  let team = null;
+  if (p.team){
+    team = document.createElement('div');
+    team.className = 'detail-team';
+    team.setAttribute('aria-label', 'Studio team structure');
+    const branch = node => {
+      const item = document.createElement('li');
+      const label = document.createElement('span');
+      label.textContent = node.name;
+      item.appendChild(label);
+      if (Array.isArray(node.children) && node.children.length){
+        const children = document.createElement('ul');
+        node.children.forEach(child => children.appendChild(branch(child)));
+        item.appendChild(children);
+      }
+      return item;
+    };
+    const tree = document.createElement('ul');
+    tree.appendChild(branch(p.team));
+    team.appendChild(tree);
+  }
 
   detailHero.dataset.accent = ACCENT[p.accent] ? p.accent : 'cyan';   // coloured placeholder art when there is no photo
   detailHero.innerHTML = '';
+  if (team) detailHero.appendChild(team);
+  else if (!list.length){
+    const logo = document.createElement('img');
+    logo.src = p.tile?.logoSrc || 'public/logo-ui.png';
+    logo.alt = p.title;
+    logo.className = 'detail-wordmark';
+    detailHero.appendChild(logo);
+  }
   list.forEach((s, i) => {
     const layer = document.createElement(isVideoSrc(s.src) ? 'video' : 'div');
     layer.className = 'layer' + (i === 0 ? ' on' : '');
@@ -1155,7 +1197,7 @@ brand.addEventListener('keyup', event => {
 });
 
 // Server-sent updates make admin changes appear without a manual refresh.
-if (window.EventSource){
+if (HELPER && window.EventSource){
   const liveUpdates = new EventSource('/api/events');
   let liveReloadT = 0;
   liveUpdates.addEventListener('config-updated', () => {

@@ -6,7 +6,9 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "check": "node --check server.js && node --check js/admin.js && node --check js/script.js"
+    "check": "node --check server.js && node --check js/admin.js && node --check js/script.js && node --check js/meeting.js && node --check scripts/build-meeting.cjs",
+    "test": "node --test",
+    "build:meeting": "node scripts/build-meeting.cjs"
   },
   "engines": {
     "node": ">=18"

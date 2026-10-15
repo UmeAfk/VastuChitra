@@ -1,3 +1,12 @@
+.meeting-note{font-size:10px;letter-spacing:.18em;color:var(--muted);max-width:150px;line-height:1.7;margin-left:18px;}
+.detail-team{margin:24px 0;}
+.detail-hero .detail-team{position:absolute;inset:0;overflow:auto;margin:0;padding:36px;}
+.detail-wordmark{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:65%;max-width:420px;object-fit:contain;}
+.detail-team ul{list-style:none;padding:0 0 0 18px;margin:8px 0;border-left:1px solid var(--line);}
+.detail-team>ul{padding-left:0;border:0;}
+.detail-team li{margin:8px 0;}
+.detail-team li>span{display:inline-block;padding:10px 14px;border:1px solid var(--line);border-radius:10px;background:var(--panel-2);font-size:13px;}
+@media(max-width:700px){.meeting-note{display:none;}}
 /* ================================================================
    Vastuchitra launcher
    ================================================================ */
@@ -610,6 +619,33 @@ body.is-intro .card .thumb{animation:thumb-settle 1.7s var(--ease-out) var(--int
 .card.tile-video-missing .thumb{background:radial-gradient(circle at 50% 48%,rgba(255,255,255,.1) 0 27px,transparent 28px),linear-gradient(145deg,#242820,#111512)}
 .card.tile-video-missing .thumb::before{content:"";position:absolute;z-index:1;left:calc(50% - 5px);top:calc(48% - 8px);width:0;height:0;border-top:8px solid transparent;border-bottom:8px solid transparent;border-left:12px solid rgba(255,255,255,.75);filter:drop-shadow(0 2px 5px rgba(0,0,0,.5))}
 .card.no-frame:hover{box-shadow:none}
+.card.tile-solid[data-gradient] .thumb{background:var(--tile-color);}
+.card.tile-solid .thumb::after,.card.tile-solid .scrim{display:none;}
+.card.tile-minimal .content,.card.tile-minimal .arrow{display:none;}
+.card.tile-minimal.tile-logo .card-logo{top:50%;width:76%;height:60%;filter:none;}
+.tile-symbol{position:absolute;inset:0;display:grid;place-items:center;color:#fff;}
+.tile-symbol svg{width:42%;height:42%;max-width:100px;max-height:100px;stroke-width:1.15;}
+.meeting-preview{background-image:none;background-color:#0b1015;}
+.meeting-preview .card{border-color:transparent;box-shadow:none;}
+.meeting-preview .card:hover{border-color:rgba(255,255,255,.5);}
+.meeting-preview .card .tag{font-size:9px;letter-spacing:.08em;text-transform:uppercase;}
+.meeting-preview .card h3{font-weight:500;letter-spacing:-.035em;}
+.meeting-preview .card .sub{font-size:11px;}
+.meeting-preview .card .scrim{background:linear-gradient(180deg,transparent 30%,rgba(5,12,18,.78));}
+.meeting-preview .card .thumb::after{background:rgba(5,12,18,.12);}
+.meeting-preview .card.tile-solid .scrim{display:none;}
+.meeting-preview .card.tile-minimal .scrim{display:none;}
+.meeting-preview .card.tile-solid .content{color:#fff;}
+.meeting-preview .card.tile-solid .tag,.meeting-preview .card.tile-solid .sub{color:rgba(255,255,255,.82);}
+@media(max-width:700px){
+  .meeting-preview .grid{grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:120px;}
+  .meeting-preview .card[data-cs="3"]{grid-column:span 4;}
+  .meeting-preview .card h3{font-size:19px;}
+}
+@media(max-width:420px){
+  .meeting-preview .grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .meeting-preview .card[data-cs="3"],.meeting-preview .card[data-cs="2"]{grid-column:span 2;}
+}
 
 @media(max-width:900px){
   .shell{padding:max(16px,var(--page-padding,32px));}

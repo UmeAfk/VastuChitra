@@ -20,6 +20,7 @@ const sharp = require('sharp');
 const { spawn, exec } = require('child_process');
 
 const vm = require('vm');
+const { parseRange } = require('./js/http-range.cjs');
 
 const PORT = parseInt(process.env.PORT, 10) || 4000;
 const HOST = '127.0.0.1';
@@ -363,7 +364,7 @@ const MIME = {
   '.mp4':'video/mp4', '.webm':'video/webm', '.mov':'video/quicktime', '.m4v':'video/x-m4v', '.mkv':'video/x-matroska', '.avi':'video/x-msvideo', '.ogv':'video/ogg',
   '.woff2':'font/woff2', '.woff':'font/woff', '.ttf':'font/ttf', '.ico':'image/x-icon'
 };
-const PUBLIC_TOP = new Set(['index.html', 'admin.html', 'css', 'js', 'assets', 'public']);
+const PUBLIC_TOP = new Set(['index.html', 'meeting.html', 'admin.html', 'css', 'js', 'assets', 'public']);
 
 function json(res, code, body){
   res.writeHead(code, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
@@ -397,13 +398,12 @@ function serveStatic(req, res){
     return fs.stat(file, (err, st) => {
       if (err || !st.isFile()) return json(res, 404, { error: 'Media not found' });
       const ext = path.extname(file).toLowerCase();
-      const range = req.headers.range && /^bytes=(\d*)-(\d*)$/.exec(req.headers.range);
-      if (range){
-        const start = range[1] ? Number(range[1]) : 0;
-        const end = range[2] ? Math.min(Number(range[2]), st.size - 1) : st.size - 1;
-        if (!Number.isFinite(start) || !Number.isFinite(end) || start > end || start >= st.size){
+      const range = parseRange(req.headers.range, st.size);
+      if (range === false){
           res.writeHead(416, { 'Content-Range':`bytes */${st.size}` }); return res.end();
-        }
+      }
+      if (range){
+        const { start, end } = range;
         res.writeHead(206, { 'Content-Type':MIME[ext] || 'application/octet-stream', 'Content-Length':end-start+1, 'Content-Range':`bytes ${start}-${end}/${st.size}`, 'Accept-Ranges':'bytes', 'Cache-Control':'no-cache' });
         if (req.method === 'HEAD') return res.end();
         return fs.createReadStream(file, { start, end }).pipe(res);
@@ -434,7 +434,9 @@ function serveStatic(req, res){
 
 function streamUpload(req, res){
   const config = loadMediaConfig();
-  const rawName = decodeURIComponent(String(req.headers['x-file-name'] || ''));
+  let rawName;
+  try { rawName = decodeURIComponent(String(req.headers['x-file-name'] || '')); }
+  catch { return json(res, 400, { error: 'Invalid upload filename encoding' }); }
   const filename = path.basename(rawName).replace(/[^a-zA-Z0-9(). _\-]/g, '_');
   const ext = path.extname(filename).toLowerCase();
   if (!filename || !MEDIA_EXTENSIONS.has(ext)) return json(res, 400, { error: 'Choose a supported image, video, or PDF file.' });

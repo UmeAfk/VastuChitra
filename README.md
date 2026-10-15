@@ -114,6 +114,23 @@ vastuchitra/
 
 ## ⚡ Prerequisites
 
+### Meeting showcase
+
+Run `npm run build:meeting` to create a static preview with 18 optimized images
+from the configured local media library. Then run `npm start` and open
+`http://localhost:4000/?demo=1`. The normal launcher and saved project catalogue
+remain available at the home URL.
+
+The generated `meeting-dist/` directory can be deployed independently to Vercel.
+It contains the meeting catalogue and compressed images, without the local
+server, application allowlist, admin interface, or original full-resolution media.
+The compressed `public/demo/` collection and `meeting.html` are tracked in Git so
+the preview also works on other machines without the original renders. The generated
+`meeting-dist/` folder is excluded. Vercel serves the meeting showcase at the root;
+the local server continues to serve the saved launcher there. The sample newsletter
+and office structure are illustrative; replace them with approved studio content.
+The motion tile currently uses still images; add video footage for video playback.
+
 * **Operating System:** Windows 10 or Windows 11 (64-bit).
 * **Node.js:** Version 18.0.0 or higher ([Download Node.js](https://nodejs.org/)).
 * **Browser:** Google Chrome or Microsoft Edge (used by kiosk launch scripts).
