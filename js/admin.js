@@ -909,6 +909,7 @@
     if ($('cfgKiosk')) $('cfgKiosk').checked = !!state.settings.kiosk;
     if ($('cfgShowClock')) $('cfgShowClock').checked = state.settings.showClock !== false;
     if ($('cfgShowAdmin')) $('cfgShowAdmin').checked = state.settings.showAdmin !== false;
+    if ($('cfgAdminPasswordRequired')) $('cfgAdminPasswordRequired').checked = state.settings.adminPasswordRequired !== false;
     if ($('cfgShowDescriptions')) $('cfgShowDescriptions').checked = state.settings.showDescriptions !== false;
     if ($('cfgShowCategories')) $('cfgShowCategories').checked = state.settings.showCategories !== false;
     if ($('cfgShowGridDots')) $('cfgShowGridDots').checked = state.settings.showGridDots !== false;
@@ -944,6 +945,7 @@
     if ($('cfgKiosk')) state.settings.kiosk = $('cfgKiosk').checked;
     if ($('cfgShowClock')) state.settings.showClock = $('cfgShowClock').checked;
     if ($('cfgShowAdmin')) state.settings.showAdmin = $('cfgShowAdmin').checked;
+    if ($('cfgAdminPasswordRequired')) state.settings.adminPasswordRequired = $('cfgAdminPasswordRequired').checked;
     if ($('cfgShowDescriptions')) state.settings.showDescriptions = $('cfgShowDescriptions').checked;
     if ($('cfgShowCategories')) state.settings.showCategories = $('cfgShowCategories').checked;
     if ($('cfgShowGridDots')) state.settings.showGridDots = $('cfgShowGridDots').checked;
@@ -2016,7 +2018,7 @@
     // Settings input change — auto-save on change
     ['cfgColumns', 'cfgRows', 'cfgCardGap', 'cfgCardRadius', 'cfgCardRowHeight', 'cfgPagePadding', 'cfgTitleScale',
       'cfgHeaderGap', 'cfgCardContentPadding',
-      'cfgShowClock', 'cfgShowAdmin', 'cfgShowDescriptions',
+      'cfgShowClock', 'cfgShowAdmin', 'cfgAdminPasswordRequired', 'cfgShowDescriptions',
       'cfgShowCategories', 'cfgShowGridDots', 'cfgClock24Hour', 'cfgShowClockIcon', 'cfgShowSlidePager', 'cfgShowProjectCount',
       'cfgMotion', 'cfgIntroAnimation', 'cfgCardTilt', 'cfgTiltStrength', 'cfgHoverZoom', 'cfgTransitionSpeed',
       'cfgAutoplaySlides', 'cfgIdleSeconds', 'cfgKiosk',
@@ -2024,6 +2026,9 @@
       const el = $(id);
       if (el) {
         el.addEventListener('input', () => {
+          if (id === 'cfgAdminPasswordRequired'){
+            try { sessionStorage.removeItem('vastuchitra-admin-unlocked'); } catch {}
+          }
           readSettingsForm();
           clearTimeout(autoSaveTimeout);
           autoSaveTimeout = setTimeout(() => autoSave(false), 220);
@@ -2054,16 +2059,24 @@
     });
   }
 
-  function setupAdminLock(){
+  async function setupAdminLock(){
     const lock = $('adminLock');
     const form = $('adminLoginForm');
     const input = $('adminPassword');
     const error = $('adminLockError');
     const toggle = $('toggleAdminPassword');
+    document.body.classList.add('admin-locked');
+    let passwordRequired = true;
+    try {
+      const config = hostedShowcase ? window.VASTUCHITRA : await api('/api/config');
+      passwordRequired = config.settings?.adminPasswordRequired !== false;
+    } catch {
+      // Keep the password prompt when the saved setting cannot be read.
+    }
     let unlocked = false;
     try { unlocked = sessionStorage.getItem('vastuchitra-admin-unlocked') === 'yes'; } catch {}
 
-    if (unlocked){
+    if (!passwordRequired || unlocked){
       lock.classList.add('unlocked');
       document.body.classList.remove('admin-locked');
       startAdmin();

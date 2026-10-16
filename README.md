@@ -126,6 +126,11 @@ It contains the meeting catalogue and compressed images, without the local
 server, application allowlist, or original full-resolution media. The web Admin
 edits a browser-local copy of the showcase; uploads and native application controls
 require the local PC server. Hold the header logo to reveal the Admin and Edit controls.
+
+In Admin → Launcher Settings → Kiosk & session, **Require admin password**
+switches between the `0575` prompt and direct access. Password protection is on
+by default. The choice takes effect the next time Admin opens. Hosted changes
+apply to the current browser; local changes are saved in the PC configuration.
 The compressed `public/demo/` collection and `meeting.html` are tracked in Git so
 the preview also works on other machines without the original renders. The generated
 `meeting-dist/` folder is excluded. Vercel serves the meeting showcase at the root;
