@@ -131,6 +131,18 @@ In Admin → Launcher Settings → Kiosk & session, **Require admin password**
 switches between the `0575` prompt and direct access. Password protection is on
 by default. The choice takes effect the next time Admin opens. Hosted changes
 apply to the current browser; local changes are saved in the PC configuration.
+
+Use the **Commercial / Heritage** switch at the top of Admin to choose which
+collection to edit and display on the launcher. The mode applies to the launcher
+after saving; reopen or refresh the launcher if it does not update automatically.
+Each mode keeps its own tile layout. Heritage stories and photo references live
+in `js/heritage.js`, with the images in `public/temple/`.
+
+The Commercial home starts with the same tile wall on the PC and the web.
+The PC retains its configured native experiences; the hosted versions of those
+projects show their galleries. Small WebP previews ship in `public/previews/`.
+Run `node scripts/build-previews.cjs` when replacing the bundled image collection,
+with the original PC media available.
 The compressed `public/demo/` collection and `meeting.html` are tracked in Git so
 the preview also works on other machines without the original renders. The generated
 `meeting-dist/` folder is excluded. Vercel serves the meeting showcase at the root;

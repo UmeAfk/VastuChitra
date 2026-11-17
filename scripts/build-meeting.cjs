@@ -45,10 +45,12 @@ const images = [
   fs.copyFileSync(path.join(root, 'css', 'styles.css'), path.join(dist, 'css', 'styles.css'));
   fs.copyFileSync(path.join(root, 'css', 'admin.css'), path.join(dist, 'css', 'admin.css'));
   fs.copyFileSync(path.join(root, 'admin.html'), path.join(dist, 'admin.html'));
-  for (const name of ['script.js', 'meeting.js', 'admin.js']) fs.copyFileSync(path.join(root, 'js', name), path.join(dist, 'js', name));
+  for (const name of ['script.js', 'meeting.js', 'heritage.js', 'portable-media.js', 'admin.js']) fs.copyFileSync(path.join(root, 'js', name), path.join(dist, 'js', name));
   fs.mkdirSync(path.join(dist, 'public'), { recursive: true });
   fs.copyFileSync(path.join(root, 'public', 'logo-ui.png'), path.join(dist, 'public', 'logo-ui.png'));
   fs.cpSync(output, path.join(dist, 'public', 'demo'), { recursive: true });
+  fs.cpSync(path.join(root, 'public', 'temple'), path.join(dist, 'public', 'temple'), { recursive: true });
+  fs.cpSync(path.join(root, 'public', 'previews'), path.join(dist, 'public', 'previews'), { recursive: true });
   // Ship only the meeting catalogue, without machine paths or the saved project catalogue.
   fs.writeFileSync(path.join(dist, 'js', 'projects.js'), 'window.VASTUCHITRA = { settings: {}, projects: [] };\n');
   const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8')

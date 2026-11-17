@@ -25,7 +25,18 @@ const CFG = Object.assign({
   headerGap: 20, cardContentPadding: 20, introAnimation: true,
   tiltStrength: 7, hoverZoom: 107, transitionSpeed: 100
 }, CONFIG.settings);
-const PROJECTS = CONFIG.projects || [];
+const PERSONAL = CFG.presentationMode === 'personal' && Array.isArray(window.VASTUCHITRA_HERITAGE);
+const PROJECTS = PERSONAL ? (Array.isArray(CONFIG.heritageProjects) ? CONFIG.heritageProjects : window.VASTUCHITRA_HERITAGE) : CONFIG.projects || [];
+if (!PERSONAL){
+  Object.assign(CFG, { columns:8, rows:5, cardRadius:4, cardGap:10, cardContentPadding:16, cardRowHeight:100, cardTilt:false });
+  document.body.classList.add('meeting-preview');
+}
+if (PERSONAL){
+  Object.assign(CFG, { columns: 6, rows: 4, cardGap: 14, cardRadius: 16, cardRowHeight: 118,
+    cardTilt: false, showCategories: true, showDescriptions: true, introAnimation: true });
+  document.body.classList.add('heritage-mode');
+  document.title = 'VastuChitra';
+}
 if (CFG.meetingPreview) window.addEventListener('storage', event => {
   if (event.key === 'vastuchitra-showcase-config-v1') location.reload();
 });
@@ -36,6 +47,7 @@ const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
 const cssUrl = u => `url("${String(u).replace(/"/g, '%22')}")`;
+const previewSrc = src => window.VASTUCHITRA_PREVIEWS?.[src] || src;
 const VIDEO_EXT = /\.(mp4|webm|mov|m4v|mkv|avi|ogv)(?:[?#].*)?$/i;
 const isVideoSrc = src => VIDEO_EXT.test(String(src || ''));
 const EASE = 'cubic-bezier(.16,.84,.24,1)';
@@ -120,7 +132,7 @@ function buildCard(p){
   const accent = ACCENT[p.accent] ? p.accent : 'cyan';
   const size = p.size || [2, 1];
   const tile = p.tile || {};
-  const tileStyle = ['image', 'gradient', 'video', 'logo'].includes(tile.style) ? tile.style : 'image';
+  const tileStyle = p.id === 'meridian' ? 'image' : ['image', 'gradient', 'video', 'logo'].includes(tile.style) ? tile.style : 'image';
   const gradient = ['ember', 'ocean', 'forest', 'orchid', 'sand', 'aurora'].includes(tile.gradient) ? tile.gradient : 'ember';
   const card = document.createElement('div');
   card.className = `card tile-${tileStyle}${tile.frame === false ? ' no-frame' : ''}${tile.showTitle === false ? ' no-title' : ''}${tile.showCategory === false ? ' no-category' : ''}${tile.showDescription === false ? ' no-description' : ''}`;
@@ -177,14 +189,28 @@ function buildCard(p){
   const slides = imageList.map((s, k) => {
     const slide = document.createElement('div'); slide.className = 'slide';
     const img = document.createElement('div');   img.className = 'img';
-    img.style.backgroundImage = cssUrl(s.src);
     if (s.pos) img.style.backgroundPosition = s.pos;
     slide.appendChild(img); thumb.appendChild(slide);
 
     // preload + decode so a swipe never lands on a half-loaded image;
     // a missing file just leaves the coloured placeholder showing
-    const pre = new Image(); pre.src = s.src;
-    (pre.decode ? pre.decode() : Promise.resolve()).then(() => { st[k].ready = true; }, () => { st[k].failed = true; });
+    st[k].load = () => {
+      if (st[k].started) return;
+      st[k].started = true;
+      const pre = new Image();
+      pre.onload = () => {
+        img.style.backgroundImage = cssUrl(pre.src);
+        st[k].ready = true;
+        if (k === 0) st[1]?.load();
+        st[k].onReady?.();
+        st[k].onReady = null;
+      };
+      pre.onerror = () => {
+        if (pre.getAttribute('src') !== s.src) pre.src = s.src;
+        else { st[k].failed = true; if (k === 0) card._st[1]?.load(); }
+      };
+      pre.src = previewSrc(s.src);
+    };
     return slide;
   });
   if (slides[0]) slides[0].classList.add('is-on');
@@ -200,6 +226,14 @@ PROJECTS.forEach(p => {
   grid.appendChild(buildCard(p));
 });
 const allCards = () => [...grid.querySelectorAll('.card')];
+if ('IntersectionObserver' in window){
+  const covers = new IntersectionObserver(entries => entries.forEach(({ target, isIntersecting }) => {
+    if (!isIntersecting) return;
+    target._st[0]?.load();
+    covers.unobserve(target);
+  }), { root:grid, rootMargin:'100px' });
+  allCards().forEach(card => covers.observe(card));
+} else allCards().forEach(card => card._st[0]?.load());
 allCards().forEach((c, i) => { c.dataset.origIndex = i; });
 const videoCards = allCards().filter(card => card._tileVideo);
 const tileVideoObserver = 'IntersectionObserver' in window ? new IntersectionObserver(entries => {
@@ -222,7 +256,7 @@ document.addEventListener('visibilitychange', () => videoCards.forEach(card => {
 }));
 
 // ---------------------------------------------------------------- 3. layout
-const LAYOUT_KEY = CFG.meetingPreview ? 'vastuchitra-meeting-layout-v2' : 'vastuchitra-layout-v3';
+const LAYOUT_KEY = PERSONAL ? 'vastuchitra-heritage-layout-v1' : CFG.meetingPreview ? 'vastuchitra-meeting-layout-v2' : 'vastuchitra-layout-v3';
 const CS_MIN = 1, CS_MAX = CFG.columns, RS_MIN = 1, RS_MAX = CFG.rows;
 const gapPx = () => parseFloat(getComputedStyle(grid).rowGap) || 16;
 
@@ -500,6 +534,7 @@ function setEditing(on){
   editToggle.setAttribute('aria-pressed', String(on));
   editToggle.setAttribute('aria-label', on ? 'Finish customizing launcher' : 'Customize launcher layout');
   if (on) allCards().forEach(killTilt);
+  if (PERSONAL && !on) refreshGalleryStrip();
 }
 editToggle.addEventListener('click', () => {
   setEditing(!editing);
@@ -704,6 +739,7 @@ class Slider {
       const k = (((this.idx + d * i) % this.n) + this.n) % this.n;
       const s = this.st[k];
       if (s.failed) continue;
+      s.load();
       return s.ready ? k : -2;
     }
     return -1;
@@ -752,7 +788,13 @@ class Slider {
     this.transition(k, d, this.fx, 0, 1, this.dur, easeInOutQuart);
   }
   goTo(k){
-    if (k === this.idx || this.drag || this.st[k].failed || !this.st[k].ready) return;
+    if (k === this.idx || this.drag || this.st[k].failed) return;
+    this.st.forEach(state => { state.onReady = null; });
+    if (!this.st[k].ready){
+      this.st[k].onReady = () => this.goTo(k);
+      this.st[k].load();
+      return;
+    }
     this.p = 0;
     this.transition(k, k > this.idx ? 1 : -1, this.fx, 0, 1, this.dur, easeInOutQuart);
   }
@@ -923,7 +965,7 @@ $('npStop').addEventListener('click', async () => {
 
 // ---- overlay open / close
 function currentImage(card){
-  const s = card._slider ? card._slider.slides[card._slider.idx] : card._slides[0];
+  const s = card._slider ? card._slider.slides[card._slider.idx] : card._slides?.[0];
   return s ? getComputedStyle(s.firstElementChild).backgroundImage : 'none';
 }
 function openOverlay(card, ev, p){
@@ -934,7 +976,7 @@ function openOverlay(card, ev, p){
   overlay.style.setProperty('--ox', ox + 'px');
   overlay.style.setProperty('--oy', oy + 'px');
   overlay.style.setProperty('--accent', accentOf(p));
-  ovBg.style.backgroundImage = currentImage(card);
+  ovBg.style.backgroundImage = card._slides ? currentImage(card) : p.slides?.[0]?.src ? cssUrl(p.slides[0].src) : 'none';
   overlay.classList.add('show');
   overlay.setAttribute('aria-hidden', 'false');
   lastFocus = card;
@@ -1022,6 +1064,17 @@ function openDetail(p){
   $('detailTag').innerHTML = (ICONS[p.icon] || '') + esc(p.cat);
   $('detailTitle').textContent = p.title;
   $('detailDesc').textContent = p.desc || p.sub || '';
+  const details = $('detailDesc');
+  document.querySelector('.heritage-source')?.remove();
+  if (PERSONAL && p.source){
+    const link = document.createElement('a');
+    link.className = 'heritage-source';
+    link.href = p.source;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.textContent = 'Read more about this place ↗';
+    details.after(link);
+  }
   $('detailSpecs').innerHTML = (p.specs || []).map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('');
   document.querySelector('.detail-team')?.remove();
   let team = null;
@@ -1063,7 +1116,7 @@ function openDetail(p){
       layer.src = s.src; layer.controls = true; layer.playsInline = true; layer.preload = 'metadata';
       layer.setAttribute('aria-label', `${p.title} video ${i + 1}`);
     } else {
-      layer.style.backgroundImage = cssUrl(s.src);
+      layer.style.backgroundImage = cssUrl(s.src.startsWith('/media/') || s.src.startsWith('/api/media-preview') ? previewSrc(s.src) : s.src);
       if (s.pos) layer.style.backgroundPosition = s.pos;
     }
     detailHero.appendChild(layer);
@@ -1075,7 +1128,7 @@ function openDetail(p){
       const video = isVideoSrc(s.src);
       b.type = 'button'; b.setAttribute('aria-label', (video ? 'Video ' : 'Image ') + (i + 1));
       if (video) { b.classList.add('video-thumb'); b.innerHTML = '<span aria-hidden="true">▶</span><small>VIDEO</small>'; }
-      else b.style.backgroundImage = cssUrl(s.src);
+      else b.style.backgroundImage = cssUrl(previewSrc(s.src));
       if (i === 0) b.classList.add('on');
       b.addEventListener('click', () => selectDetailMedia(i));
       detailThumbs.appendChild(b);
@@ -1110,6 +1163,80 @@ function activate(card, ev){
   if (a.type === 'exe' || (a.type === 'url' && a.open === 'main')) runLaunch(p);
   else if (a.type === 'url') openViewer(p);
   else openDetail(p);
+}
+
+// Personal mode presents the catalogue as a photo gallery. The tile editor
+// still controls the order, without affecting the commercial layout.
+let refreshGalleryStrip = () => {};
+if (PERSONAL && !PROJECTS.length){
+  const empty = document.createElement('main');
+  empty.className = 'place-gallery';
+  empty.textContent = 'No heritage projects yet. Add a card in Admin to get started.';
+  grid.before(empty);
+}
+if (PERSONAL && PROJECTS.length){
+  const gallery = document.createElement('main');
+  gallery.className = 'place-gallery';
+  gallery.innerHTML = `
+    <div class="place-stage">
+      <div class="place-photo"></div>
+      <div class="place-copy">
+        <div class="place-story" aria-live="polite"><p class="place-region"></p><h1></h1><p class="place-description"></p></div>
+        <button class="place-open" type="button">Explore this place <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="6" width="14" height="13" rx="2"/><path d="M4 15V6a3 3 0 0 1 3-3h10M7 16l4-4 3 3 2-2 5 5"/><circle cx="17" cy="10" r="1" fill="currentColor" stroke="none"/></svg></button>
+      </div>
+    </div>
+    <div class="place-nav">
+      <button class="place-prev" type="button" aria-label="Previous place">←</button>
+      <div class="place-strip" role="group" aria-label="Browse places"></div>
+      <button class="place-next" type="button" aria-label="Next place">→</button>
+    </div>`;
+  grid.before(gallery);
+  const find = selector => gallery.querySelector(selector);
+  const strip = find('.place-strip');
+  let order = PROJECTS;
+  let selected = order[0];
+  function showPlace(index, scroll = true){
+    selected = order[(index + order.length) % order.length];
+    const photo = normSlides(selected).find(slide => !isVideoSrc(slide.src));
+    const image = document.createElement('img');
+    if (photo) image.src = photo.src;
+    image.alt = selected.title;
+    image.style.objectPosition = photo?.pos || 'center';
+    find('.place-photo').replaceChildren(...(photo ? [image] : []));
+    find('.place-region').textContent = selected.cat;
+    find('h1').textContent = selected.title;
+    find('.place-description').textContent = selected.desc;
+    const thumb = strip.querySelector('[data-place="' + selected.id + '"]');
+    strip.querySelectorAll('button').forEach(button => button.setAttribute('aria-pressed', String(button === thumb)));
+    if (scroll) thumb?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  }
+  refreshGalleryStrip = () => {
+    order = allCards().map(card => byId.get(card.dataset.id));
+    strip.replaceChildren(...order.map((place, i) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.dataset.place = place.id;
+      const image = document.createElement('img');
+      const photo = normSlides(place).find(slide => !isVideoSrc(slide.src));
+      if (photo) image.src = previewSrc(photo.src);
+      image.alt = '';
+      image.style.objectPosition = photo?.pos || 'center';
+      const name = document.createElement('span');
+      name.textContent = place.title;
+      button.append(...(photo ? [image] : []), name);
+      button.addEventListener('click', () => showPlace(i));
+      return button;
+    }));
+    showPlace(Math.max(0, order.indexOf(selected)), false);
+  };
+  refreshGalleryStrip();
+  find('.place-prev').addEventListener('click', () => showPlace(order.indexOf(selected) - 1));
+  find('.place-next').addEventListener('click', () => showPlace(order.indexOf(selected) + 1));
+  find('.place-open').addEventListener('click', event => {
+    currentP = selected;
+    openOverlay(event.currentTarget, event, selected);
+    openDetail(selected);
+  });
 }
 
 // ---------------------------------------------------------------- 7. kiosk extras
@@ -1210,7 +1337,7 @@ if (HELPER && window.EventSource){
 
 // ---------------------------------------------------------------- 8. intro ripple
 (function intro(){
-  if (reduceMotion || CFG.introAnimation === false || !allCards().length){ document.body.classList.remove('is-intro'); return; }
+  if (PERSONAL || reduceMotion || CFG.introAnimation === false || !allCards().length){ document.body.classList.remove('is-intro'); return; }
   const gr = grid.getBoundingClientRect();
   let maxDelay = 0;
   allCards().forEach(c => {

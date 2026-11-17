@@ -3,8 +3,8 @@
   // Static hosting also serves index.html directly. A rewrite for / cannot
   // reliably override that file, so select the bundled showcase on remote hosts.
   const hosted = /^https?:$/.test(location.protocol) && !['localhost', '127.0.0.1', '[::1]'].includes(location.hostname);
-  if (!hosted && !new URLSearchParams(location.search).has('demo') && document.documentElement.dataset.meeting !== 'true') return;
-  const image = n => ({ src: `public/demo/project-${n}.webp`, pos: '50% 50%' });
+  const staticMode = hosted || new URLSearchParams(location.search).has('demo') || document.documentElement.dataset.meeting === 'true';
+  const image = n => ({ src: `/public/demo/project-${n}.webp`, pos: '50% 50%' });
   const card = (id, title, cat, sub, size, slides, extra = {}) => ({
     id, title, cat, sub, size, slides, icon: 'frames', accent: 'cyan',
     fx: 'push', interval: 4600, action: { type: 'detail' }, ...extra
@@ -13,7 +13,7 @@
     style: logoIcon ? 'logo' : 'gradient', color, logoIcon,
     showTitle: false, showCategory: false, showDescription: false, frame: false
   });
-  window.VASTUCHITRA = {
+  const showcase = {
     settings: {
       ...window.VASTUCHITRA?.settings, columns: 8, rows: 5, showAdmin: true, showTools: false,
       meetingPreview: true, autoplaySlides: true, motion: true, introAnimation: true,
@@ -89,6 +89,31 @@
       })
     ]
   };
+  const artwork = { 'meeting-about':14, 'meeting-journal':13, 'meeting-team':11 };
+  showcase.projects.forEach(project => {
+    if (!project.slides.length){
+      project.slides = artwork[project.id] ? [image(artwork[project.id])] : [{ src:'/public/logo-ui.png' }];
+    }
+  });
+  window.VASTUCHITRA_COMMERCIAL = (config, offline = false) => {
+    if (config.settings?.commercialCatalogVersion === 1) return config;
+    const primary = config.projects || [];
+    const startsWithShowcase = primary.some(project => showcase.projects.some(tile => tile.id === project.id));
+    const combined = offline && !startsWithShowcase ? [...showcase.projects, ...primary] : primary.map(project => {
+      const bundled = showcase.projects.find(tile => tile.id === project.id);
+      return bundled && !project.slides?.length ? { ...project, slides:bundled.slides } : project;
+    });
+    if (!offline){
+      const ids = new Set(combined.map(project => project.id));
+      combined.push(...(window.VASTUCHITRA_PORTABLE_PROJECTS || []).filter(project => !ids.has(project.id)));
+    }
+    return { ...config, settings:{ ...config.settings, commercialCatalogVersion:1 }, projects:combined };
+  };
+  if (!staticMode){
+    if (window.VASTUCHITRA) window.VASTUCHITRA = window.VASTUCHITRA_COMMERCIAL(window.VASTUCHITRA, true);
+    return;
+  }
+  window.VASTUCHITRA = showcase;
   // Hosted administration saves a browser-local copy; the PC server keeps its
   // existing configuration API and saved catalogue.
   try {
@@ -98,6 +123,7 @@
       Object.assign(saved.settings, { meetingPreview: true, showAdmin: true, showTools: false });
     }
   } catch {}
+  window.VASTUCHITRA = window.VASTUCHITRA_COMMERCIAL(window.VASTUCHITRA);
   if (!/\/admin(?:\.html)?\/?$/.test(location.pathname || '')) document.title = 'VastuChitra — Studio Showcase';
   document.body.classList.add('meeting-preview');
 })();

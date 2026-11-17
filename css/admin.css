@@ -1845,3 +1845,8 @@ input:checked+.slider{background-color:var(--cyan);border-color:var(--cyan);}
 @media(max-width:700px){.project-editor-card .tile-treatment-controls{grid-template-columns:1fr}}
 /* The hosted showcase keeps edits in the current browser. */
 .hosted-admin-note{padding:12px 16px;margin:0 0 20px;border:1px solid #334155;border-radius:10px;color:#cbd5e1;background:#17202b;font-size:13px;line-height:1.5;}
+.catalog-switch{display:inline-flex;gap:3px;padding:3px;border:1px solid var(--line,#35352e);border-radius:10px;background:#151613;}
+.catalog-switch button{appearance:none;border:0;background:transparent;color:var(--muted,#aaa);padding:8px 11px;border-radius:7px;font:inherit;font-size:12px;font-weight:600;cursor:pointer;}
+.catalog-switch button[aria-pressed="true"]{background:#332719;color:#ffd48e;}
+.catalog-switch button:disabled{opacity:.55;cursor:default;}
+.admin-actions{flex-wrap:wrap;}

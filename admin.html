@@ -54,6 +54,10 @@
 
     <!-- Header Actions -->
     <div class="admin-actions">
+      <div class="catalog-switch" role="group" aria-label="Project collection">
+        <button type="button" data-catalog="commercial" aria-pressed="true" disabled>Commercial</button>
+        <button type="button" data-catalog="personal" aria-pressed="false" disabled>Heritage</button>
+      </div>
       <a href="index.html" class="btn secondary btn-launcher" target="_blank" title="View live launcher in new tab">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
         <span>Open Launcher</span>
@@ -933,7 +937,9 @@
 <!-- Toast Container -->
 <div class="toast-container" id="toastContainer"></div>
 
+<script src="js/portable-media.js"></script>
 <script src="js/meeting.js"></script>
+<script src="js/heritage.js"></script>
 <script src="js/admin.js"></script>
 </body>
 </html>

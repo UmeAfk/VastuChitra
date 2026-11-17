@@ -18,7 +18,13 @@
       headerGap: 20, cardContentPadding: 20, introAnimation: true,
       tiltStrength: 7, hoverZoom: 107, transitionSpeed: 100
     },
-    projects: [],
+    commercialProjects: [],
+    heritageProjects: [],
+    get projects(){ return this.settings.presentationMode === 'personal' ? this.heritageProjects : this.commercialProjects; },
+    set projects(value){
+      if (this.settings.presentationMode === 'personal') this.heritageProjects = value;
+      else this.commercialProjects = value;
+    },
     apps: {},
     assets: [],
     mediaConfig: { rootPath: 'assets', mirrorPath: '', collisionPolicy: 'rename' },
@@ -158,6 +164,7 @@
     if (!asset && /\.tiff?$/i.test(relative)) {
       values.unshift(`/api/media-preview?path=${encodeURIComponent(relative)}&mode=${thumbnail ? 'thumb' : 'full'}`);
     }
+    if (window.VASTUCHITRA_PREVIEWS?.[src]) values.unshift(window.VASTUCHITRA_PREVIEWS[src]);
     return [...new Set(values.filter(Boolean))];
   }
 
@@ -210,7 +217,7 @@
         path:`/public/demo/project-${i + 1}.webp`, kind:'file', mediaType:'image'
       }));
       if (path === '/api/config' && method === 'POST'){
-        const config = { settings: { ...body.settings, meetingPreview:true, showAdmin:true, showTools:false }, projects:body.projects, apps:body.apps || {} };
+        const config = { settings: { ...body.settings, meetingPreview:true, showAdmin:true, showTools:false }, projects:body.projects, heritageProjects:body.heritageProjects, apps:body.apps || {} };
         localStorage.setItem('vastuchitra-showcase-config-v1', JSON.stringify(config));
         window.VASTUCHITRA = config;
         return { success:true };
@@ -240,7 +247,8 @@
   // ---------------------------------------------------------------- Load Data
   async function loadConfig(){
     try {
-      const data = await api('/api/config');
+      const loaded = await api('/api/config');
+      const data = hostedShowcase ? loaded : window.VASTUCHITRA_COMMERCIAL(loaded, true);
       state.settings = Object.assign({
         columns: 6, rows: 4, idleSeconds: 120, kiosk: false,
         cardGap: 16, cardRadius: 22, showClock: true, showAdmin: true,
@@ -252,11 +260,13 @@
         headerGap: 20, cardContentPadding: 20, introAnimation: true,
         tiltStrength: 7, hoverZoom: 107, transitionSpeed: 100
       }, data.settings);
-      state.projects = Array.isArray(data.projects) ? data.projects : [];
+      state.commercialProjects = Array.isArray(data.projects) ? data.projects : [];
+      state.heritageProjects = Array.isArray(data.heritageProjects) ? data.heritageProjects : (window.VASTUCHITRA_HERITAGE || []);
       state.apps = data.apps || {};
       state.assets = Array.isArray(data.assets) ? data.assets : [];
       state.mediaConfig = Object.assign({ rootPath:'assets', mirrorPath:'', collisionPolicy:'rename' }, data.mediaConfig || {});
       renderAll();
+      document.querySelectorAll('[data-catalog]').forEach(button => { button.disabled = false; });
     } catch (e){
       console.error('Failed to load config:', e);
       showToast('Could not load configuration: ' + e.message, 'error');
@@ -265,13 +275,13 @@
 
   // ---------------------------------------------------------------- Auto-Save to Server
   let autoSaveTimeout = null;
+  const configPayload = () => ({
+    settings: state.settings, projects: state.commercialProjects,
+    heritageProjects: state.heritageProjects, apps: state.apps
+  });
   async function autoSave(showSuccessToast = false){
     readSettingsForm();
-    const payload = {
-      settings: state.settings,
-      projects: state.projects,
-      apps: state.apps
-    };
+    const payload = configPayload();
 
     const indicator = $('autoSaveIndicator');
     if (indicator) {
@@ -300,11 +310,19 @@
 
   // ---------------------------------------------------------------- Rendering
   function renderAll(){
+    syncCatalogSwitch();
     updateMetrics();
     renderProjectsList();
     renderAssets();
     renderSettings();
     updateBadges();
+  }
+
+  function syncCatalogSwitch(){
+    const mode = state.settings.presentationMode === 'personal' ? 'personal' : 'commercial';
+    document.querySelectorAll('[data-catalog]').forEach(button => {
+      button.setAttribute('aria-pressed', String(button.dataset.catalog === mode));
+    });
   }
 
   function updateMetrics(){
@@ -1552,6 +1570,12 @@
       showToast('Card ID and Title are required!', 'error');
       return;
     }
+    const otherProjects = state.settings.presentationMode === 'personal' ? state.commercialProjects : state.heritageProjects;
+    if (otherProjects.some(project => project.id === id) ||
+        (state.isNew || id !== state.currentEdit.id) && state.projects.some(project => project.id === id)){
+      showToast('That card ID is already in use. Choose a unique ID.', 'error');
+      return;
+    }
 
     const cat = $('fCat').value.trim();
     const sub = $('fSub').value.trim();
@@ -1582,6 +1606,7 @@
       ...(activeTile.logoSrc ? { logoSrc: activeTile.logoSrc } : {})
     };
     if (state.currentEdit?.team) projectData.team = state.currentEdit.team;
+    if (state.currentEdit?.source) projectData.source = state.currentEdit.source;
 
     if (activeSlideList.length > 0){
       projectData.slides = activeSlideList;
@@ -1981,7 +2006,7 @@
         state.apps[id] = appConfig;
         
         try {
-          await api('/api/config', 'POST', { settings: state.settings, projects: state.projects, apps: state.apps });
+          await api('/api/config', 'POST', configPayload());
           await api(`/api/launch/${id}`, 'POST');
           showToast(`Launched ${id}!`, 'success');
         } catch (e){
@@ -2015,6 +2040,18 @@
       });
     }
 
+    document.querySelectorAll('[data-catalog]').forEach(button => button.addEventListener('click', () => {
+      if (button.getAttribute('aria-pressed') === 'true') return;
+      state.settings.presentationMode = button.dataset.catalog;
+      $('projectSearch').value = '';
+      document.querySelector('[data-tab="projects"]').click();
+      syncCatalogSwitch();
+      updateMetrics();
+      renderProjectsList();
+      updateBadges();
+      clearTimeout(autoSaveTimeout);
+      autoSave(false);
+    }));
     // Settings input change — auto-save on change
     ['cfgColumns', 'cfgRows', 'cfgCardGap', 'cfgCardRadius', 'cfgCardRowHeight', 'cfgPagePadding', 'cfgTitleScale',
       'cfgHeaderGap', 'cfgCardContentPadding',

@@ -170,7 +170,9 @@ window.VASTUCHITRA = {
 
   settings: ${JSON.stringify(settings, null, 4)},
 
-  projects: ${JSON.stringify(projects, null, 4)}
+  projects: ${JSON.stringify(projects, null, 4)},
+
+  heritageProjects: ${JSON.stringify(config.heritageProjects, null, 4) ?? 'null'}
 };
 `;
   fs.writeFileSync(path.join(ROOT, 'js', 'projects.js'), fileContent, 'utf8');
@@ -519,6 +521,7 @@ const server = http.createServer(async (req, res) => {
         return json(res, 200, {
           settings: pcfg.settings || {},
           projects: pcfg.projects || [],
+          heritageProjects: pcfg.heritageProjects,
           apps,
           assets,
           mediaConfig: loadMediaConfig()
@@ -603,7 +606,8 @@ const server = http.createServer(async (req, res) => {
       if (url.pathname === '/api/config'){
         const payload = await parseJsonBody(req);
         if (payload.settings && payload.projects){
-          saveProjectsConfig({ settings: payload.settings, projects: payload.projects });
+          const heritageProjects = Array.isArray(payload.heritageProjects) ? payload.heritageProjects : loadProjectsConfig().heritageProjects;
+          saveProjectsConfig({ settings: payload.settings, projects: payload.projects, heritageProjects });
         }
         if (payload.apps && typeof payload.apps === 'object'){
           saveApps(payload.apps);
