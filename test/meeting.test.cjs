@@ -6,6 +6,7 @@ const path = require('path');
 const vm = require('vm');
 const code = fs.readFileSync(path.join(__dirname, '../js/meeting.js'), 'utf8');
 const media = fs.readFileSync(path.join(__dirname, '../js/portable-media.js'), 'utf8');
+const client = fs.readFileSync(path.join(__dirname, '../js/client.js'), 'utf8');
 function load(search, meeting, hostname = 'localhost', protocol = 'http:', savedConfig = null) {
   const original = { settings: { columns: 4 }, projects: [{ id: 'saved' }] };
   const sandbox = {
@@ -14,7 +15,7 @@ function load(search, meeting, hostname = 'localhost', protocol = 'http:', saved
     document: { documentElement: { dataset: { meeting } }, body: { classList: { add() {} } },
       createElement: () => ({}), querySelector: () => ({ appendChild() {} }) }
   };
-  vm.runInNewContext(media + '\n' + code, sandbox);
+  vm.runInNewContext(media + '\n' + client + '\n' + code, sandbox);
   return { config: sandbox.window.VASTUCHITRA, original };
 }
 test('normal launcher starts with the showcase and keeps its saved PC projects', () => {
@@ -43,6 +44,76 @@ test('web Admin edits preserve logo-hold access to the header controls', () => {
   assert.equal(config.settings.meetingPreview, true);
   assert.equal(config.settings.showAdmin, true);
   assert.equal(config.settings.showTools, false);
+});
+
+test('legacy Personal mode migrates to Heritage without losing temple projects', () => {
+  const temples = [{ id:'temple-kept', title:'Saved temple' }];
+  const saved = { settings:{ presentationMode:'personal' }, projects:[], heritageProjects:temples };
+  const { config } = load('', undefined, 'showcase.example.com', 'https:', saved);
+  assert.equal(config.settings.presentationMode, 'heritage');
+  assert.equal(config.heritageProjects[0].id, 'temple-kept');
+  assert.equal(config.personalProjects.length, 22);
+  assert.ok(config.personalProjects.every(p => p.id.startsWith('sadhna-')));
+});
+
+test('new Personal collection and intentionally empty collections survive reloads', () => {
+  for (const projects of [[], [{ id:'my-work', title:'My work' }]]){
+    const saved = { settings:{ presentationMode:'personal', catalogModesVersion:1, clientCatalogVersion:1, clientExperienceVersion:1 }, projects:[], personalProjects:projects };
+    const { config } = load('', undefined, 'showcase.example.com', 'https:', saved);
+    assert.equal(config.settings.presentationMode, 'personal');
+    assert.deepEqual(JSON.parse(JSON.stringify(config.personalProjects)), projects);
+  }
+});
+
+test('Client covers all requested experiences and keeps custom cards during starter migration', () => {
+  const custom = {id:'client-custom',title:'Saved client work',slides:[]};
+  const saved = {settings:{presentationMode:'personal',catalogModesVersion:1},projects:[],personalProjects:[custom]};
+  const {config} = load('',undefined,'showcase.example.com','https:',saved);
+  for (const kind of ['overview','rera','renders','film','ar','vr','projection','balcony','documents','360','people','camera','tools','partners','green','balcony-simulator','design-intent','mep']){
+    assert.ok(config.personalProjects.some(p => p.clientKind === kind),kind);
+  }
+  assert.ok(config.personalProjects.some(p => p.id === custom.id));
+  assert.equal(config.settings.clientCatalogVersion,1);
+  assert.equal(new Set(config.personalProjects.map(p => p.id)).size,config.personalProjects.length);
+  assert.ok(config.personalProjects.filter(p=>p.clientKind === 'colour').every(p=>p.action.type === 'none' && p.tile.showTitle === false));
+  for (const slide of config.personalProjects.flatMap(p=>p.slides || [])){
+    assert.ok(fs.existsSync(path.join(__dirname,'..',slide.src)));
+  }
+});
+
+test('Client exhibition composition has no overlapping tiles or empty cells', () => {
+  const {config} = load('',undefined,'showcase.example.com','https:');
+  const occupied = new Set();
+  for (const project of config.personalProjects){
+    const {col,row} = project.canvasPosition;
+    const [width,height] = project.size;
+    assert.ok(col + width <= 8);
+    for (let y=row;y<row+height;y++) for (let x=col;x<col+width;x++){
+      const key = `${x},${y}`;
+      assert.equal(occupied.has(key),false,project.id);
+      occupied.add(key);
+    }
+  }
+  assert.equal(occupied.size,80);
+});
+
+test('Client redesign preserves custom titles and sizes', () => {
+  const saved = {settings:{presentationMode:'personal',catalogModesVersion:1,clientCatalogVersion:1},projects:[],personalProjects:[{id:'sadhna-ar',title:'Custom AR title',size:[3,2],clientKind:'ar'}]};
+  const {config} = load('',undefined,'showcase.example.com','https:',saved);
+  assert.equal(config.personalProjects[0].title,'Custom AR title');
+  assert.deepEqual(JSON.parse(JSON.stringify(config.personalProjects[0].size)),[3,2]);
+  assert.equal(config.settings.clientDesignVersion,2);
+});
+
+test('experience updates rename only stock titles and append the new cards once',()=>{
+  const saved={settings:{presentationMode:'personal',catalogModesVersion:1,clientCatalogVersion:1,clientDesignVersion:2},projects:[],personalProjects:[{id:'sadhna-360',title:'Interactive 360°',size:[2,1]},{id:'sadhna-vr',title:'Our custom VR room',size:[3,2]}]};
+  const first=load('',undefined,'showcase.example.com','https:',saved).config;
+  assert.equal(first.personalProjects.find(p=>p.id==='sadhna-360').title,'Every Angle');
+  assert.equal(first.personalProjects.find(p=>p.id==='sadhna-vr').title,'Our custom VR room');
+  assert.equal(first.personalProjects.length,6);
+  const second=load('',undefined,'showcase.example.com','https:',JSON.parse(JSON.stringify(first))).config;
+  assert.equal(second.personalProjects.length,6);
+  assert.equal(new Set(second.personalProjects.map(p=>p.id)).size,6);
 });
 test('local and hosted meeting modes use the full image collection and safe detail actions', () => {
   for (const [search, flag] of [['?demo=1', undefined], ['', 'true']]) {

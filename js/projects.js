@@ -5,16 +5,16 @@
 window.VASTUCHITRA = {
 
   settings: {
-    "columns": 6,
-    "rows": 4,
+    "columns": 8,
+    "rows": 6,
     "idleSeconds": 120,
     "kiosk": false,
-    "cardGap": 16,
-    "cardRadius": 22,
-    "showClock": true,
+    "cardGap": 12,
+    "cardRadius": 14,
+    "showClock": false,
     "showAdmin": true,
-    "cardRowHeight": 130,
-    "pagePadding": 32,
+    "cardRowHeight": 120,
+    "pagePadding": 24,
     "titleScale": 100,
     "showBrandSubtitle": true,
     "showDescriptions": true,
@@ -22,25 +22,652 @@ window.VASTUCHITRA = {
     "showGridDots": true,
     "clock24Hour": false,
     "showClockIcon": true,
-    "showSlidePager": true,
+    "showSlidePager": false,
     "motion": true,
     "cardTilt": false,
     "autoplaySlides": true,
-    "kioskHoldSeconds": 2,
+    "kioskHoldSeconds": 0.5,
     "toolRevealSeconds": 15,
     "showProjectCount": false,
     "hideIdleCursor": true,
     "resetSlidesOnIdle": true,
     "disableSelection": true,
-    "headerGap": 20,
-    "cardContentPadding": 20,
+    "headerGap": 16,
+    "cardContentPadding": 22,
     "introAnimation": true,
-    "tiltStrength": 7,
-    "hoverZoom": 107,
-    "transitionSpeed": 100
+    "tiltStrength": 5,
+    "hoverZoom": 110,
+    "transitionSpeed": 50,
+    "adminPasswordRequired": false,
+    "presentationMode": "personal",
+    "commercialCatalogVersion": 1,
+    "canvasLoop": true,
+    "canvasAutoScroll": false,
+    "canvasPauseOnHover": true,
+    "showBrandLogo": true,
+    "canvasScrollSpeed": 24,
+    "brandLogoSrc": "",
+    "brandLogoWidth": 172,
+    "canvasEdgeBlur": true,
+    "pinLogo": true,
+    "catalogModesVersion": 1,
+    "clientCatalogVersion": 1,
+    "clientDesignVersion": 2,
+    "hoverZoomEnabled": true,
+    "hoverZoomDuration": 1100,
+    "canvasSmoothScroll": true,
+    "canvasEdgeHeight": 68,
+    "canvasEdgeStrength": 8,
+    "brandLogoOriginal": false,
+    "clientThemeDefault": "system",
+    "clientRememberTheme": true,
+    "clientShowThemeToggle": true,
+    "clientThemeAnimation": true,
+    "clientLightBackground": "#cbd5cf",
+    "clientDarkBackground": "#111816",
+    "brochureSize": 72,
+    "brochureCornerRadius": 9,
+    "brochureFlipDuration": 850,
+    "brochureAnimate": true,
+    "brochureSwipe": true,
+    "brochureSinglePage": false,
+    "brochureShowCounter": true,
+    "brochureShowNumbers": true,
+    "brochureShowTitle": true,
+    "presentationLayouts": {
+        "commercial": {
+            "columns": 8,
+            "rows": 5,
+            "cardGap": 10,
+            "cardRadius": 4,
+            "cardRowHeight": 100,
+            "pagePadding": 28,
+            "cardContentPadding": 16,
+            "titleScale": 100,
+            "headerGap": 20
+        },
+        "personal": {
+            "columns": 8,
+            "rows": 6,
+            "cardGap": 12,
+            "cardRadius": 14,
+            "cardRowHeight": 120,
+            "pagePadding": 24,
+            "cardContentPadding": 22,
+            "titleScale": 100,
+            "headerGap": 16
+        },
+        "heritage": {
+            "columns": 6,
+            "rows": 4,
+            "cardGap": 18,
+            "cardRadius": 22,
+            "cardRowHeight": 142,
+            "pagePadding": 30,
+            "cardContentPadding": 24,
+            "titleScale": 100,
+            "headerGap": 22
+        }
+    },
+    "presentationOptions": {
+        "commercial": {
+            "canvasLoop": true,
+            "canvasAutoScroll": false,
+            "canvasPauseOnHover": true,
+            "canvasScrollSpeed": 24,
+            "canvasEdgeBlur": true,
+            "canvasSmoothScroll": true,
+            "canvasEdgeHeight": 68,
+            "canvasEdgeStrength": 8,
+            "hoverZoomEnabled": true,
+            "hoverZoomDuration": 1100,
+            "hoverZoom": 110,
+            "cardTilt": false,
+            "tiltStrength": 5,
+            "transitionSpeed": 50,
+            "autoplaySlides": true,
+            "introAnimation": true,
+            "showClock": false,
+            "showClockIcon": true,
+            "clock24Hour": false,
+            "showProjectCount": false,
+            "showDescriptions": true,
+            "showCategories": true,
+            "showSlidePager": false,
+            "showGridDots": true
+        },
+        "personal": {
+            "canvasLoop": true,
+            "canvasAutoScroll": false,
+            "canvasPauseOnHover": true,
+            "canvasScrollSpeed": 24,
+            "canvasEdgeBlur": true,
+            "canvasSmoothScroll": true,
+            "canvasEdgeHeight": 68,
+            "canvasEdgeStrength": 8,
+            "hoverZoomEnabled": true,
+            "hoverZoomDuration": 1100,
+            "hoverZoom": 110,
+            "cardTilt": false,
+            "tiltStrength": 5,
+            "transitionSpeed": 50,
+            "autoplaySlides": true,
+            "introAnimation": true,
+            "showClock": false,
+            "showClockIcon": true,
+            "clock24Hour": false,
+            "showProjectCount": false,
+            "showDescriptions": true,
+            "showCategories": true,
+            "showSlidePager": false,
+            "showGridDots": true
+        },
+        "heritage": {
+            "canvasLoop": true,
+            "canvasAutoScroll": false,
+            "canvasPauseOnHover": true,
+            "canvasScrollSpeed": 24,
+            "canvasEdgeBlur": true,
+            "canvasSmoothScroll": true,
+            "canvasEdgeHeight": 68,
+            "canvasEdgeStrength": 8,
+            "hoverZoomEnabled": true,
+            "hoverZoomDuration": 1100,
+            "hoverZoom": 110,
+            "cardTilt": false,
+            "tiltStrength": 5,
+            "transitionSpeed": 50,
+            "autoplaySlides": true,
+            "introAnimation": true,
+            "showClock": false,
+            "showClockIcon": true,
+            "clock24Hour": false,
+            "showProjectCount": false,
+            "showDescriptions": true,
+            "showCategories": true,
+            "showSlidePager": false,
+            "showGridDots": true
+        }
+    },
+    "clientExperienceVersion": 1
 },
 
   projects: [
+    {
+        "id": "meeting-selected",
+        "title": "Spaces worth experiencing.",
+        "cat": "Selected work",
+        "sub": "Architecture, brought to life.",
+        "size": [
+            3,
+            2
+        ],
+        "slides": [
+            {
+                "src": "/public/demo/project-1.webp",
+                "pos": "50% 50%"
+            },
+            {
+                "src": "/public/demo/project-2.webp",
+                "pos": "50% 50%"
+            },
+            {
+                "src": "/public/demo/project-3.webp",
+                "pos": "50% 50%"
+            },
+            {
+                "src": "/public/demo/project-4.webp",
+                "pos": "50% 50%"
+            },
+            {
+                "src": "/public/demo/project-5.webp",
+                "pos": "50% 50%"
+            },
+            {
+                "src": "/public/demo/project-6.webp",
+                "pos": "50% 50%"
+            },
+            {
+                "src": "/public/demo/project-7.webp",
+                "pos": "50% 50%"
+            },
+            {
+                "src": "/public/demo/project-8.webp",
+                "pos": "50% 50%"
+            },
+            {
+                "src": "/public/demo/project-9.webp",
+                "pos": "50% 50%"
+            }
+        ],
+        "icon": "frames",
+        "accent": "cyan",
+        "fx": "push",
+        "interval": 4600,
+        "action": {
+            "type": "detail"
+        },
+        "desc": "Explore a selection of architectural images from our studio library. Swipe the tile or choose a view below to look closer.",
+        "specs": [
+            [
+                "Collection",
+                "Nine selected architectural views"
+            ],
+            [
+                "Experience",
+                "Touch, swipe, explore"
+            ]
+        ]
+    },
+    {
+        "id": "meeting-residences",
+        "title": "A new perspective.",
+        "cat": "Architecture",
+        "sub": "Details that bring a place to life.",
+        "size": [
+            2,
+            2
+        ],
+        "slides": [
+            {
+                "src": "/public/demo/project-3.webp",
+                "pos": "50% 50%"
+            },
+            {
+                "src": "/public/demo/project-4.webp",
+                "pos": "50% 50%"
+            },
+            {
+                "src": "/public/demo/project-10.webp",
+                "pos": "50% 50%"
+            },
+            {
+                "src": "/public/demo/project-11.webp",
+                "pos": "50% 50%"
+            }
+        ],
+        "icon": "frames",
+        "accent": "mint",
+        "fx": "lift",
+        "interval": 5300,
+        "action": {
+            "type": "detail"
+        }
+    },
+    {
+        "id": "meeting-about",
+        "title": "We make space for imagination.",
+        "cat": "About us",
+        "sub": "Meet the thinking behind the images.",
+        "size": [
+            2,
+            1
+        ],
+        "slides": [
+            {
+                "src": "/public/demo/project-14.webp",
+                "pos": "50% 50%"
+            }
+        ],
+        "icon": "garden",
+        "accent": "mint",
+        "fx": "push",
+        "interval": 4600,
+        "action": {
+            "type": "detail"
+        },
+        "tile": {
+            "style": "gradient",
+            "color": "#00856C"
+        },
+        "desc": "VastuChitra brings architectural imagery and interactive experiences together in one place. This showcase connects project stories, studio updates, and the people behind the work.",
+        "specs": [
+            [
+                "Our focus",
+                "Architectural visualization"
+            ],
+            [
+                "Our canvas",
+                "Images · Motion · Interactive experiences"
+            ]
+        ]
+    },
+    {
+        "id": "meeting-journal",
+        "title": "Inside the studio",
+        "cat": "Studio journal · Preview",
+        "sub": "New perspectives. Work in progress. Ideas taking shape.",
+        "size": [
+            2,
+            1
+        ],
+        "slides": [
+            {
+                "src": "/public/demo/project-13.webp",
+                "pos": "50% 50%"
+            }
+        ],
+        "icon": "blueprint",
+        "accent": "coral",
+        "fx": "push",
+        "interval": 4600,
+        "action": {
+            "type": "detail"
+        },
+        "tile": {
+            "style": "gradient",
+            "color": "#C44B26"
+        },
+        "desc": "A place for your newsletter, recent work, studio milestones, and behind-the-scenes stories. This sample edition shows how a newsletter tile can sit alongside client projects.",
+        "specs": [
+            [
+                "In this edition",
+                "From first sketch to final frame"
+            ],
+            [
+                "Studio notes",
+                "Material, light, and atmosphere"
+            ]
+        ]
+    },
+    {
+        "id": "meeting-outdoors",
+        "title": "Life beyond the walls.",
+        "cat": "Landscape & community",
+        "sub": "Places to pause, connect, and belong.",
+        "size": [
+            2,
+            2
+        ],
+        "slides": [
+            {
+                "src": "/public/demo/project-5.webp",
+                "pos": "50% 50%"
+            },
+            {
+                "src": "/public/demo/project-6.webp",
+                "pos": "50% 50%"
+            },
+            {
+                "src": "/public/demo/project-12.webp",
+                "pos": "50% 50%"
+            }
+        ],
+        "icon": "frames",
+        "accent": "mint",
+        "fx": "wipe",
+        "interval": 6100,
+        "action": {
+            "type": "detail"
+        }
+    },
+    {
+        "id": "meeting-process",
+        "title": "From vision to atmosphere.",
+        "cat": "Behind the frame",
+        "sub": "Light. Material. Place.",
+        "size": [
+            3,
+            1
+        ],
+        "slides": [
+            {
+                "src": "/public/demo/project-7.webp",
+                "pos": "50% 50%"
+            },
+            {
+                "src": "/public/demo/project-2.webp",
+                "pos": "50% 50%"
+            },
+            {
+                "src": "/public/demo/project-13.webp",
+                "pos": "50% 50%"
+            }
+        ],
+        "icon": "frames",
+        "accent": "gold",
+        "fx": "push",
+        "interval": 5700,
+        "action": {
+            "type": "detail"
+        },
+        "desc": "An animated image sequence from the studio library. This tile can also hold a short studio film or project video when your footage is ready.",
+        "specs": [
+            [
+                "Today",
+                "Animated image sequence"
+            ],
+            [
+                "Future content",
+                "Studio films & project snippets"
+            ]
+        ]
+    },
+    {
+        "id": "meeting-team",
+        "title": "The people behind the picture.",
+        "cat": "Our people",
+        "sub": "Explore a sample studio structure.",
+        "size": [
+            2,
+            1
+        ],
+        "slides": [
+            {
+                "src": "/public/demo/project-11.webp",
+                "pos": "50% 50%"
+            }
+        ],
+        "icon": "building",
+        "accent": "ocean",
+        "fx": "push",
+        "interval": 4600,
+        "action": {
+            "type": "detail"
+        },
+        "tile": {
+            "style": "gradient",
+            "color": "#185B98"
+        },
+        "desc": "An illustrative office structure for the meeting preview. Replace these roles with your actual team as the showcase develops.",
+        "team": {
+            "name": "Studio leadership",
+            "children": [
+                {
+                    "name": "Creative direction",
+                    "children": [
+                        {
+                            "name": "Architecture & design"
+                        },
+                        {
+                            "name": "Visualization artists"
+                        }
+                    ]
+                },
+                {
+                    "name": "Production",
+                    "children": [
+                        {
+                            "name": "Motion & film"
+                        },
+                        {
+                            "name": "Interactive experiences"
+                        }
+                    ]
+                },
+                {
+                    "name": "Client partnerships",
+                    "children": [
+                        {
+                            "name": "Project coordination"
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    {
+        "id": "meeting-detail",
+        "title": "A closer look",
+        "cat": "Architectural details",
+        "sub": "",
+        "size": [
+            2,
+            1
+        ],
+        "slides": [
+            {
+                "src": "/public/demo/project-14.webp",
+                "pos": "50% 50%"
+            },
+            {
+                "src": "/public/demo/project-15.webp",
+                "pos": "50% 50%"
+            }
+        ],
+        "icon": "frames",
+        "accent": "cyan",
+        "fx": "lift",
+        "interval": 6900,
+        "action": {
+            "type": "detail"
+        },
+        "tile": {
+            "showTitle": false,
+            "showCategory": false,
+            "showDescription": false
+        },
+        "desc": "Explore the details, proportions, and perspectives that shape an architectural story."
+    },
+    {
+        "id": "meeting-community",
+        "title": "Made for everyday life.",
+        "cat": "Shared spaces",
+        "sub": "",
+        "size": [
+            2,
+            1
+        ],
+        "slides": [
+            {
+                "src": "/public/demo/project-16.webp",
+                "pos": "50% 50%"
+            },
+            {
+                "src": "/public/demo/project-5.webp",
+                "pos": "50% 50%"
+            },
+            {
+                "src": "/public/demo/project-12.webp",
+                "pos": "50% 50%"
+            }
+        ],
+        "icon": "frames",
+        "accent": "cyan",
+        "fx": "wipe",
+        "interval": 6200,
+        "action": {
+            "type": "detail"
+        },
+        "desc": "A collection of shared spaces and architectural views from our studio image library."
+    },
+    {
+        "id": "meeting-city",
+        "title": "The bigger picture.",
+        "cat": "Urban perspectives",
+        "sub": "",
+        "size": [
+            3,
+            1
+        ],
+        "slides": [
+            {
+                "src": "/public/demo/project-17.webp",
+                "pos": "50% 50%"
+            },
+            {
+                "src": "/public/demo/project-6.webp",
+                "pos": "50% 50%"
+            },
+            {
+                "src": "/public/demo/project-1.webp",
+                "pos": "50% 50%"
+            }
+        ],
+        "icon": "frames",
+        "accent": "cyan",
+        "fx": "push",
+        "interval": 7400,
+        "action": {
+            "type": "detail"
+        },
+        "desc": "A change of scale: explore the relationship between buildings, streets, and the city around them."
+    },
+    {
+        "id": "meeting-interior",
+        "title": "Spaces within.",
+        "cat": "Interior studies",
+        "sub": "",
+        "size": [
+            2,
+            1
+        ],
+        "slides": [
+            {
+                "src": "/public/demo/project-18.webp",
+                "pos": "50% 50%"
+            },
+            {
+                "src": "/public/demo/project-7.webp",
+                "pos": "50% 50%"
+            }
+        ],
+        "icon": "frames",
+        "accent": "cyan",
+        "fx": "fade",
+        "interval": 6700,
+        "action": {
+            "type": "detail"
+        },
+        "desc": "Explore architectural spaces through light, material, and atmosphere."
+    },
+    {
+        "id": "meeting-frames",
+        "title": "Another point of view",
+        "cat": "From the archive",
+        "sub": "",
+        "size": [
+            2,
+            1
+        ],
+        "slides": [
+            {
+                "src": "/public/demo/project-8.webp",
+                "pos": "50% 50%"
+            },
+            {
+                "src": "/public/demo/project-9.webp",
+                "pos": "50% 50%"
+            },
+            {
+                "src": "/public/demo/project-13.webp",
+                "pos": "50% 50%"
+            }
+        ],
+        "icon": "frames",
+        "accent": "cyan",
+        "fx": "push",
+        "interval": 5900,
+        "action": {
+            "type": "detail"
+        },
+        "tile": {
+            "showTitle": false,
+            "showCategory": false,
+            "showDescription": false
+        },
+        "desc": "More perspectives from the studio archive. Select a thumbnail to explore each view."
+    },
     {
         "id": "meridian",
         "title": "Meridian Coastal Villa",
@@ -740,6 +1367,1181 @@ window.VASTUCHITRA = {
         ],
         "action": {
             "type": "detail"
+        }
+    }
+],
+
+  heritageProjects: [
+    {
+        "id": "heritage-thanjavur",
+        "title": "Brihadisvara Temple",
+        "cat": "Thanjavur, Tamil Nadu · Temple",
+        "sub": "The tall vimana rising over the sanctum",
+        "size": [
+            4,
+            2
+        ],
+        "slides": [
+            {
+                "src": "/public/temple/Brihadishwara%20Temple%2C%20Tanjavur%2C%20TN.jpg",
+                "pos": "50% 42%"
+            }
+        ],
+        "desc": "Rajaraja I commissioned this Shiva temple in the early eleventh century. It is part of UNESCO’s Great Living Chola Temples. The complex gives a sense of the scale and ambition of Chola architecture, while worship continues there today.",
+        "specs": [
+            [
+                "Location",
+                "Thanjavur, Tamil Nadu"
+            ],
+            [
+                "Collection",
+                "Temple"
+            ],
+            [
+                "Look for",
+                "The tall vimana rising over the sanctum"
+            ]
+        ],
+        "source": "https://whc.unesco.org/en/list/250/",
+        "icon": "museum",
+        "accent": "gold",
+        "fx": "kenburns",
+        "interval": 6900,
+        "action": {
+            "type": "detail"
+        }
+    },
+    {
+        "id": "heritage-ayodhya",
+        "title": "Shri Ram Mandir",
+        "cat": "Ayodhya, Uttar Pradesh · Temple",
+        "sub": "Carved pillars and the rising temple towers",
+        "size": [
+            2,
+            2
+        ],
+        "slides": [
+            {
+                "src": "/public/temple/Ayodhya%20Ram%20Mandir%20picture.jpg",
+                "pos": "50% 50%"
+            },
+            {
+                "src": "/public/temple/%E0%A4%85%E0%A4%AF%E0%A5%8B%E0%A4%A7%E0%A5%8D%E0%A4%AF%E0%A4%BE%20%E0%A4%B0%E0%A4%BE%E0%A4%AE%20%E0%A4%AE%E0%A4%82%E0%A4%A6%E0%A4%BF%E0%A4%B0.jpg",
+                "pos": "50% 50%"
+            }
+        ],
+        "desc": "The temple is dedicated to Rama. In the Ramayana tradition, Ayodhya is his birthplace. A broad staircase leads to the entrance, beneath a series of carved towers.",
+        "specs": [
+            [
+                "Location",
+                "Ayodhya, Uttar Pradesh"
+            ],
+            [
+                "Collection",
+                "Temple"
+            ],
+            [
+                "Look for",
+                "Carved pillars and the rising temple towers"
+            ]
+        ],
+        "source": "https://ayodhya.nic.in/ayodhya-tourism/",
+        "icon": "museum",
+        "accent": "gold",
+        "fx": "kenburns",
+        "interval": 6900,
+        "action": {
+            "type": "detail"
+        }
+    },
+    {
+        "id": "heritage-vrindavan",
+        "title": "Prem Mandir",
+        "cat": "Vrindavan, Uttar Pradesh · Temple",
+        "sub": "Narrative carvings in white marble",
+        "size": [
+            3,
+            1
+        ],
+        "slides": [
+            {
+                "src": "/public/temple/Prem%20mandir%20Vrindavan.jpg",
+                "pos": "50% 50%"
+            },
+            {
+                "src": "/public/temple/%E0%A4%AA%E0%A5%8D%E0%A4%B0%E0%A5%87%E0%A4%AE%20%E0%A4%AE%E0%A4%82%E0%A4%A6%E0%A4%BF%E0%A4%B0%20%E0%A4%B5%E0%A5%83%E0%A4%82%E0%A4%A6%E0%A4%BE%E0%A4%B5%E0%A4%A8%20%E0%A4%A4%E0%A4%B8%E0%A5%8D%E0%A4%B5%E0%A5%80%E0%A4%B0%E0%A5%87%E0%A4%82.jpg",
+                "pos": "50% 50%"
+            }
+        ],
+        "desc": "Prem Mandir honours Radha and Krishna as well as Rama and Sita. Its white marble and sculpted scenes give visitors a way to encounter stories from Krishna’s life through architecture.",
+        "specs": [
+            [
+                "Location",
+                "Vrindavan, Uttar Pradesh"
+            ],
+            [
+                "Collection",
+                "Temple"
+            ],
+            [
+                "Look for",
+                "Narrative carvings in white marble"
+            ]
+        ],
+        "source": "https://www.prod.incredibleindia.gov.in/content/incredible-india-v2/en/destinations/mathura-vrindavan/prem-mandir.html",
+        "icon": "museum",
+        "accent": "gold",
+        "fx": "kenburns",
+        "interval": 6900,
+        "action": {
+            "type": "detail"
+        }
+    },
+    {
+        "id": "heritage-murudeshwara",
+        "title": "Murudeshwara Temple",
+        "cat": "Uttara Kannada, Karnataka · Temple",
+        "sub": "The Shiva statue and Raja Gopuram against the sea",
+        "size": [
+            3,
+            1
+        ],
+        "slides": [
+            {
+                "src": "/public/temple/Majestic%20Murudeshwar.jpg",
+                "pos": "50% 38%"
+            }
+        ],
+        "desc": "On Kanduka Hill beside the Arabian Sea, the temple complex brings together a Shiva shrine, a tall entrance tower and a monumental Shiva statue. Local tradition connects the site with the story of the Atma Linga.",
+        "specs": [
+            [
+                "Location",
+                "Uttara Kannada, Karnataka"
+            ],
+            [
+                "Collection",
+                "Temple"
+            ],
+            [
+                "Look for",
+                "The Shiva statue and Raja Gopuram against the sea"
+            ]
+        ],
+        "source": "https://karnatakatourism.org/en/destinations/murudeshwara/",
+        "icon": "museum",
+        "accent": "gold",
+        "fx": "kenburns",
+        "interval": 6900,
+        "action": {
+            "type": "detail"
+        }
+    },
+    {
+        "id": "heritage-dhanushkodi",
+        "title": "Dhanushkodi",
+        "cat": "Rameswaram, Tamil Nadu · Coastal heritage",
+        "sub": "The meeting of road, shore and open water",
+        "size": [
+            2,
+            1
+        ],
+        "slides": [
+            {
+                "src": "/public/temple/The%20Last%20Road%20of%20India%20-%20Dhanushkodi%2C%20Tamilnadu%2C%20INDIA.jpg",
+                "pos": "50% 50%"
+            }
+        ],
+        "desc": "At the far end of the Rameswaram peninsula, Dhanushkodi is part of a coastal landscape associated with the Ramayana. The landscape itself is the focus here: a narrow stretch of land framed by water.",
+        "specs": [
+            [
+                "Location",
+                "Rameswaram, Tamil Nadu"
+            ],
+            [
+                "Collection",
+                "Coastal heritage"
+            ],
+            [
+                "Look for",
+                "The meeting of road, shore and open water"
+            ]
+        ],
+        "source": "https://www.incredibleindia.gov.in/en/tamil-nadu/rameswaram/rameswaram-tracing-the-footsteps-of-lord-ram",
+        "icon": "landscape",
+        "accent": "gold",
+        "fx": "kenburns",
+        "interval": 6900,
+        "action": {
+            "type": "detail"
+        }
+    },
+    {
+        "id": "heritage-thiruvalluvar",
+        "title": "Thiruvalluvar Statue",
+        "cat": "Kanniyakumari, Tamil Nadu · Literary heritage",
+        "sub": "The figure and pedestal rising from the offshore rock",
+        "size": [
+            2,
+            1
+        ],
+        "slides": [
+            {
+                "src": "/public/temple/Kanyakumari%20Thiruvalluvar.jpg",
+                "pos": "50% 0%"
+            }
+        ],
+        "desc": "This offshore stone sculpture honours Thiruvalluvar, the Tamil poet and thinker associated with the Tirukkural. Its 133-foot height recalls the 133 chapters of the work.",
+        "specs": [
+            [
+                "Location",
+                "Kanniyakumari, Tamil Nadu"
+            ],
+            [
+                "Collection",
+                "Literary heritage"
+            ],
+            [
+                "Look for",
+                "The figure and pedestal rising from the offshore rock"
+            ]
+        ],
+        "source": "https://kanniyakumari.nic.in/tspot_ts/",
+        "icon": "landscape",
+        "accent": "gold",
+        "fx": "kenburns",
+        "interval": 6900,
+        "action": {
+            "type": "detail"
+        }
+    },
+    {
+        "id": "heritage-unity",
+        "title": "Statue of Unity",
+        "cat": "Ekta Nagar, Gujarat · Modern monument",
+        "sub": "The scale of the figure against the Narmada valley",
+        "icon": "landscape",
+        "accent": "gold",
+        "size": [
+            2,
+            1
+        ],
+        "tile": {
+            "style": "image",
+            "gradient": "ember",
+            "frame": true,
+            "showTitle": true,
+            "showCategory": true,
+            "showDescription": true,
+            "logoSrc": ""
+        },
+        "source": "https://narmada.nic.in/tourist-place/statue-of-unity-kevadia/",
+        "slides": [
+            {
+                "src": "/public/temple/Statue%20of%20Unity%20Aerial%20Drone%20View%20_%208K%20Cinematic%20Night%20Glow.jpg",
+                "pos": "50% 25.3%"
+            }
+        ],
+        "desc": "This 182-metre monument in the Narmada River landscape commemorates Sardar Vallabhbhai Patel. The aerial view shows how the statue sits within the river valley.",
+        "specs": [
+            [
+                "Location",
+                "Ekta Nagar, Gujarat"
+            ],
+            [
+                "Collection",
+                "Modern monument"
+            ],
+            [
+                "Look for",
+                "The scale of the figure against the Narmada valley"
+            ]
+        ],
+        "action": {
+            "type": "detail"
+        }
+    }
+],
+
+  personalProjects: [
+    {
+        "id": "sadhna-overview",
+        "title": "Shree Sadhna",
+        "cat": "The project",
+        "sub": "A place to make your own.",
+        "size": [
+            3,
+            3
+        ],
+        "clientKind": "overview",
+        "icon": "home",
+        "accent": "gold",
+        "fx": "fade",
+        "interval": 6500,
+        "slides": [],
+        "action": {
+            "type": "detail"
+        },
+        "tile": {
+            "style": "gradient",
+            "color": "#ece6da",
+            "frame": false
+        },
+        "desc": "Shree Sadhna brings every part of the project into one place: the architecture, the views, the people and the experiences. This is a presentation preview; project facts and final artwork will be added with the client.",
+        "specs": [
+            [
+                "Project",
+                "Shree Sadhna"
+            ],
+            [
+                "Location",
+                "To be added"
+            ],
+            [
+                "Developer",
+                "To be added"
+            ],
+            [
+                "Presentation",
+                "Preview artwork from the studio library"
+            ]
+        ],
+        "canvasPosition": {
+            "col": 0,
+            "row": 0
+        }
+    },
+    {
+        "id": "sadhna-renders",
+        "title": "In Focus",
+        "cat": "01 / Render collection",
+        "sub": "Architectural render collection",
+        "size": [
+            5,
+            3
+        ],
+        "clientKind": "renders",
+        "icon": "frames",
+        "accent": "gold",
+        "fx": "fade",
+        "interval": 6500,
+        "slides": [
+            {
+                "src": "/public/demo/project-1.webp",
+                "pos": "50% 50%"
+            },
+            {
+                "src": "/public/demo/project-3.webp",
+                "pos": "50% 50%"
+            },
+            {
+                "src": "/public/demo/project-5.webp",
+                "pos": "50% 50%"
+            },
+            {
+                "src": "/public/demo/project-10.webp",
+                "pos": "50% 50%"
+            },
+            {
+                "src": "/public/demo/project-14.webp",
+                "pos": "50% 50%"
+            },
+            {
+                "src": "/public/demo/project-18.webp",
+                "pos": "50% 50%"
+            }
+        ],
+        "action": {
+            "type": "detail"
+        },
+        "desc": "Explore the image collection. These studio library renders demonstrate the gallery; replace them with the approved Shree Sadhna renders.",
+        "canvasPosition": {
+            "col": 3,
+            "row": 0
+        }
+    },
+    {
+        "id": "sadhna-clay",
+        "title": "Colour study",
+        "cat": "Palette",
+        "sub": "",
+        "size": [
+            1,
+            1
+        ],
+        "clientKind": "colour",
+        "icon": "frames",
+        "accent": "gold",
+        "fx": "fade",
+        "interval": 6500,
+        "slides": [],
+        "action": {
+            "type": "none"
+        },
+        "tile": {
+            "style": "gradient",
+            "color": "#bb623f",
+            "frame": false,
+            "showTitle": false,
+            "showCategory": false,
+            "showDescription": false
+        },
+        "canvasPosition": {
+            "col": 0,
+            "row": 3
+        }
+    },
+    {
+        "id": "sadhna-rera",
+        "title": "On Record",
+        "cat": "02 / RERA & project facts",
+        "sub": "RERA & project facts · Awaiting details",
+        "size": [
+            2,
+            1
+        ],
+        "clientKind": "rera",
+        "icon": "blueprint",
+        "accent": "gold",
+        "fx": "fade",
+        "interval": 6500,
+        "slides": [],
+        "action": {
+            "type": "detail"
+        },
+        "tile": {
+            "style": "gradient",
+            "color": "#e2ddcc",
+            "frame": false
+        },
+        "desc": "The official project registration, approved details and relevant documents will live here. No registration number has been supplied.",
+        "specs": [
+            [
+                "RERA registration",
+                "To be added"
+            ],
+            [
+                "Registered project name",
+                "To be confirmed"
+            ],
+            [
+                "Authority / official record",
+                "To be added"
+            ]
+        ],
+        "canvasPosition": {
+            "col": 1,
+            "row": 3
+        }
+    },
+    {
+        "id": "sadhna-walkthrough",
+        "title": "In Motion",
+        "cat": "03 / Walkthrough film",
+        "sub": "Walkthrough film · Preview stills",
+        "size": [
+            3,
+            2
+        ],
+        "clientKind": "film",
+        "icon": "reel",
+        "accent": "gold",
+        "fx": "fade",
+        "interval": 6500,
+        "slides": [
+            {
+                "src": "/public/demo/project-2.webp",
+                "pos": "50% 50%"
+            },
+            {
+                "src": "/public/demo/project-7.webp",
+                "pos": "50% 50%"
+            }
+        ],
+        "action": {
+            "type": "detail"
+        },
+        "desc": "The walkthrough film will appear here once supplied. The current images are still previews, not a playable project film.",
+        "canvasPosition": {
+            "col": 3,
+            "row": 3
+        }
+    },
+    {
+        "id": "sadhna-ar",
+        "title": "Place It Here",
+        "cat": "04 / Augmented reality",
+        "sub": "Augmented reality · Not connected",
+        "size": [
+            2,
+            1
+        ],
+        "clientKind": "ar",
+        "icon": "ar",
+        "accent": "gold",
+        "fx": "fade",
+        "interval": 6500,
+        "slides": [],
+        "action": {
+            "type": "detail"
+        },
+        "tile": {
+            "style": "gradient",
+            "color": "#d9e0ce",
+            "frame": false
+        },
+        "desc": "A dedicated entry to the project’s augmented reality model. Add the hosted AR experience URL in this card’s Action settings.",
+        "canvasPosition": {
+            "col": 6,
+            "row": 3
+        }
+    },
+    {
+        "id": "sadhna-vr",
+        "title": "Step Beyond",
+        "cat": "05 / Virtual reality",
+        "sub": "Virtual reality · Not connected",
+        "size": [
+            2,
+            1
+        ],
+        "clientKind": "vr",
+        "icon": "vr",
+        "accent": "gold",
+        "fx": "fade",
+        "interval": 6500,
+        "slides": [],
+        "action": {
+            "type": "detail"
+        },
+        "tile": {
+            "style": "gradient",
+            "color": "#382c40",
+            "frame": false
+        },
+        "desc": "Explore the development at full scale. Connect the VR application or hosted experience in this card’s Action settings.",
+        "canvasPosition": {
+            "col": 0,
+            "row": 4
+        }
+    },
+    {
+        "id": "sadhna-sage",
+        "title": "Colour study",
+        "cat": "Palette",
+        "sub": "",
+        "size": [
+            1,
+            1
+        ],
+        "clientKind": "colour",
+        "icon": "frames",
+        "accent": "gold",
+        "fx": "fade",
+        "interval": 6500,
+        "slides": [],
+        "action": {
+            "type": "none"
+        },
+        "tile": {
+            "style": "gradient",
+            "color": "#899777",
+            "frame": false,
+            "showTitle": false,
+            "showCategory": false,
+            "showDescription": false
+        },
+        "canvasPosition": {
+            "col": 2,
+            "row": 4
+        }
+    },
+    {
+        "id": "sadhna-balcony",
+        "title": "The Outlook",
+        "cat": "06 / Balcony views",
+        "sub": "Balcony views & perspectives",
+        "size": [
+            4,
+            2
+        ],
+        "clientKind": "balcony",
+        "icon": "landscape",
+        "accent": "gold",
+        "fx": "fade",
+        "interval": 6500,
+        "slides": [
+            {
+                "src": "/public/demo/project-8.webp",
+                "pos": "50% 50%"
+            },
+            {
+                "src": "/public/demo/project-9.webp",
+                "pos": "50% 50%"
+            },
+            {
+                "src": "/public/demo/project-4.webp",
+                "pos": "50% 50%"
+            }
+        ],
+        "action": {
+            "type": "detail"
+        },
+        "desc": "A gallery for views from individual balconies and floors. Current images are preview artwork; approved floor and direction labels can be added as specifications.",
+        "canvasPosition": {
+            "col": 0,
+            "row": 5
+        }
+    },
+    {
+        "id": "sadhna-360",
+        "title": "Every Angle",
+        "cat": "07 / Interactive 360°",
+        "sub": "Interactive 360° tour · Not connected",
+        "size": [
+            2,
+            1
+        ],
+        "clientKind": "360",
+        "icon": "orbit",
+        "accent": "gold",
+        "fx": "fade",
+        "interval": 6500,
+        "slides": [],
+        "action": {
+            "type": "detail"
+        },
+        "tile": {
+            "style": "gradient",
+            "color": "#c5b48f",
+            "frame": false
+        },
+        "desc": "An interactive tour of the project. Connect the published 360° walkthrough through this card’s URL action.",
+        "canvasPosition": {
+            "col": 6,
+            "row": 4
+        }
+    },
+    {
+        "id": "sadhna-projection",
+        "title": "Afterglow",
+        "cat": "08 / Projection mapping",
+        "sub": "Projection mapping · Not connected",
+        "size": [
+            2,
+            1
+        ],
+        "clientKind": "projection",
+        "icon": "projector",
+        "accent": "gold",
+        "fx": "fade",
+        "interval": 6500,
+        "slides": [],
+        "action": {
+            "type": "detail"
+        },
+        "tile": {
+            "style": "gradient",
+            "color": "#4a4151",
+            "frame": false
+        },
+        "desc": "A home for the project’s projection mapping film or installation. Upload the film in Media or connect the installation application in Action settings.",
+        "canvasPosition": {
+            "col": 4,
+            "row": 5
+        }
+    },
+    {
+        "id": "sadhna-brochures",
+        "title": "The Project Edit",
+        "cat": "09 / Brochures & plans",
+        "sub": "Brochure & floor plans",
+        "size": [
+            2,
+            1
+        ],
+        "clientKind": "documents",
+        "icon": "blueprint",
+        "accent": "gold",
+        "fx": "fade",
+        "interval": 6500,
+        "slides": [],
+        "action": {
+            "type": "detail"
+        },
+        "tile": {
+            "style": "gradient",
+            "gradient": "ember",
+            "frame": false,
+            "showTitle": true,
+            "showCategory": true,
+            "showDescription": true,
+            "logoSrc": "",
+            "color": "#e8d5ba"
+        },
+        "desc": "The project brochure, floor plans and information pack will be available here. Add an approved PDF URL as this card’s action when ready.",
+        "canvasPosition": {
+            "col": 6,
+            "row": 5
+        },
+        "brochurePages": [
+            {
+                "layout": "cover",
+                "src": "/public/demo/project-3.webp",
+                "eyebrow": "Project publication · Preview edition",
+                "title": "Shree Sadhna",
+                "body": "A place to make your own.\nStudio preview artwork."
+            },
+            {
+                "layout": "text",
+                "eyebrow": "01 / A first look",
+                "title": "A project,\nin perspective.",
+                "body": "Architecture. Shared spaces. The views beyond your window.\n\nExplore this sample publication through images and project notes. Final project information and approved artwork will replace this preview edition."
+            },
+            {
+                "layout": "photo",
+                "src": "/public/demo/project-1.webp",
+                "eyebrow": "02 / Shared spaces",
+                "title": "Room for everyday moments.",
+                "body": "Preview render from the studio library."
+            },
+            {
+                "layout": "text",
+                "eyebrow": "03 / The architecture",
+                "title": "The details\nmake the difference.",
+                "body": "Use this page for the design story, materials, finishes and amenities.\n\nProject-specific information is to be added after client approval."
+            },
+            {
+                "layout": "photo",
+                "src": "/public/demo/project-18.webp",
+                "eyebrow": "04 / Interior studies",
+                "title": "Spaces within.",
+                "body": "Preview render from the studio library."
+            },
+            {
+                "layout": "plan",
+                "eyebrow": "05 / Plans & layouts",
+                "title": "A closer look\nat the plan.",
+                "body": "Approved floor plans have not been supplied yet.\n\nAdd a plan image to this page in Admin. Plan images are shown in full so dimensions and annotations remain visible."
+            },
+            {
+                "layout": "photo",
+                "src": "/public/demo/project-8.webp",
+                "eyebrow": "06 / Beyond the building",
+                "title": "Another point of view.",
+                "body": "Preview render from the studio library."
+            },
+            {
+                "layout": "text",
+                "eyebrow": "Shree Sadhna",
+                "title": "The next chapter.",
+                "body": "This is a sample project publication.\n\nDeveloper details, location, RERA registration, specifications and contact information are to be added. All imagery currently shown is studio preview artwork."
+            }
+        ]
+    },
+    {
+        "id": "sadhna-plum",
+        "title": "Colour study",
+        "cat": "Palette",
+        "sub": "",
+        "size": [
+            1,
+            1
+        ],
+        "clientKind": "colour",
+        "icon": "frames",
+        "accent": "gold",
+        "fx": "fade",
+        "interval": 6500,
+        "slides": [],
+        "action": {
+            "type": "none"
+        },
+        "tile": {
+            "style": "gradient",
+            "color": "#382c40",
+            "frame": false,
+            "showTitle": false,
+            "showCategory": false,
+            "showDescription": false
+        },
+        "canvasPosition": {
+            "col": 5,
+            "row": 7
+        }
+    },
+    {
+        "id": "sadhna-site",
+        "title": "Ground Report",
+        "cat": "10 / Site camera",
+        "sub": "Site camera · Not connected",
+        "size": [
+            5,
+            1
+        ],
+        "clientKind": "camera",
+        "icon": "projector",
+        "accent": "gold",
+        "fx": "fade",
+        "interval": 6500,
+        "slides": [],
+        "action": {
+            "type": "detail"
+        },
+        "tile": {
+            "style": "gradient",
+            "color": "#d5d8cc",
+            "frame": false
+        },
+        "desc": "The live site camera has not been connected. Add an authorized, embeddable camera URL in this card’s Action settings. This preview does not display a live feed.",
+        "specs": [
+            [
+                "Feed status",
+                "Not connected"
+            ],
+            [
+                "Site / camera",
+                "To be added"
+            ]
+        ],
+        "canvasPosition": {
+            "col": 0,
+            "row": 7
+        }
+    },
+    {
+        "id": "sadhna-people",
+        "title": "The Makers",
+        "cat": "11 / Project team",
+        "sub": "Project team & credits",
+        "size": [
+            2,
+            1
+        ],
+        "clientKind": "people",
+        "icon": "building",
+        "accent": "gold",
+        "fx": "fade",
+        "interval": 6500,
+        "slides": [],
+        "action": {
+            "type": "detail"
+        },
+        "tile": {
+            "style": "gradient",
+            "color": "#ece6da",
+            "frame": false
+        },
+        "desc": "Credits for the people who brought the project together. Add the actual names and roles in this card’s specifications.",
+        "specs": [
+            [
+                "Developer",
+                "To be added"
+            ],
+            [
+                "Architect",
+                "To be added"
+            ],
+            [
+                "Visualization & experiences",
+                "To be confirmed"
+            ],
+            [
+                "Project consultants",
+                "To be added"
+            ]
+        ],
+        "canvasPosition": {
+            "col": 4,
+            "row": 6
+        }
+    },
+    {
+        "id": "sadhna-tools",
+        "title": "The Toolkit",
+        "cat": "12 / Software & workflow",
+        "sub": "Software & workflow",
+        "size": [
+            1,
+            1
+        ],
+        "clientKind": "tools",
+        "icon": "cube",
+        "accent": "gold",
+        "fx": "fade",
+        "interval": 6500,
+        "slides": [],
+        "action": {
+            "type": "detail"
+        },
+        "tile": {
+            "style": "gradient",
+            "color": "#d9e0ce",
+            "frame": false
+        },
+        "desc": "A place to credit the production software and tools actually used on this project. Add confirmed software names and their role in the specifications.",
+        "canvasPosition": {
+            "col": 6,
+            "row": 6
+        }
+    },
+    {
+        "id": "sadhna-partners",
+        "title": "In Company",
+        "cat": "13 / Associated brands",
+        "sub": "Associated brands",
+        "size": [
+            1,
+            1
+        ],
+        "clientKind": "partners",
+        "icon": "garden",
+        "accent": "gold",
+        "fx": "fade",
+        "interval": 6500,
+        "slides": [],
+        "action": {
+            "type": "detail"
+        },
+        "tile": {
+            "style": "gradient",
+            "color": "#e2ddcc",
+            "frame": false
+        },
+        "desc": "Credits for the brands and partners associated with Shree Sadhna. Add confirmed names, logos and links once supplied.",
+        "canvasPosition": {
+            "col": 7,
+            "row": 6
+        }
+    },
+    {
+        "id": "sadhna-ochre",
+        "title": "Colour study",
+        "cat": "Palette",
+        "sub": "",
+        "size": [
+            2,
+            1
+        ],
+        "clientKind": "colour",
+        "icon": "frames",
+        "accent": "gold",
+        "fx": "fade",
+        "interval": 6500,
+        "slides": [],
+        "action": {
+            "type": "none"
+        },
+        "tile": {
+            "style": "gradient",
+            "color": "#c3a471",
+            "frame": false,
+            "showTitle": false,
+            "showCategory": false,
+            "showDescription": false
+        },
+        "canvasPosition": {
+            "col": 6,
+            "row": 7
+        }
+    },
+    {
+        "id": "sadhna-green",
+        "title": "A Lighter Footprint",
+        "cat": "Green building status",
+        "sub": "Green building status · Awaiting details",
+        "size": [
+            2,
+            2
+        ],
+        "clientKind": "green",
+        "icon": "garden",
+        "accent": "gold",
+        "fx": "fade",
+        "interval": 6500,
+        "slides": [],
+        "action": {
+            "type": "detail"
+        },
+        "tile": {
+            "style": "gradient",
+            "color": "#d9e0ce",
+            "frame": false
+        },
+        "desc": "The project’s environmental goals, resource strategy and verified green building status belong here. No certification, rating or performance claim has been supplied yet.",
+        "specs": [
+            [
+                "Certification / rating",
+                "To be confirmed"
+            ],
+            [
+                "Energy strategy",
+                "To be added"
+            ],
+            [
+                "Water & reuse",
+                "To be added"
+            ],
+            [
+                "Landscape & materials",
+                "To be added"
+            ]
+        ],
+        "previousSize": [
+            2,
+            2
+        ],
+        "canvasPosition": {
+            "col": 0,
+            "row": 8
+        }
+    },
+    {
+        "id": "sadhna-balcony-simulator",
+        "title": "Beyond the Balcony",
+        "cat": "Balcony simulator",
+        "sub": "Balcony simulator · Not connected",
+        "size": [
+            2,
+            2
+        ],
+        "clientKind": "balcony-simulator",
+        "icon": "landscape",
+        "accent": "gold",
+        "fx": "fade",
+        "interval": 6500,
+        "slides": [],
+        "action": {
+            "type": "detail"
+        },
+        "tile": {
+            "style": "gradient",
+            "color": "#c5b48f",
+            "frame": false
+        },
+        "desc": "A dedicated entry to the balcony simulator: explore the view from different floors, orientations and times of day once the experience is connected. Add the simulator URL or application in this card’s Action settings.",
+        "specs": [
+            [
+                "Experience",
+                "Balcony simulator"
+            ],
+            [
+                "Connection",
+                "Not connected"
+            ],
+            [
+                "Floors & orientations",
+                "To be supplied"
+            ]
+        ],
+        "previousSize": [
+            2,
+            2
+        ],
+        "canvasPosition": {
+            "col": 2,
+            "row": 8
+        }
+    },
+    {
+        "id": "sadhna-design-intent",
+        "title": "The Thinking Behind",
+        "cat": "Design intent",
+        "sub": "The idea behind the architecture",
+        "size": [
+            2,
+            2
+        ],
+        "clientKind": "design-intent",
+        "icon": "blueprint",
+        "accent": "gold",
+        "fx": "fade",
+        "interval": 6500,
+        "slides": [
+            {
+                "src": "/public/demo/project-3.webp",
+                "pos": "50% 50%"
+            },
+            {
+                "src": "/public/demo/project-14.webp",
+                "pos": "50% 50%"
+            }
+        ],
+        "action": {
+            "type": "detail"
+        },
+        "desc": "A place for the architectural concept, site response, design decisions and material story. The current images are studio preview artwork; add the approved Shree Sadhna design narrative here.",
+        "specs": [
+            [
+                "Architectural concept",
+                "To be added"
+            ],
+            [
+                "Site response",
+                "To be added"
+            ],
+            [
+                "Materials & character",
+                "To be added"
+            ]
+        ],
+        "previousSize": [
+            2,
+            2
+        ],
+        "canvasPosition": {
+            "col": 4,
+            "row": 8
+        }
+    },
+    {
+        "id": "sadhna-mep",
+        "title": "Behind the Walls",
+        "cat": "MEP & coordination",
+        "sub": "Building systems, brought together",
+        "size": [
+            2,
+            2
+        ],
+        "clientKind": "mep",
+        "icon": "model",
+        "accent": "gold",
+        "fx": "fade",
+        "interval": 6500,
+        "slides": [],
+        "action": {
+            "type": "detail"
+        },
+        "tile": {
+            "style": "gradient",
+            "color": "#d5d8cc",
+            "frame": false
+        },
+        "desc": "Explore the mechanical, electrical and plumbing systems behind the project. Add approved diagrams, coordination views and system information, or connect a model viewer through this card’s Action settings.",
+        "specs": [
+            [
+                "Mechanical / ventilation",
+                "To be supplied"
+            ],
+            [
+                "Electrical systems",
+                "To be supplied"
+            ],
+            [
+                "Plumbing & drainage",
+                "To be supplied"
+            ],
+            [
+                "Fire & life safety",
+                "To be supplied"
+            ]
+        ],
+        "previousSize": [
+            2,
+            2
+        ],
+        "canvasPosition": {
+            "col": 6,
+            "row": 8
         }
     }
 ]

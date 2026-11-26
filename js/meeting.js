@@ -95,7 +95,50 @@
       project.slides = artwork[project.id] ? [image(artwork[project.id])] : [{ src:'/public/logo-ui.png' }];
     }
   });
+  function normalizeCollections(config){
+    const settings = { ...config.settings };
+    // Earlier versions used personal for the temple collection.
+    if (settings.catalogModesVersion !== 1 && settings.presentationMode === 'personal') settings.presentationMode = 'heritage';
+    settings.catalogModesVersion = 1;
+    const personalProjects = Array.isArray(config.personalProjects) ? config.personalProjects : showcase.projects
+      .filter(project => ['meeting-selected','meeting-residences','meeting-outdoors','meeting-process','meeting-detail','meeting-interior'].includes(project.id))
+      .map(project => ({ ...JSON.parse(JSON.stringify(project)), id:project.id.replace('meeting-','personal-') }));
+    let clientProjects = personalProjects;
+    if (settings.clientCatalogVersion !== 1 && window.VASTUCHITRA_CLIENT){
+      const oldSeeds = showcase.projects.filter(project => ['meeting-selected','meeting-residences','meeting-outdoors','meeting-process','meeting-detail','meeting-interior'].includes(project.id));
+      const isStarter = project => oldSeeds.some(seed => project.id === seed.id.replace('meeting-','personal-') && project.title === seed.title && project.desc === seed.desc);
+      // Replace the previous sample portfolio, retaining any custom client cards.
+      clientProjects = [...JSON.parse(JSON.stringify(window.VASTUCHITRA_CLIENT)), ...personalProjects.filter(project => !isStarter(project))];
+      settings.clientCatalogVersion = 1;
+    }
+    if (settings.clientDesignVersion !== 2 && window.VASTUCHITRA_CLIENT){
+      const oldTitles = {ar:'Bring it into your space.',vr:'A different point of view.','360':'Look all around.',projection:'Architecture, illuminated.',brochures:'Take a closer look.',people:'The people behind it.',tools:'Made with.',partners:'In good company.',site:'From the site.',renders:'The architecture',walkthrough:'Step inside.',balcony:'Your everyday horizon.',rera:'The details, on record.'};
+      clientProjects = clientProjects.map(project => {
+        const seed = window.VASTUCHITRA_CLIENT.find(seed => seed.id === project.id);
+        if (!seed) return project;
+        const key = project.id.replace('sadhna-','');
+        const defaultSize = JSON.stringify(project.size) === JSON.stringify(seed.previousSize);
+        return {...project,
+          ...(defaultSize ? {size:seed.size,canvasPosition:seed.canvasPosition} : {}),
+          ...(project.title === oldTitles[key] ? {title:seed.title} : {})};
+      });
+      settings.clientDesignVersion = 2;
+    }
+    if(settings.clientExperienceVersion!==1 && window.VASTUCHITRA_CLIENT){
+      const oldNames={ar:['Augmented reality','Bring it into your space.'],vr:['Virtual reality','A different point of view.'],'360':['Interactive 360°','Look all around.'],projection:['Projection mapping','Architecture, illuminated.'],brochures:['Brochures & plans','Take a closer look.'],people:['Project team','The people behind it.'],tools:['Software','Made with.'],partners:['Brand partners','In good company.'],site:['Site camera','From the site.'],renders:['The render collection','The architecture'],walkthrough:['Walkthrough film','Step inside.'],balcony:['Balcony views','Your everyday horizon.'],rera:['RERA & project facts','The details, on record.']};
+      clientProjects=clientProjects.map(project=>{
+        const key=project.id.replace('sadhna-','');
+        if(!oldNames[key]?.includes(project.title))return project;
+        return {...project,title:window.VASTUCHITRA_CLIENT_NAMES[key],sub:window.VASTUCHITRA_CLIENT_LABELS[key]};
+      });
+      const ids=new Set(clientProjects.map(project=>project.id));
+      if(clientProjects.length) clientProjects.push(...window.VASTUCHITRA_CLIENT.filter(project=>['green','balcony-simulator','design-intent','mep'].includes(project.clientKind) && !ids.has(project.id)).map(project=>JSON.parse(JSON.stringify(project))));
+      settings.clientExperienceVersion=1;
+    }
+    return { ...config, settings, personalProjects:clientProjects };
+  }
   window.VASTUCHITRA_COMMERCIAL = (config, offline = false) => {
+    config = normalizeCollections(config);
     if (config.settings?.commercialCatalogVersion === 1) return config;
     const primary = config.projects || [];
     const startsWithShowcase = primary.some(project => showcase.projects.some(tile => tile.id === project.id));

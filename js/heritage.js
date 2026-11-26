@@ -28,7 +28,7 @@
       'At the far end of the Rameswaram peninsula, Dhanushkodi is part of a coastal landscape associated with the Ramayana. The landscape itself is the focus here: a narrow stretch of land framed by water.',
       'The meeting of road, shore and open water', 'https://www.incredibleindia.gov.in/en/tamil-nadu/rameswaram/rameswaram-tracing-the-footsteps-of-lord-ram'),
     story('thiruvalluvar', 'Thiruvalluvar Statue', 'Kanniyakumari, Tamil Nadu', 'Literary heritage', [2,1],
-      [photo('Kanyakumari Thiruvalluvar')],
+      [photo('Kanyakumari Thiruvalluvar', '50% 0%')],
       'This offshore stone sculpture honours Thiruvalluvar, the Tamil poet and thinker associated with the Tirukkural. Its 133-foot height recalls the 133 chapters of the work.',
       'The figure and pedestal rising from the offshore rock', 'https://kanniyakumari.nic.in/tspot_ts/'),
     story('unity', 'Statue of Unity', 'Ekta Nagar, Gujarat', 'Modern monument', [2,1],

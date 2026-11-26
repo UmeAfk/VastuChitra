@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "check": "node --check server.js && node --check js/admin.js && node --check js/script.js && node --check js/meeting.js && node --check scripts/build-meeting.cjs",
+    "check": "node --check server.js && node --check js/admin.js && node --check js/script.js && node --check js/meeting.js && node --check scripts/build-meeting.cjs && node --check js/canvas.js && node --check js/grid-layout.js && node --check js/settings.js && node --check js/brochure.js && node --check js/client-theme.js && node --check js/client.js && node --check js/view-state.js",
     "test": "node --test",
     "build:meeting": "node scripts/build-meeting.cjs"
   },

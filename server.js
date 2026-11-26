@@ -172,7 +172,9 @@ window.VASTUCHITRA = {
 
   projects: ${JSON.stringify(projects, null, 4)},
 
-  heritageProjects: ${JSON.stringify(config.heritageProjects, null, 4) ?? 'null'}
+  heritageProjects: ${JSON.stringify(config.heritageProjects, null, 4) ?? 'null'},
+
+  personalProjects: ${JSON.stringify(config.personalProjects, null, 4) ?? 'null'}
 };
 `;
   fs.writeFileSync(path.join(ROOT, 'js', 'projects.js'), fileContent, 'utf8');
@@ -522,6 +524,7 @@ const server = http.createServer(async (req, res) => {
           settings: pcfg.settings || {},
           projects: pcfg.projects || [],
           heritageProjects: pcfg.heritageProjects,
+          personalProjects: pcfg.personalProjects,
           apps,
           assets,
           mediaConfig: loadMediaConfig()
@@ -607,14 +610,15 @@ const server = http.createServer(async (req, res) => {
         const payload = await parseJsonBody(req);
         if (payload.settings && payload.projects){
           const heritageProjects = Array.isArray(payload.heritageProjects) ? payload.heritageProjects : loadProjectsConfig().heritageProjects;
-          saveProjectsConfig({ settings: payload.settings, projects: payload.projects, heritageProjects });
+          const personalProjects = Array.isArray(payload.personalProjects) ? payload.personalProjects : loadProjectsConfig().personalProjects;
+          saveProjectsConfig({ settings: payload.settings, projects: payload.projects, heritageProjects, personalProjects });
         }
         if (payload.apps && typeof payload.apps === 'object'){
           saveApps(payload.apps);
         }
         console.log('  ★ Configuration saved via Admin Panel');
         broadcastLiveUpdate('config-updated', { savedAt: Date.now() });
-        return json(res, 200, { success: true, message: 'Configuration saved successfully' });
+        return json(res, 200, { success: true, personalSaved: !!(payload.settings && payload.projects && Array.isArray(payload.personalProjects)), heritageSaved: !!(payload.settings && payload.projects && Array.isArray(payload.heritageProjects)), message: 'Configuration saved successfully' });
       }
 
       // Legacy single-item delete.

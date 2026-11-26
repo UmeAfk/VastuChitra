@@ -24,16 +24,21 @@ const CFG = Object.assign({
   showProjectCount: true, hideIdleCursor: true, resetSlidesOnIdle: true, disableSelection: true,
   headerGap: 20, cardContentPadding: 20, introAnimation: true,
   tiltStrength: 7, hoverZoom: 107, transitionSpeed: 100
-}, CONFIG.settings);
-const PERSONAL = CFG.presentationMode === 'personal' && Array.isArray(window.VASTUCHITRA_HERITAGE);
-const PROJECTS = PERSONAL ? (Array.isArray(CONFIG.heritageProjects) ? CONFIG.heritageProjects : window.VASTUCHITRA_HERITAGE) : CONFIG.projects || [];
-if (!PERSONAL){
-  Object.assign(CFG, { columns:8, rows:5, cardRadius:4, cardGap:10, cardContentPadding:16, cardRowHeight:100, cardTilt:false });
+}, window.VASTU_SETTINGS.resolve(CONFIG.settings));
+const PERSONAL = CFG.presentationMode === 'heritage' && Array.isArray(window.VASTUCHITRA_HERITAGE);
+const CLIENT = CFG.presentationMode === 'personal';
+const PROJECTS = PERSONAL ? (Array.isArray(CONFIG.heritageProjects) ? CONFIG.heritageProjects : window.VASTUCHITRA_HERITAGE) : CFG.presentationMode === 'personal' ? CONFIG.personalProjects || [] : CONFIG.projects || [];
+if (!PERSONAL && !CLIENT){
   document.body.classList.add('meeting-preview');
 }
+if (CLIENT){
+  Object.assign(CFG,{introAnimation:false});
+  document.body.classList.remove('meeting-preview');
+  document.body.classList.add('client-mode');
+  document.title = (PROJECTS.find(project => project.clientKind === 'overview')?.title || 'Client project') + ' — VastuChitra';
+}
 if (PERSONAL){
-  Object.assign(CFG, { columns: 6, rows: 4, cardGap: 14, cardRadius: 16, cardRowHeight: 118,
-    cardTilt: false, showCategories: true, showDescriptions: true, introAnimation: true });
+  CFG.cardTilt = false;
   document.body.classList.add('heritage-mode');
   document.title = 'VastuChitra';
 }
@@ -53,6 +58,13 @@ const isVideoSrc = src => VIDEO_EXT.test(String(src || ''));
 const EASE = 'cubic-bezier(.16,.84,.24,1)';
 const ACCENT = { cyan:'#d7a34a', violet:'#68b89c', amber:'#e57c48', rose:'#d95f70', ocean:'#4d8fe8', orchid:'#a879e8', aqua:'#38c9c5', lime:'#9acb5a', cobalt:'#356de8', indigo:'#5c5bd6', plum:'#8247ad', magenta:'#d4479c', coral:'#f06f65', tangerine:'#ed8a2f', gold:'#c69b42', mint:'#70cdb1', emerald:'#168c68', glacier:'#7fc9df', slate:'#708394', pearl:'#c9c4b7' };
 const root = document.documentElement;
+document.body.classList.toggle('hide-brand-logo',CFG.showBrandLogo === false);
+const headerLogo = document.querySelector('.launcher-logo');
+headerLogo.style.width = clamp(Number(CFG.brandLogoWidth) || 172,80,300) + 'px';
+if (CFG.brandLogoSrc){
+  headerLogo.addEventListener('error', () => { headerLogo.src = '/public/logo-ui.png'; }, {once:true});
+  headerLogo.src = CFG.brandLogoSrc;
+}
 const speedFactor = 100 / clamp(parseInt(CFG.transitionSpeed) || 100, 50, 180);
 
 root.style.setProperty('--cols', CFG.columns);
@@ -75,7 +87,14 @@ document.body.classList.toggle('hide-card-cat', CFG.showCategories === false);
 document.body.classList.toggle('hide-grid-dots', CFG.showGridDots === false);
 document.body.classList.toggle('hide-clock-icon', CFG.showClockIcon === false);
 document.body.classList.toggle('hide-slide-pager', CFG.showSlidePager === false);
-document.body.classList.toggle('reduce-effects', CFG.motion === false);
+document.body.classList.toggle('reduce-effects', reduceMotion);
+document.body.classList.toggle('disable-hover-zoom', reduceMotion || !CFG.hoverZoomEnabled);
+document.body.classList.toggle('logo-original',CFG.brandLogoOriginal);
+root.style.setProperty('--hover-zoom-duration',CFG.hoverZoomDuration + 'ms');
+root.style.setProperty('--canvas-edge-height',CFG.canvasEdgeHeight + 'px');
+root.style.setProperty('--canvas-edge-blur',CFG.canvasEdgeStrength + 'px');
+root.style.setProperty('--client-light-canvas',CFG.clientLightBackground);
+root.style.setProperty('--client-dark-canvas',CFG.clientDarkBackground);
 document.body.classList.toggle('hide-project-count', CFG.showProjectCount === false);
 document.body.classList.toggle('disable-selection', CFG.disableSelection !== false);
 if (KIOSK) document.addEventListener('contextmenu', e => e.preventDefault());
@@ -121,8 +140,47 @@ const CORNER = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strok
 // ---------------------------------------------------------------- 2. cards
 const grid = $('grid');
 const shell = $('shell');
+// The header overlays the scrolling canvas; only its controls receive pointer events.
+const topbar = shell.querySelector('.topbar');
+function alignHeader(){
+  topbar.style.left = grid.offsetLeft + 'px';
+  topbar.style.right = (shell.clientWidth - grid.offsetLeft - grid.clientWidth) + 'px';
+  topbar.style.top = grid.offsetTop + 'px';
+}
+requestAnimationFrame(alignHeader);
+window.addEventListener('resize',alignHeader);
+if (CLIENT){
+  const themeButton = document.createElement('button');
+  themeButton.type = 'button';
+  themeButton.className = 'client-theme-toggle';
+  themeButton.innerHTML = '<svg class="theme-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg><svg class="theme-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.44.402.784a6.25 6.25 0 0 0 8.268 8.268c.344-.215.806-.004.803.42Z"/></svg>';
+  const syncThemeButton = () => {
+    const dark = document.documentElement.dataset.clientTheme === 'dark';
+    themeButton.setAttribute('aria-label',dark ? 'Switch Client to light mode' : 'Switch Client to dark mode');
+    themeButton.setAttribute('aria-pressed',String(dark));
+  };
+  syncThemeButton();
+  window.addEventListener('client-theme-changed',syncThemeButton);
+  themeButton.addEventListener('click',() => window.VASTU_CLIENT_THEME.toggle(themeButton));
+  if (CFG.clientShowThemeToggle) topbar.querySelector('.status').prepend(themeButton);
+}
+if (CFG.pinLogo === false){
+  document.body.classList.add('logo-unpinned');
+  let logoOffset = 0, previousScroll = grid.scrollTop;
+  grid.addEventListener('scroll', () => {
+    // Ignore the infinite canvas's wrap back to zero: the logo should stay away.
+    const current = grid.scrollTop;
+    let delta = current - previousScroll;
+    const cycleLength = loopingCanvas?.length;
+    if (cycleLength && delta < -cycleLength / 2) delta += cycleLength;
+    logoOffset = clamp(logoOffset + delta,0,topbar.offsetHeight + grid.offsetTop + 12);
+    previousScroll = current;
+    root.style.setProperty('--logo-scroll',logoOffset + 'px');
+  }, {passive:true});
+}
 const byId = new Map();
 let editing = false;
+let loopingCanvas = null;
 
 function normSlides(p){
   return (p.slides || []).map(s => typeof s === 'string' ? { src: s } : s).filter(s => s && s.src);
@@ -137,6 +195,11 @@ function buildCard(p){
   const card = document.createElement('div');
   card.className = `card tile-${tileStyle}${tile.frame === false ? ' no-frame' : ''}${tile.showTitle === false ? ' no-title' : ''}${tile.showCategory === false ? ' no-category' : ''}${tile.showDescription === false ? ' no-description' : ''}`;
   card.dataset.id = p.id;
+  if (CLIENT) card.dataset.clientKind = p.clientKind || 'custom';
+  if (CLIENT){
+    const palette = {'#ece6da':'paper','#e2ddcc':'stone','#d9e0ce':'mint','#382c40':'ink','#4a4151':'violet','#c5b48f':'blue','#e8d5ba':'peach','#d5d8cc':'slate','#bb623f':'coral','#899777':'green','#c3a471':'yellow'};
+    if (palette[tile.color?.toLowerCase()]) card.dataset.clientPalette = palette[tile.color.toLowerCase()];
+  }
   card.dataset.accent = accent;
   card.dataset.gradient = gradient;
   if (/^#[0-9a-f]{6}$/i.test(tile.color || '')){
@@ -157,6 +220,41 @@ function buildCard(p){
       <h3>${esc(p.title)}</h3>
       <p class="sub">${esc(p.sub)}</p>
     </div>`;
+  if (PERSONAL){
+    card.classList.add('place-poster');
+    const location = document.createElement('span');
+    location.className = 'poster-location';
+    location.textContent = (p.cat || '').split(' · ')[0];
+    card.appendChild(location);
+  }
+  if (CLIENT && p.clientKind && p.clientKind !== 'colour'){
+    const marker = document.createElement('span');
+    marker.className = 'client-card-symbol';
+    marker.setAttribute('aria-hidden','true');
+    marker.innerHTML = ICONS[p.icon] || ICONS.frames;
+    card.appendChild(marker);
+    if (p.clientKind === 'overview'){
+      const seal = document.createElement('span');
+      seal.className = 'client-project-seal';
+      seal.textContent = p.title.split(/\s+/).map(word => word[0]).slice(0,2).join('');
+      seal.setAttribute('aria-hidden','true');
+      card.appendChild(seal);
+      const note = document.createElement('span');
+      note.className = 'client-project-note';
+      note.textContent = 'A project by its many perspectives';
+      card.appendChild(note);
+      const brief = document.createElement('p');
+      brief.className = 'client-project-brief';
+      brief.textContent = (p.desc || '').split(/(?<=[.!?])\s+/)[0];
+      card.querySelector('.content').appendChild(brief);
+    }
+    if (['renders','film','balcony'].includes(p.clientKind)){
+      const label = document.createElement('span');
+      label.className = 'client-media-note';
+      label.textContent = p.clientKind === 'film' && !normSlides(p).some(s => isVideoSrc(s.src)) ? 'Film to be added · Preview stills' : 'Studio preview collection';
+      card.appendChild(label);
+    }
+  }
 
   // images: every card gets .slide layers; 2+ become a carousel below
   const thumb = card.querySelector('.thumb');
@@ -189,6 +287,7 @@ function buildCard(p){
   const slides = imageList.map((s, k) => {
     const slide = document.createElement('div'); slide.className = 'slide';
     const img = document.createElement('div');   img.className = 'img';
+    if (!reduceMotion) img.style.opacity = '0';
     if (s.pos) img.style.backgroundPosition = s.pos;
     slide.appendChild(img); thumb.appendChild(slide);
 
@@ -200,7 +299,9 @@ function buildCard(p){
       const pre = new Image();
       pre.onload = () => {
         img.style.backgroundImage = cssUrl(pre.src);
+        img.style.opacity = '1';
         st[k].ready = true;
+        loopingCanvas?.sync(card);
         if (k === 0) st[1]?.load();
         st[k].onReady?.();
         st[k].onReady = null;
@@ -225,7 +326,7 @@ PROJECTS.forEach(p => {
   byId.set(p.id, p);
   grid.appendChild(buildCard(p));
 });
-const allCards = () => [...grid.querySelectorAll('.card')];
+const allCards = () => [...grid.children].filter(node => node.classList.contains('card'));
 if ('IntersectionObserver' in window){
   const covers = new IntersectionObserver(entries => entries.forEach(({ target, isIntersecting }) => {
     if (!isIntersecting) return;
@@ -256,16 +357,38 @@ document.addEventListener('visibilitychange', () => videoCards.forEach(card => {
 }));
 
 // ---------------------------------------------------------------- 3. layout
-const LAYOUT_KEY = PERSONAL ? 'vastuchitra-heritage-layout-v1' : CFG.meetingPreview ? 'vastuchitra-meeting-layout-v2' : 'vastuchitra-layout-v3';
+const LAYOUT_KEY = CFG.presentationMode === 'personal' ? 'vastuchitra-client-canvas-v2' : PERSONAL ? 'vastuchitra-heritage-layout-v1' : CFG.meetingPreview ? 'vastuchitra-meeting-layout-v2' : 'vastuchitra-layout-v3';
 const CS_MIN = 1, CS_MAX = CFG.columns, RS_MIN = 1, RS_MAX = CFG.rows;
 const gapPx = () => parseFloat(getComputedStyle(grid).rowGap) || 16;
+let layoutPositions = {}, livePositions = {};
+function gridMetrics(){
+  const style = getComputedStyle(grid);
+  const columns = parseInt(style.getPropertyValue?.('--visible-columns')) || style.gridTemplateColumns.split(/\s+/).filter(Boolean).length || CFG.columns;
+  const columnGap = parseFloat(style.columnGap) || 0;
+  const columnWidth = (grid.clientWidth - (parseFloat(style.paddingLeft) || 0) - (parseFloat(style.paddingRight) || 0) - columnGap * (columns - 1)) / columns;
+  const rowHeight = parseFloat(style.gridAutoRows) || parseFloat(getComputedStyle(root).getPropertyValue('--cell-row')) || 130;
+  return { columns, columnGap, columnWidth, columnStep:columnWidth + columnGap, rowStep:rowHeight + gapPx() };
+}
+function slotRect(node){
+  const rect = grid.getBoundingClientRect();
+  return { left:rect.left + grid.clientLeft + node.offsetLeft - grid.scrollLeft,
+    top:rect.top + grid.clientTop + node.offsetTop - grid.scrollTop, width:node.offsetWidth, height:node.offsetHeight };
+}
 
 // size one row unit so `rows` stacked rows fill the available height
 function fitRowHeight(){
+  const width=window.innerWidth;
+  const narrow=CLIENT ? 460 : PERSONAL ? 520 : 420;
+  const medium=PERSONAL ? 900 : 700;
+  const visibleColumns=Math.min(CFG.columns,width<=narrow ? 2 : width<=medium ? 4 : CFG.columns);
+  grid.style.setProperty('--visible-columns',String(visibleColumns));
+  grid.style.gridTemplateColumns=`repeat(${visibleColumns},minmax(0,1fr))`;
+  grid.style.gridAutoRows='var(--cell-row)';
   const padB = parseFloat(getComputedStyle(grid).paddingBottom) || 0;
   const h = (grid.clientHeight - padB - gapPx() * (CFG.rows - 1)) / CFG.rows;
   const configuredMinimum = clamp(parseInt(CFG.cardRowHeight) || 130, 90, 220);
-  root.style.setProperty('--cell-row', Math.max(configuredMinimum, Math.floor(h)) + 'px');
+  if (grid.clientHeight) root.style.setProperty('--cell-row', Math.max(configuredMinimum, Math.floor(h)) + 'px');
+  if (Object.keys(layoutPositions).length && !gestureBusy) arrangeGrid();
 }
 fitRowHeight();
 window.addEventListener('resize', fitRowHeight);
@@ -276,6 +399,8 @@ const sizeOf = card => ({
   rs: parseInt(card.style.getPropertyValue('--rs')) || 2
 });
 function setSize(card, cs, rs){
+  cs = clamp(Math.round(Number(cs)) || 1, 1, CS_MAX);
+  rs = clamp(Math.round(Number(rs)) || 1, 1, RS_MAX);
   card.style.setProperty('--cs', cs); card.style.setProperty('--rs', rs);
   card.classList.toggle('is-lg', cs * rs >= 6);
   card.classList.toggle('is-sm', cs * rs <= 1);
@@ -293,7 +418,7 @@ function saveLayout(){
   const sizes = {};
   allCards().forEach(c => { sizes[c.dataset.id] = sizeOf(c); });
   const catalogOrder = PROJECTS.map(project => project.id);
-  try { localStorage.setItem(LAYOUT_KEY, JSON.stringify({ order, sizes, catalogOrder })); } catch {}
+  try { localStorage.setItem(LAYOUT_KEY, JSON.stringify({ order, sizes, positions:layoutPositions, catalogOrder })); } catch {}
 }
 function loadLayout(){
   try { const raw = localStorage.getItem(LAYOUT_KEY); return raw ? JSON.parse(raw) : null; } catch { return null; }
@@ -314,6 +439,30 @@ function initLayout(){
   });
 }
 initLayout();
+{
+  const saved = loadLayout();
+  const metrics = gridMetrics();
+  layoutPositions = saved?.positions || (CLIENT && metrics.columns === 8 ? Object.fromEntries(PROJECTS.filter(p=>p.canvasPosition).map(p=>[p.id,p.canvasPosition])) : null) || Object.fromEntries(allCards().map(card => [card.dataset.id,{
+    col:Math.round(card.offsetLeft / metrics.columnStep),row:Math.round(card.offsetTop / metrics.rowStep)
+  }]));
+  arrangeGrid();
+}
+function arrangeGrid(anchor = null, baseline = layoutPositions, placeholder = null, moving = null){
+  const cards = allCards(), metrics = gridMetrics();
+  livePositions = window.VASTU_GRID.packGrid(cards.map(card => ({ id:card.dataset.id,...sizeOf(card) })),metrics.columns,baseline,anchor);
+  cards.forEach(card => {
+    const target = card === moving && placeholder ? placeholder : card;
+    const pos = livePositions[card.dataset.id], size = sizeOf(card);
+    target.style.gridColumn = `${pos.col + 1} / span ${Math.min(size.cs,metrics.columns)}`;
+    target.style.gridRow = `${pos.row + 1} / span ${size.rs}`;
+  });
+  return livePositions;
+}
+function commitGridOrder(){
+  layoutPositions = livePositions;
+  allCards().sort((a,b) => layoutPositions[a.dataset.id].row - layoutPositions[b.dataset.id].row ||
+    layoutPositions[a.dataset.id].col - layoutPositions[b.dataset.id].col).forEach(card => grid.appendChild(card));
+}
 
 // ---- FLIP: every card glides from where it was to where the grid puts it.
 // Web Animations API → nothing is left in inline styles, an interrupted glide
@@ -339,14 +488,22 @@ function withFlip(mutate){
 }
 
 function resetLayout(){
+  if (gestureBusy) return;
   try { localStorage.removeItem(LAYOUT_KEY); } catch {}
   const cards = allCards();
   withFlip(() => {
     [...cards].sort((a, b) => a.dataset.origIndex - b.dataset.origIndex).forEach(c => grid.appendChild(c));
     applyDefaultSizes();
+    allCards().forEach(card => { card.style.gridColumn = ''; card.style.gridRow = ''; });
+    const metrics = gridMetrics();
+    layoutPositions = Object.fromEntries(allCards().map(card => [card.dataset.id,{
+      col:Math.round(card.offsetLeft / metrics.columnStep),row:Math.round(card.offsetTop / metrics.rowStep)
+    }]));
+    arrangeGrid();
   });
   cards.forEach(pulse);
 }
+$('resetLayout').addEventListener('click', resetLayout);
 
 // ---- lifting a card out of the grid (shared by move + stretch)
 // A dashed placeholder takes its slot straight away, so neighbours flow around
@@ -354,16 +511,19 @@ function resetLayout(){
 function floatCard(card){
   killTilt(card);
   const rect = card.getBoundingClientRect();
+  const next = card.nextSibling;
   const s = sizeOf(card);
   const ph = document.createElement('div');
   ph.className = 'card-placeholder';
   ph.style.setProperty('--cs', s.cs); ph.style.setProperty('--rs', s.rs);
   ph.style.setProperty('--glow', card.style.getPropertyValue('--glow'));
+  ph.style.gridColumn = card.style.gridColumn;
+  ph.style.gridRow = card.style.gridRow;
   card.before(ph);
   card.classList.add('is-floating');
   setBox(card, rect.left, rect.top, rect.width, rect.height);
   grid.classList.add('is-editing-active');
-  return { rect, ph };
+  return { rect, ph, next };
 }
 function setBox(card, l, t, w, h){
   const st = card.style;
@@ -386,6 +546,9 @@ function settle(card, ph){
     ph.remove();                                        // this is the moment a rearrange becomes real
     if (anim) anim.cancel();                            // release the held end-state (fill: forwards) so the grid owns the layout again
     grid.classList.remove('is-editing-active');
+    gestureBusy = false;
+    arrangeGrid(null,livePositions);
+    commitGridOrder();
     pulse(card); saveLayout();
   };
   card.classList.remove('is-dragging', 'is-resizing');           // scale/rotate ease back to rest while gliding
@@ -394,13 +557,16 @@ function settle(card, ph){
   anim = card.animate(
     [{ left: px(from.left), top: px(from.top), width: px(from.width), height: px(from.height) },
      { left: px(to.left),   top: px(to.top),   width: px(to.width),   height: px(to.height) }],
-    { duration: 460, easing: EASE, fill: 'forwards' });
+    { duration: 220, easing: EASE, fill: 'forwards' });
   anim.onfinish = fin; anim.oncancel = fin;
 }
 
 // ---- gestures (edit mode): press-and-move anywhere on a card to move it,
 // drag the corner handle to stretch it
+let gestureBusy = false;
 function beginGesture(card, e, kind){
+  if (gestureBusy || !e.isPrimary) return;
+  gestureBusy = true;
   e.preventDefault();
   const id = e.pointerId, sx = e.clientX, sy = e.clientY;
   let started = false, gesture = null;
@@ -419,41 +585,58 @@ function beginGesture(card, e, kind){
     window.removeEventListener('pointermove', move);
     window.removeEventListener('pointerup', up);
     window.removeEventListener('pointercancel', up);
-    if (started) gesture.end();
+    window.removeEventListener('keydown', escape);
+    window.removeEventListener('blur', cancel);
+    card.removeEventListener('lostpointercapture', cancel);
+    if (started){ gesture.move(ev); gesture.end(ev.type === 'pointercancel'); }
+    else gestureBusy = false;
   };
+  const cancel = () => {
+    window.removeEventListener('pointermove', move);
+    window.removeEventListener('pointerup', up);
+    window.removeEventListener('pointercancel', up);
+    window.removeEventListener('keydown', escape);
+    window.removeEventListener('blur', cancel);
+    card.removeEventListener('lostpointercapture', cancel);
+    if (started) gesture.end(true); else gestureBusy = false;
+  };
+  const escape = ev => { if (ev.key === 'Escape'){ ev.preventDefault(); cancel(); } };
   window.addEventListener('pointermove', move);
   window.addEventListener('pointerup', up);
   window.addEventListener('pointercancel', up);
+  window.addEventListener('keydown', escape);
+  window.addEventListener('blur', cancel);
+  card.addEventListener('lostpointercapture', cancel);
+  card.setPointerCapture(id);
   if (kind === 'resize') start(e);
 }
 
 // -- move: the card follows the pointer with time-based easing; the placeholder
 //    hops between slots as you pass over other cards and everything glides.
 function startDrag(card, sx, sy, e0){
-  const { rect, ph } = floatCard(card);
+  const { rect, ph, next } = floatCard(card);
   card.classList.add('is-dragging');
   const offX = sx - rect.left, offY = sy - rect.top;
   let px = e0.clientX, py = e0.clientY;                      // latest pointer
   let x = rect.left, y = rect.top;                           // eased card position
-  let last = performance.now(), lastSwap = 0, lastOver = null, swapX = px, swapY = py, raf = 0;
+  let last = performance.now(), raf = 0;
+  const baseline = structuredClone(livePositions);
+  let lastCell = '';
 
   function autoScroll(dt){
     const gr = grid.getBoundingClientRect(), edge = 72;
     if (py < gr.top + edge)         grid.scrollTop -= ((gr.top + edge - py) / edge) * 16 * (dt / 16);
     else if (py > gr.bottom - edge) grid.scrollTop += ((py - (gr.bottom - edge)) / edge) * 16 * (dt / 16);
   }
-  function reorder(now){
-    if (now - lastSwap < 150) return;
-    const over = document.elementsFromPoint(px, py).find(n => n !== card && n.classList && n.classList.contains('card'));
-    if (!over){ lastOver = null; return; }
-    if (over === lastOver) return;                            // just swapped with it — wait until you leave it
-    if (Math.hypot(px - swapX, py - swapY) < 10) return;      // and don't cascade while the finger is still
-    const r = over.getBoundingClientRect();
-    const ix = r.width * .2, iy = r.height * .2;              // only the middle of a card counts — no flicker on edges
-    if (px < r.left + ix || px > r.right - ix || py < r.top + iy || py > r.bottom - iy) return;
-    const after = !!(ph.compareDocumentPosition(over) & Node.DOCUMENT_POSITION_FOLLOWING);
-    withFlip(() => { after ? over.after(ph) : over.before(ph); });
-    lastSwap = now; lastOver = over; swapX = px; swapY = py;
+  function reorder(){
+    const metrics = gridMetrics(), bounds = grid.getBoundingClientRect(), size = sizeOf(card);
+    const col = clamp(Math.round((px - offX - bounds.left + grid.scrollLeft) / metrics.columnStep),0,Math.max(0,metrics.columns - Math.min(size.cs,metrics.columns)));
+    const row = Math.max(0,Math.round((py - offY - bounds.top + grid.scrollTop) / metrics.rowStep));
+    const cell = col + ':' + row;
+    if (cell === lastCell) return;
+    lastCell = cell;
+    ph.dataset.slot = `${col + 1} · ${row + 1}`;
+    withFlip(() => arrangeGrid({id:card.dataset.id,col,row},baseline,ph,card));
   }
   function frame(now){
     const dt = Math.min(48, now - last); last = now;
@@ -467,7 +650,15 @@ function startDrag(card, sx, sy, e0){
 
   return {
     move(ev){ px = ev.clientX; py = ev.clientY; },
-    end(){ cancelAnimationFrame(raf); settle(card, ph); }
+    end(cancelled){
+      cancelAnimationFrame(raf);
+      if (!cancelled) reorder();
+      if (cancelled){
+        next ? grid.insertBefore(ph,next) : grid.appendChild(ph);
+        arrangeGrid(null,baseline,ph,card);
+      }
+      settle(card, ph);
+    }
   };
 }
 
@@ -479,19 +670,20 @@ document.body.appendChild(sizeBadge);
 
 function startResize(card, sx, sy, e0){
   const { rect, ph } = floatCard(card);
+  const original = sizeOf(card);
+  const baseline = structuredClone(livePositions);
   card.classList.add('is-resizing');
-  const gr = grid.getBoundingClientRect(), gap = gapPx();
-  const colUnit = (gr.width + gap) / CFG.columns;
-  const rowUnit = (parseFloat(getComputedStyle(root).getPropertyValue('--cell-row')) || 130) + gap;
-  const minW = colUnit - gap, minH = rowUnit - gap;
-  const maxW = colUnit * CS_MAX - gap, maxH = rowUnit * RS_MAX - gap;
+  const gr = grid.getBoundingClientRect(), gap = gapPx(), metrics = gridMetrics();
+  const colUnit = metrics.columnStep, rowUnit = metrics.rowStep;
+  const minW = metrics.columnWidth, minH = rowUnit - gap;
+  const maxW = colUnit * metrics.columns - metrics.columnGap, maxH = rowUnit * RS_MAX - gap;
   let { cs, rs } = sizeOf(card);
   let px = e0.clientX, py = e0.clientY;
   let w = rect.width, h = rect.height, last = performance.now(), raf = 0;
 
   sizeBadge.style.setProperty('--glow', card.style.getPropertyValue('--glow'));
   sizeBadge.textContent = `${cs} × ${rs}`;
-  requestAnimationFrame(() => sizeBadge.classList.add('show'));
+  sizeBadge.classList.add('show');
 
   function frame(now){
     const dt = Math.min(48, now - last); last = now;
@@ -504,12 +696,13 @@ function startResize(card, sx, sy, e0){
     const top  = Math.max(gr.top,  Math.min(rect.top, window.innerHeight - 12 - h));
     setBox(card, left, top, w, h);
 
-    const ncs = clamp(Math.round((tw + gap) / colUnit), CS_MIN, CS_MAX);
+    const ncs = clamp(Math.round((tw + metrics.columnGap) / colUnit), CS_MIN, metrics.columns);
     const nrs = clamp(Math.round((th + gap) / rowUnit), RS_MIN, RS_MAX);
     if (ncs !== cs || nrs !== rs){
       cs = ncs; rs = nrs;
-      withFlip(() => { ph.style.setProperty('--cs', cs); ph.style.setProperty('--rs', rs); });
       setSize(card, cs, rs);
+      ph.style.setProperty('--cs',cs); ph.style.setProperty('--rs',rs);
+      withFlip(() => arrangeGrid({id:card.dataset.id,...baseline[card.dataset.id]},baseline,ph,card));
       sizeBadge.textContent = `${cs} × ${rs}`;
     }
     sizeBadge.style.left = (px + 34) + 'px';
@@ -521,20 +714,34 @@ function startResize(card, sx, sy, e0){
 
   return {
     move(ev){ px = ev.clientX; py = ev.clientY; },
-    end(){ cancelAnimationFrame(raf); sizeBadge.classList.remove('show'); settle(card, ph); }
+    end(cancelled){
+      cancelAnimationFrame(raf);
+      const unchanged = cancelled || Math.hypot(px - sx, py - sy) < 6;
+      const cs = unchanged ? original.cs : clamp(Math.round((rect.width + px - sx + metrics.columnGap) / colUnit), CS_MIN, metrics.columns);
+      const rs = unchanged ? original.rs : clamp(Math.round((rect.height + py - sy + gap) / rowUnit), RS_MIN, RS_MAX);
+      setSize(card,cs,rs);
+      ph.style.setProperty('--cs',cs);
+      ph.style.setProperty('--rs',rs);
+      arrangeGrid(unchanged ? null : {id:card.dataset.id,...baseline[card.dataset.id]},baseline,ph,card);
+      sizeBadge.classList.remove('show');
+      settle(card, ph);
+    }
   };
 }
 
 // ---- edit mode toggle
 const editToggle = $('editToggle');
 function setEditing(on){
+  if (gestureBusy) return;
   editing = on;
   shell.classList.toggle('editing', on);
   editToggle.classList.toggle('active', on);
   editToggle.setAttribute('aria-pressed', String(on));
   editToggle.setAttribute('aria-label', on ? 'Finish customizing launcher' : 'Customize launcher layout');
   if (on) allCards().forEach(killTilt);
-  if (PERSONAL && !on) refreshGalleryStrip();
+  requestAnimationFrame(fitRowHeight);
+  loopingCanvas?.setEditing(on);
+
 }
 editToggle.addEventListener('click', () => {
   setEditing(!editing);
@@ -613,6 +820,10 @@ allCards().forEach(card => {
   card.tabIndex = 0;
   card.setAttribute('role', 'button');
   const p = byId.get(card.dataset.id);
+  if (p.action?.type === 'none'){
+    card.tabIndex = -1;
+    card.setAttribute('role','presentation');
+  }
   card.setAttribute('aria-label', p.title + ' — ' + p.cat);
   card.addEventListener('keydown', e => {
     if (editing) return;
@@ -750,6 +961,7 @@ class Slider {
   paint(tr, t){
     FX[tr.fx](tr.cur, tr.nxt, t, tr.d);
     tr.nxt.style.zIndex = 2; tr.cur.style.zIndex = 1;
+    loopingCanvas?.sync(this.card);
   }
 
   // tween t from → to. to === 1 commits the new slide, to === 0 snaps back
@@ -773,6 +985,7 @@ class Slider {
     resetSlide(tr.cur); resetSlide(tr.nxt);
     if (tr.to >= 1){ tr.cur.classList.remove('is-on'); this.idx = tr.nxtIdx; }
     else tr.nxt.classList.remove('is-on');
+    loopingCanvas?.sync(this.card);
   }
   finish(){
     const tr = this.tr; if (!tr) return;
@@ -924,6 +1137,18 @@ const btnStop = $('btnStop'), btnRetry = $('btnRetry'), btnBack = $('btnBack');
 const nowPlaying = $('nowPlaying'), npTitle = $('npTitle');
 
 let launchToken = 0, cleanupTimer = 0, lastFocus = null, currentP = null;
+let liveDetailIndex=0,restoringView=false;
+let viewStorage;
+try{viewStorage=sessionStorage;}catch{}
+const pageMemory=window.VASTU_VIEW_STATE.create(viewStorage,'vastuchitra-launcher-view-v1-'+(CFG.presentationMode || 'commercial'));
+const savedView=pageMemory.read();
+function rememberPage(){
+  if(restoringView)return;
+  const open=overlay.classList.contains('show') && overlay.dataset.view!=='launch';
+  pageMemory.write({projectId:open ? currentP?.id : null,scrollTop:grid.scrollTop,
+    detailIndex:liveDetailIndex,brochureIndex:typeof brochureViewer==='object' ? brochureViewer.index : 0,
+    detailScroll:document.querySelector('.view-detail')?.scrollTop || 0});
+}
 
 const appKey = p => (p.action && p.action.app) || p.id;
 const accentOf = p => ACCENT[p.accent] || ACCENT.cyan;
@@ -965,7 +1190,7 @@ $('npStop').addEventListener('click', async () => {
 
 // ---- overlay open / close
 function currentImage(card){
-  const s = card._slider ? card._slider.slides[card._slider.idx] : card._slides?.[0];
+  const s = card._slider ? card._slider.slides[card._slider.idx] : card._slides?.find(slide => slide.classList.contains('is-on')) || card._slides?.[0];
   return s ? getComputedStyle(s.firstElementChild).backgroundImage : 'none';
 }
 function openOverlay(card, ev, p){
@@ -983,9 +1208,11 @@ function openOverlay(card, ev, p){
   closeBtn.focus({ preventScroll: true });
 }
 function closeOverlay(){
+  brochureViewer?.stop();
   launchToken++;                                            // any in-flight launch stops touching the screen
   detailHero?.querySelectorAll('video').forEach(video => video.pause());
   overlay.classList.remove('show');
+  rememberPage();
   overlay.setAttribute('aria-hidden', 'true');
   clearTimeout(cleanupTimer);
   cleanupTimer = setTimeout(cleanupOverlay, 900);           // after the circle has closed back into the card
@@ -1048,18 +1275,22 @@ btnStop.addEventListener('click', async () => {
 
 // ---- details view
 const detailHero = $('detailHero'), detailThumbs = $('detailThumbs');
+const brochureViewer = new window.VASTU_BROCHURE.Brochure($('brochureViewer'),{...CFG,onPageChange:()=>rememberPage()});
 const btnDetailLaunch = $('btnDetailLaunch');
 
 function selectDetailMedia(index){
+  liveDetailIndex=index;
   detailHero.querySelectorAll('.layer').forEach((layer, i) => {
     const active = i === index;
     layer.classList.toggle('on', active);
     if (layer.tagName === 'VIDEO' && !active) layer.pause();
   });
   detailThumbs.querySelectorAll('button').forEach((thumb, i) => thumb.classList.toggle('on', i === index));
+  rememberPage();
 }
 
 function openDetail(p){
+  liveDetailIndex=0;
   const list = normSlides(p);
   $('detailTag').innerHTML = (ICONS[p.icon] || '') + esc(p.cat);
   $('detailTitle').textContent = p.title;
@@ -1109,6 +1340,23 @@ function openDetail(p){
     logo.className = 'detail-wordmark';
     detailHero.appendChild(logo);
   }
+  if (CLIENT && !team && !list.length){
+    detailHero.innerHTML = '';
+    const cover = document.createElement('div');
+    cover.className = 'client-detail-cover';
+    const category = document.createElement('span');
+    category.textContent = p.cat;
+    const symbol = document.createElement('div');
+    symbol.className = 'client-detail-symbol';
+    symbol.setAttribute('aria-hidden','true');
+    symbol.innerHTML = ICONS[p.icon] || ICONS.frames;
+    const title = document.createElement('h3');
+    title.textContent = p.title;
+    const subtitle = document.createElement('p');
+    subtitle.textContent = p.sub || '';
+    cover.append(category,symbol,title,subtitle);
+    detailHero.appendChild(cover);
+  }
   list.forEach((s, i) => {
     const layer = document.createElement(isVideoSrc(s.src) ? 'video' : 'div');
     layer.className = 'layer' + (i === 0 ? ' on' : '');
@@ -1155,91 +1403,71 @@ function openViewer(p){
 btnViewerMain.addEventListener('click', () => { if (currentP) runLaunch(currentP); });
 
 // ---- what a tap on a card does
-function activate(card, ev){
+function activate(card, ev, restore=false){
   const p = byId.get(card.dataset.id); if (!p) return;
   const a = p.action || { type: 'detail' };
+  if(restore && (a.type==='exe' || a.open==='main'))return;
+  if (a.type === 'none') return;
   currentP = p;
   openOverlay(card, ev, p);
+  if (CLIENT && (p.clientKind === 'documents' || p.brochurePages) && a.type === 'detail'){
+    showView('brochure');
+    const pages = Array.isArray(p.brochurePages) && p.brochurePages.length ? p.brochurePages : window.VASTUCHITRA_BROCHURE_PAGES || [];
+    brochureViewer.open(p,pages);
+    rememberPage();
+    return;
+  }
   if (a.type === 'exe' || (a.type === 'url' && a.open === 'main')) runLaunch(p);
   else if (a.type === 'url') openViewer(p);
   else openDetail(p);
-}
-
-// Personal mode presents the catalogue as a photo gallery. The tile editor
-// still controls the order, without affecting the commercial layout.
-let refreshGalleryStrip = () => {};
-if (PERSONAL && !PROJECTS.length){
-  const empty = document.createElement('main');
-  empty.className = 'place-gallery';
-  empty.textContent = 'No heritage projects yet. Add a card in Admin to get started.';
-  grid.before(empty);
-}
-if (PERSONAL && PROJECTS.length){
-  const gallery = document.createElement('main');
-  gallery.className = 'place-gallery';
-  gallery.innerHTML = `
-    <div class="place-stage">
-      <div class="place-photo"></div>
-      <div class="place-copy">
-        <div class="place-story" aria-live="polite"><p class="place-region"></p><h1></h1><p class="place-description"></p></div>
-        <button class="place-open" type="button">Explore this place <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="6" width="14" height="13" rx="2"/><path d="M4 15V6a3 3 0 0 1 3-3h10M7 16l4-4 3 3 2-2 5 5"/><circle cx="17" cy="10" r="1" fill="currentColor" stroke="none"/></svg></button>
-      </div>
-    </div>
-    <div class="place-nav">
-      <button class="place-prev" type="button" aria-label="Previous place">←</button>
-      <div class="place-strip" role="group" aria-label="Browse places"></div>
-      <button class="place-next" type="button" aria-label="Next place">→</button>
-    </div>`;
-  grid.before(gallery);
-  const find = selector => gallery.querySelector(selector);
-  const strip = find('.place-strip');
-  let order = PROJECTS;
-  let selected = order[0];
-  function showPlace(index, scroll = true){
-    selected = order[(index + order.length) % order.length];
-    const photo = normSlides(selected).find(slide => !isVideoSrc(slide.src));
-    const image = document.createElement('img');
-    if (photo) image.src = photo.src;
-    image.alt = selected.title;
-    image.style.objectPosition = photo?.pos || 'center';
-    find('.place-photo').replaceChildren(...(photo ? [image] : []));
-    find('.place-region').textContent = selected.cat;
-    find('h1').textContent = selected.title;
-    find('.place-description').textContent = selected.desc;
-    const thumb = strip.querySelector('[data-place="' + selected.id + '"]');
-    strip.querySelectorAll('button').forEach(button => button.setAttribute('aria-pressed', String(button === thumb)));
-    if (scroll) thumb?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
-  }
-  refreshGalleryStrip = () => {
-    order = allCards().map(card => byId.get(card.dataset.id));
-    strip.replaceChildren(...order.map((place, i) => {
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.dataset.place = place.id;
-      const image = document.createElement('img');
-      const photo = normSlides(place).find(slide => !isVideoSrc(slide.src));
-      if (photo) image.src = previewSrc(photo.src);
-      image.alt = '';
-      image.style.objectPosition = photo?.pos || 'center';
-      const name = document.createElement('span');
-      name.textContent = place.title;
-      button.append(...(photo ? [image] : []), name);
-      button.addEventListener('click', () => showPlace(i));
-      return button;
-    }));
-    showPlace(Math.max(0, order.indexOf(selected)), false);
-  };
-  refreshGalleryStrip();
-  find('.place-prev').addEventListener('click', () => showPlace(order.indexOf(selected) - 1));
-  find('.place-next').addEventListener('click', () => showPlace(order.indexOf(selected) + 1));
-  find('.place-open').addEventListener('click', event => {
-    currentP = selected;
-    openOverlay(event.currentTarget, event, selected);
-    openDetail(selected);
-  });
+  rememberPage();
 }
 
 // ---------------------------------------------------------------- 7. kiosk extras
+loopingCanvas = new window.VASTU_CANVAS.LoopCanvas(grid,{
+  enabled:CFG.canvasLoop !== false, smooth:!reduceMotion && CFG.canvasSmoothScroll, cards:allCards, activate,
+  load:card => card._st[0]?.load()
+});
+if (CFG.canvasEdgeBlur !== false){
+  const edge = document.createElement('div');
+  edge.className = 'canvas-edge';
+  edge.setAttribute('aria-hidden','true');
+  shell.appendChild(edge);
+  let fadeTimer = 0;
+  function alignEdge(){
+    edge.style.left = grid.offsetLeft + 'px';
+    edge.style.right = (shell.clientWidth - grid.offsetLeft - grid.clientWidth) + 'px';
+    edge.style.bottom = (shell.clientHeight - grid.offsetTop - grid.clientHeight) + 'px';
+  }
+  alignEdge();
+  window.addEventListener('resize',alignEdge);
+  grid.addEventListener('scroll', () => {
+    shell.classList.toggle('canvas-has-scrolled',grid.scrollTop > 2);
+    shell.classList.add('canvas-is-scrolling');
+    clearTimeout(fadeTimer);
+    fadeTimer = setTimeout(() => shell.classList.remove('canvas-is-scrolling'),350);
+  }, {passive:true});
+}
+let canvasHover = false, canvasTouch = false, canvasRestUntil = 0, canvasLast = performance.now(), canvasFraction = 0;
+grid.addEventListener('pointerenter', () => { canvasHover = true; });
+grid.addEventListener('pointerleave', () => { canvasHover = false; });
+grid.addEventListener('pointerdown', () => { canvasTouch = true; });
+window.addEventListener('pointerup', () => { canvasTouch = false; canvasRestUntil = performance.now() + 2000; });
+window.addEventListener('pointercancel', () => { canvasTouch = false; });
+grid.addEventListener('wheel', () => { canvasRestUntil = performance.now() + 2000; }, {passive:true});
+if (CFG.canvasAutoScroll && CFG.canvasLoop !== false && !reduceMotion){
+  function drift(now){
+    const elapsed = Math.min(60,now - canvasLast); canvasLast = now;
+    if (!editing && !document.hidden && !canvasTouch && now > canvasRestUntil &&
+        !grid.contains(document.activeElement) && !(CFG.canvasPauseOnHover !== false && canvasHover) && !overlay.classList.contains('show')){
+      canvasFraction += clamp(Number(CFG.canvasScrollSpeed) || 24,5,100) * elapsed / 1000;
+      const pixels = Math.floor(canvasFraction);
+      if (pixels){ grid.scrollTop += pixels; canvasFraction -= pixels; }
+    }
+    requestAnimationFrame(drift);
+  }
+  requestAnimationFrame(drift);
+}
 // idle: nobody touched the screen → close details / websites, leave edit mode.
 // (A program that is playing stays up — that's the point of the visit.)
 let idleTimer = 0;
@@ -1335,9 +1563,30 @@ if (HELPER && window.EventSource){
   });
 }
 
+// Restore the reading position after refresh without relaunching native programs.
+let pageSaveTimer=0;
+grid.addEventListener('scroll',()=>{clearTimeout(pageSaveTimer);pageSaveTimer=setTimeout(rememberPage,120);},{passive:true});
+window.addEventListener('pagehide',()=>{clearTimeout(pageSaveTimer);rememberPage();});
+requestAnimationFrame(()=>{
+  restoringView=true;
+  grid.scrollTop=savedView.scrollTop || 0;
+  const card=allCards().find(card=>card.dataset.id===savedView.projectId);
+  if(card){
+    activate(card,null,true);
+    if(overlay.dataset.view==='brochure'){
+      brochureViewer.index=savedView.brochureIndex || 0;brochureViewer.render();
+    }else if(overlay.dataset.view==='detail'){
+      const count=detailHero.querySelectorAll('.layer').length;
+      if(count)selectDetailMedia(Math.min(count-1,savedView.detailIndex || 0));
+      document.querySelector('.view-detail').scrollTop=savedView.detailScroll || 0;
+    }
+  }
+  restoringView=false;
+});
+
 // ---------------------------------------------------------------- 8. intro ripple
 (function intro(){
-  if (PERSONAL || reduceMotion || CFG.introAnimation === false || !allCards().length){ document.body.classList.remove('is-intro'); return; }
+  if (savedView.projectId || savedView.scrollTop || PERSONAL || reduceMotion || CFG.introAnimation === false || !allCards().length){ document.body.classList.remove('is-intro'); return; }
   const gr = grid.getBoundingClientRect();
   let maxDelay = 0;
   allCards().forEach(c => {

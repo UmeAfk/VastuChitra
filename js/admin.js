@@ -3,6 +3,14 @@
 // ================================================================
 (() => {
   'use strict';
+  let adminView = {};
+  try { adminView = JSON.parse(sessionStorage.getItem('vastuchitra-admin-view-v1')) || {}; } catch {}
+  let restoringAdmin = false;
+  function rememberAdmin(patch={}){
+    if(restoringAdmin)return;
+    adminView = {...adminView,...patch};
+    try { sessionStorage.setItem('vastuchitra-admin-view-v1',JSON.stringify(adminView)); } catch {}
+  }
   const hostedShowcase = !!window.VASTUCHITRA?.settings?.meetingPreview;
 
   // ---------------------------------------------------------------- State
@@ -20,9 +28,11 @@
     },
     commercialProjects: [],
     heritageProjects: [],
-    get projects(){ return this.settings.presentationMode === 'personal' ? this.heritageProjects : this.commercialProjects; },
+    personalProjects: [],
+    get projects(){ return this.settings.presentationMode === 'heritage' ? this.heritageProjects : this.settings.presentationMode === 'personal' ? this.personalProjects : this.commercialProjects; },
     set projects(value){
-      if (this.settings.presentationMode === 'personal') this.heritageProjects = value;
+      if (this.settings.presentationMode === 'heritage') this.heritageProjects = value;
+      else if (this.settings.presentationMode === 'personal') this.personalProjects = value;
       else this.commercialProjects = value;
     },
     apps: {},
@@ -217,10 +227,10 @@
         path:`/public/demo/project-${i + 1}.webp`, kind:'file', mediaType:'image'
       }));
       if (path === '/api/config' && method === 'POST'){
-        const config = { settings: { ...body.settings, meetingPreview:true, showAdmin:true, showTools:false }, projects:body.projects, heritageProjects:body.heritageProjects, apps:body.apps || {} };
+        const config = { settings: { ...body.settings, meetingPreview:true, showAdmin:true, showTools:false }, projects:body.projects, heritageProjects:body.heritageProjects, personalProjects:body.personalProjects, apps:body.apps || {} };
         localStorage.setItem('vastuchitra-showcase-config-v1', JSON.stringify(config));
         window.VASTUCHITRA = config;
-        return { success:true };
+        return { success:true, heritageSaved:true, personalSaved:true };
       }
       if (path === '/api/config') return { ...window.VASTUCHITRA, assets, mediaConfig:{ rootPath:'Bundled showcase images', mirrorPath:'', collisionPolicy:'rename' } };
       if (path === '/api/assets') return { assets };
@@ -260,12 +270,15 @@
         headerGap: 20, cardContentPadding: 20, introAnimation: true,
         tiltStrength: 7, hoverZoom: 107, transitionSpeed: 100
       }, data.settings);
+      state.settings = window.VASTU_SETTINGS.normalize(state.settings);
       state.commercialProjects = Array.isArray(data.projects) ? data.projects : [];
       state.heritageProjects = Array.isArray(data.heritageProjects) ? data.heritageProjects : (window.VASTUCHITRA_HERITAGE || []);
+      state.personalProjects = Array.isArray(data.personalProjects) ? data.personalProjects : [];
       state.apps = data.apps || {};
       state.assets = Array.isArray(data.assets) ? data.assets : [];
       state.mediaConfig = Object.assign({ rootPath:'assets', mirrorPath:'', collisionPolicy:'rename' }, data.mediaConfig || {});
       renderAll();
+      restoreAdminView();
       document.querySelectorAll('[data-catalog]').forEach(button => { button.disabled = false; });
     } catch (e){
       console.error('Failed to load config:', e);
@@ -275,13 +288,15 @@
 
   // ---------------------------------------------------------------- Auto-Save to Server
   let autoSaveTimeout = null;
+  let configSaveChain = Promise.resolve(), saveSequence = 0;
   const configPayload = () => ({
     settings: state.settings, projects: state.commercialProjects,
-    heritageProjects: state.heritageProjects, apps: state.apps
+    heritageProjects: state.heritageProjects, personalProjects: state.personalProjects, apps: state.apps
   });
   async function autoSave(showSuccessToast = false){
     readSettingsForm();
-    const payload = configPayload();
+    const payload = JSON.parse(JSON.stringify(configPayload()));
+    const sequence = ++saveSequence;
 
     const indicator = $('autoSaveIndicator');
     if (indicator) {
@@ -290,21 +305,27 @@
     }
 
     try {
-      await api('/api/config', 'POST', payload);
+      const result = await (configSaveChain = configSaveChain.catch(() => {}).then(() => api('/api/config', 'POST', payload)));
+      if (sequence !== saveSequence) return;
+      if (payload.settings.presentationMode === 'heritage' && !result.heritageSaved){
+        throw new Error('Restart the local VastuChitra server before saving Heritage changes.');
+      }
+      if (payload.settings.presentationMode === 'personal' && !result.personalSaved) throw new Error('Restart the local VastuChitra server before saving Client changes.');
       if (indicator) {
         indicator.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg> <span>Auto-Saved</span>`;
         setTimeout(() => {
-          if (indicator) indicator.style.opacity = '0.75';
+          if (indicator && sequence === saveSequence) indicator.style.opacity = '0.75';
         }, 1200);
       }
       if (showSuccessToast) {
         showToast('Changes applied and saved to launcher!', 'success');
       }
     } catch (e){
+      if (sequence !== saveSequence) return;
       if (indicator) {
         indicator.innerHTML = `<span style="color:var(--rose)">✕</span> <span>Save Failed</span>`;
       }
-      showToast('Auto-save failed: ' + e.message, 'error');
+      if (sequence === saveSequence) showToast('Auto-save failed: ' + e.message, 'error');
     }
   }
 
@@ -319,7 +340,11 @@
   }
 
   function syncCatalogSwitch(){
-    const mode = state.settings.presentationMode === 'personal' ? 'personal' : 'commercial';
+    const mode = ['personal','heritage'].includes(state.settings.presentationMode) ? state.settings.presentationMode : 'commercial';
+    const headline = document.querySelector('.pane-headline h2');
+    const intro = document.querySelector('.pane-headline p');
+    if (headline) headline.textContent = mode === 'personal' ? 'Client project · Experience cards' : mode === 'heritage' ? 'Heritage collection' : 'VastuChitra · Studio showcase';
+    if (intro) intro.textContent = mode === 'personal' ? 'One project, many ways to explore. Edit the overview, documents, media, experiences and project credits.' : 'Arrange, edit, and configure cards displayed on the launcher.';
     document.querySelectorAll('[data-catalog]').forEach(button => {
       button.setAttribute('aria-pressed', String(button.dataset.catalog === mode));
     });
@@ -409,6 +434,12 @@
       `;
 
       if (thumb) applyBackgroundWithFallback(item.querySelector('.project-art'), thumb, true);
+      if (p.tile?.style === 'gradient' && /^#[0-9a-f]{6}$/i.test(p.tile.color || '')){
+        const art = item.querySelector('.project-art');
+        art.style.background = p.tile.color;
+        art.querySelector('.project-art-scrim').style.display = 'none';
+        item.querySelector('.project-title-overlay').style.color = ['#382c40','#4a4151'].includes(p.tile.color) ? '#f4eee3' : '#352e35';
+      }
 
       // Event listeners
       item.querySelector('.btn-edit').addEventListener('click', () => openEditor(p));
@@ -913,43 +944,229 @@
   }
 
   // ---------------------------------------------------------------- Settings & Visualizer
+  const settingsGroups={
+    layout:['collection','Layout & spacing','Grid dimensions, card sizes and breathing room for this collection.'],
+    canvas:['collection','Canvas & scrolling','Infinite browsing, automatic movement and the soft bottom edge.'],
+    interface:['collection','Visible interface','Choose what visitors see in this collection.'],
+    motion:['collection','Motion & images','Hover movement, image playback and card transitions.'],
+    client:['collection','Appearance','Light and dark appearance for the Client canvas.'],
+    brochure:['collection','Brochure','Reading size, page turns and booklet controls.'],
+    branding:['universal','Branding & header','Shared logo artwork and header controls.'],
+    session:['universal','Kiosk & access','Shared display behaviour, Admin access and idle reset.'],
+    accessibility:['universal','Accessibility','Shared motion and touch preferences.']
+  };
+  function buildSettingsTabs(layout,tools){
+    const nav=document.createElement('div');nav.className='settings-navigation';
+    nav.innerHTML='<div class="settings-scope-tabs" role="tablist" aria-label="Settings scope"><button type="button" role="tab" data-settings-scope="collection">Collection settings</button><button type="button" role="tab" data-settings-scope="universal">Universal</button></div><div class="settings-group-tabs" role="tablist" aria-label="Settings groups"></div>';
+    tools.before(nav);
+    nav.addEventListener('keydown',event=>{
+      if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
+      const button=event.target.closest('[role="tab"]');if(!button)return;
+      const list=button.closest('[role="tablist"]');
+      const buttons=[...list.querySelectorAll('[role="tab"]')];
+      const index=buttons.indexOf(button);
+      const next=event.key==='Home' ? 0 : event.key==='End' ? buttons.length-1 : (index+(event.key==='ArrowRight' ? 1 : -1)+buttons.length)%buttons.length;
+      const target=buttons[next],text=target.textContent;event.preventDefault();target.click();
+      [...list.querySelectorAll('[role="tab"]')].find(button=>button.textContent===text)?.focus();
+    });
+    nav.querySelectorAll('[data-settings-scope]').forEach(button=>button.onclick=()=>{
+      rememberAdmin({settingsScope:button.dataset.settingsScope,settingsGroup:button.dataset.settingsScope==='universal' ? 'branding' : 'layout',settingsSearch:''});
+      $('settingsSearch').value='';filterSettings();
+    });
+  }
+  function organizeSettingsGroups(layout){
+    const oldSections=[...layout.children];
+    const rows=[...layout.querySelectorAll('.setting-row')];
+    const sections={};
+    for(const [group,[scope,label,help]] of Object.entries(settingsGroups)){
+      const section=document.createElement('section');section.className='settings-section-card';
+      section.dataset.settingsGroup=group;section.dataset.scope=scope;
+      section.id='settings-panel-'+group;section.setAttribute('role','tabpanel');section.setAttribute('aria-label',label);
+      section.innerHTML=`<div class="settings-section-head"><div><h3>${label}</h3><p>${help}</p></div></div>`;
+      sections[group]=section;layout.appendChild(section);
+    }
+    for(const row of rows){
+      const id=row.querySelector('input[id],select[id]')?.id || '';
+      const key=id.replace(/^cfg/,'');
+      const group=Object.keys(window.VASTU_SETTINGS.bounds).some(name=>id==='cfg'+name[0].toUpperCase()+name.slice(1)) ? 'layout' :
+        key.startsWith('Canvas') ? 'canvas' : key.startsWith('Client') ? 'client' : key.startsWith('Brochure') ? 'brochure' :
+        ['Motion','DisableSelection'].includes(key) ? 'accessibility' :
+        key.startsWith('Brand') || ['ShowBrandLogo','PinLogo','ShowAdmin'].includes(key) ? 'branding' :
+        ['HoverZoom','HoverZoomEnabled','HoverZoomDuration','CardTilt','TiltStrength','TransitionSpeed','AutoplaySlides','IntroAnimation'].includes(key) ? 'motion' :
+        key.startsWith('Show') || key.startsWith('Clock') ? 'interface' : 'session';
+      sections[group].appendChild(row);
+    }
+    oldSections.forEach(section=>section.remove());
+  }
+  function renderSettingsTabs(){
+    const names={personal:'Client',heritage:'Heritage',commercial:'VastuChitra'};
+    const mode=state.settings.presentationMode || 'commercial';
+    const scope=adminView.settingsScope==='universal' ? 'universal' : 'collection';
+    const available=Object.entries(settingsGroups).filter(([group,data])=>data[0]===scope && (!['client','brochure'].includes(group) || mode==='personal'));
+    if(!available.some(([group])=>group===adminView.settingsGroup))adminView.settingsGroup=available[0][0];
+    document.querySelectorAll('[data-settings-scope]').forEach(button=>{
+      const selected=button.dataset.settingsScope===scope;
+      button.setAttribute('aria-selected',String(selected));
+      button.textContent=button.dataset.settingsScope==='collection' ? `${names[mode] || 'VastuChitra'} settings` : 'Universal';
+    });
+    const tabs=document.querySelector('.settings-group-tabs');if(!tabs)return;
+    tabs.replaceChildren();
+    for(const [group,[,label]] of available){
+      const button=document.createElement('button');button.type='button';button.setAttribute('role','tab');
+      button.textContent=label;button.setAttribute('aria-selected',String(group===adminView.settingsGroup));
+      button.setAttribute('aria-controls','settings-panel-'+group);
+      button.onclick=()=>{rememberAdmin({settingsGroup:group,settingsSearch:''});$('settingsSearch').value='';filterSettings();};
+      tabs.appendChild(button);
+    }
+    $('resetCollectionLayout').hidden=scope!=='collection' || adminView.settingsGroup!=='layout';
+  }
+  function restoreAdminView(){
+    const saved={...adminView};restoringAdmin=true;
+    if(saved.viewMode==='list')$('btnViewList').click();
+    if(saved.projectSearch){$('projectSearch').value=saved.projectSearch;renderProjectsList();}
+    if(saved.mediaFolder && state.assets.some(asset=>(asset.relativePath || '').startsWith(saved.mediaFolder))){state.currentMediaFolder=saved.mediaFolder;renderAssets();}
+    const tab=['projects','assets','settings'].includes(saved.tab) ? saved.tab : 'projects';
+    document.querySelector(`[data-tab="${tab}"]`).click();
+    $('settingsSearch').value=saved.settingsSearch || '';filterSettings();
+    const project=state.projects.find(project=>project.id===saved.editId);
+    if(project){openEditor(project);switchEditorSection(['general','media','action','specs'].includes(saved.editorSection) ? saved.editorSection : 'general');}
+    requestAnimationFrame(()=>{
+      window.scrollTo(0,Number(saved.scrollY)||0);
+      const pane=document.querySelector('.project-editor-card .form-pane');if(pane && project)pane.scrollTop=Number(saved.editorScroll)||0;
+      restoringAdmin=false;
+    });
+  }
+  function buildExtraSettings(){
+    const layout=document.querySelector('.settings-layout');
+    const tools=document.createElement('div');tools.className='settings-discovery';
+    tools.innerHTML='<label for="settingsSearch">Find a setting</label><input id="settingsSearch" class="form-input" type="search" placeholder="Search theme, brochure, motion…"><p>Only the selected group is shown. Collection controls are saved independently; Universal controls apply everywhere.</p><button class="btn secondary sm" type="button" id="resetCollectionLayout">Restore grid & spacing defaults</button><p id="settingsSearchStatus" role="status"></p>';
+    layout.before(tools);
+    buildSettingsTabs(layout,tools);
+    const groups={motion:['Image & scrolling behaviour','Fine-tune hover movement and the soft scrolling edge.'],branding:['Logo artwork','Choose how the logo is treated on the Client canvas.'],client:['Client appearance','Set the starting theme, visitor preferences and canvas colours.'],brochure:['Client brochure viewer','Control page turns, reading size and booklet controls.']};
+    for(const [group,[title,help]] of Object.entries(groups)){
+      const section=document.createElement('section');section.className='settings-section-card';section.dataset.settingsGroup=group;
+      section.innerHTML=`<div class="settings-section-head"><div><h3>${title}</h3><p>${help}</p></div></div>`;
+      for(const field of window.VASTU_SETTINGS.fields.filter(field=>field.group===group)){
+        const row=document.createElement('div');row.className='setting-row';
+        const control=field.type==='boolean' ? `<label class="switch"><input id="${field.id}" type="checkbox"><span class="slider"></span></label>` :
+          field.type==='select' ? `<select id="${field.id}" class="form-select">${field.options.map(value=>`<option value="${value}">${value==='system' ? 'Follow device' : value[0].toUpperCase()+value.slice(1)}</option>`).join('')}</select>` :
+          `<input id="${field.id}" class="form-input ${field.type==='number' ? 'num-input' : 'settings-colour'}" type="${field.type}" ${field.min!=null ? `min="${field.min}" max="${field.max}"` : ''}>${field.unit ? `<span>${field.unit}</span>` : ''}`;
+        row.innerHTML=`<div class="setting-info"><label for="${field.id}">${field.label}</label><p>${field.help}</p></div><div class="setting-ctrl unit-input">${control}</div>`;
+        section.appendChild(row);
+      }
+      layout.appendChild(section);
+    }
+    $('settingsSearch').addEventListener('input',()=>{rememberAdmin({settingsSearch:$('settingsSearch').value});filterSettings();});
+    $('resetCollectionLayout').addEventListener('click',()=>{
+      const mode=state.settings.presentationMode || 'commercial';
+      state.settings.presentationLayouts[mode]={...window.VASTU_SETTINGS.presets[mode]};
+      renderSettings();autoSave(true);
+    });
+    organizeSettingsGroups(layout);
+  }
+  function filterSettings(){
+    const query=($('settingsSearch')?.value || '').trim().toLowerCase();let found=0;
+    document.querySelector('.settings-layout').classList.toggle('settings-searching',!!query);
+    document.querySelectorAll('.settings-layout>.settings-section-card').forEach(section=>{
+      const clientOnly=['client','brochure'].includes(section.dataset.settingsGroup);
+      const applicable=section.dataset.scope===(adminView.settingsScope || 'collection') && (!clientOnly || state.settings.presentationMode==='personal') && (query || section.dataset.settingsGroup===(adminView.settingsGroup || 'layout'));
+      const groupMatch=!!query && section.querySelector('.settings-section-head')?.textContent.toLowerCase().includes(query);
+      let visible=0;
+      section.querySelectorAll('.setting-row').forEach(row=>{
+        const match=!row.classList.contains('setting-retired') && (!query || groupMatch || row.textContent.toLowerCase().includes(query));
+        row.hidden=!match;
+        if(match)visible++;
+      });
+      section.hidden=!applicable || (query && !visible);
+      if(applicable) found+=visible;
+    });
+    renderSettingsTabs();
+    $('settingsSearchStatus').textContent=query ? `${found} matching settings` : '';
+  }
+  function renderExtraSettings(){
+    const effective=window.VASTU_SETTINGS.resolve(state.settings);
+    for(const field of window.VASTU_SETTINGS.fields){
+      const input=$(field.id);if(!input)continue;
+      if(field.type==='boolean')input.checked=effective[field.key];
+      else input.value=effective[field.key];
+    }
+    syncSettingsDependencies();filterSettings();
+  }
+  function syncSettingsDependencies(){
+    const disable=(id,disabled)=>{const input=$(id);if(input){input.disabled=disabled;input.closest('.setting-row')?.classList.toggle('setting-unavailable',disabled);}};
+    const motion=$('cfgMotion').checked;
+    $('cfgHeaderGap').closest('.setting-row').classList.add('setting-retired');
+    $('cfgHeaderGap').closest('.setting-row').hidden=true;
+    disable('cfgIntroAnimation',state.settings.presentationMode==='personal' || state.settings.presentationMode==='heritage');
+    const looping=$('cfgCanvasLoop').checked;
+    disable('cfgCanvasAutoScroll',!looping);
+    for(const id of ['cfgCanvasScrollSpeed','cfgCanvasPauseOnHover'])disable(id,!looping || !$('cfgCanvasAutoScroll').checked);
+    disable('cfgHoverZoomDuration',!motion || !$('cfgHoverZoomEnabled').checked);
+    disable('cfgHoverZoom',!motion || !$('cfgHoverZoomEnabled').checked);
+    disable('cfgBrochureFlipDuration',!motion || !$('cfgBrochureAnimate').checked);
+    for(const id of ['cfgCanvasEdgeHeight','cfgCanvasEdgeStrength'])disable(id,!$('cfgCanvasEdgeBlur').checked);
+  }
   function renderSettings(){
-    if ($('cfgColumns')) $('cfgColumns').value = state.settings.columns || 6;
-    if ($('cfgRows')) $('cfgRows').value = state.settings.rows || 4;
-    if ($('cfgIdleSeconds')) $('cfgIdleSeconds').value = state.settings.idleSeconds != null ? state.settings.idleSeconds : 120;
-    if ($('cfgCardGap')) $('cfgCardGap').value = state.settings.cardGap != null ? state.settings.cardGap : 16;
-    if ($('cfgCardRadius')) $('cfgCardRadius').value = state.settings.cardRadius != null ? state.settings.cardRadius : 22;
-    if ($('cfgCardRowHeight')) $('cfgCardRowHeight').value = state.settings.cardRowHeight != null ? state.settings.cardRowHeight : 130;
-    if ($('cfgPagePadding')) $('cfgPagePadding').value = state.settings.pagePadding != null ? state.settings.pagePadding : 32;
-    if ($('cfgTitleScale')) $('cfgTitleScale').value = state.settings.titleScale != null ? state.settings.titleScale : 100;
-    if ($('cfgHeaderGap')) $('cfgHeaderGap').value = state.settings.headerGap != null ? state.settings.headerGap : 20;
-    if ($('cfgCardContentPadding')) $('cfgCardContentPadding').value = state.settings.cardContentPadding != null ? state.settings.cardContentPadding : 20;
-    if ($('cfgKiosk')) $('cfgKiosk').checked = !!state.settings.kiosk;
-    if ($('cfgShowClock')) $('cfgShowClock').checked = state.settings.showClock !== false;
-    if ($('cfgShowAdmin')) $('cfgShowAdmin').checked = state.settings.showAdmin !== false;
-    if ($('cfgAdminPasswordRequired')) $('cfgAdminPasswordRequired').checked = state.settings.adminPasswordRequired !== false;
-    if ($('cfgShowDescriptions')) $('cfgShowDescriptions').checked = state.settings.showDescriptions !== false;
-    if ($('cfgShowCategories')) $('cfgShowCategories').checked = state.settings.showCategories !== false;
-    if ($('cfgShowGridDots')) $('cfgShowGridDots').checked = state.settings.showGridDots !== false;
-    if ($('cfgClock24Hour')) $('cfgClock24Hour').checked = !!state.settings.clock24Hour;
-    if ($('cfgShowClockIcon')) $('cfgShowClockIcon').checked = state.settings.showClockIcon !== false;
-    if ($('cfgShowSlidePager')) $('cfgShowSlidePager').checked = state.settings.showSlidePager !== false;
-    if ($('cfgShowProjectCount')) $('cfgShowProjectCount').checked = state.settings.showProjectCount !== false;
-    if ($('cfgMotion')) $('cfgMotion').checked = state.settings.motion !== false;
-    if ($('cfgIntroAnimation')) $('cfgIntroAnimation').checked = state.settings.introAnimation !== false;
-    if ($('cfgCardTilt')) $('cfgCardTilt').checked = state.settings.cardTilt !== false;
-    if ($('cfgTiltStrength')) $('cfgTiltStrength').value = state.settings.tiltStrength != null ? state.settings.tiltStrength : 7;
-    if ($('cfgHoverZoom')) $('cfgHoverZoom').value = state.settings.hoverZoom != null ? state.settings.hoverZoom : 107;
-    if ($('cfgTransitionSpeed')) $('cfgTransitionSpeed').value = state.settings.transitionSpeed != null ? state.settings.transitionSpeed : 100;
-    if ($('cfgAutoplaySlides')) $('cfgAutoplaySlides').checked = state.settings.autoplaySlides !== false;
-    if ($('cfgKioskHoldSeconds')) $('cfgKioskHoldSeconds').value = state.settings.kioskHoldSeconds != null ? state.settings.kioskHoldSeconds : 2;
-    if ($('cfgToolRevealSeconds')) $('cfgToolRevealSeconds').value = state.settings.toolRevealSeconds != null ? state.settings.toolRevealSeconds : 15;
-    if ($('cfgHideIdleCursor')) $('cfgHideIdleCursor').checked = state.settings.hideIdleCursor !== false;
-    if ($('cfgResetSlidesOnIdle')) $('cfgResetSlidesOnIdle').checked = state.settings.resetSlidesOnIdle !== false;
-    if ($('cfgDisableSelection')) $('cfgDisableSelection').checked = state.settings.disableSelection !== false;
+    const effective = window.VASTU_SETTINGS.resolve(state.settings);
+    $('cfgCanvasLoop').checked = effective.canvasLoop !== false;
+    $('cfgCanvasAutoScroll').checked = !!effective.canvasAutoScroll;
+    $('cfgCanvasPauseOnHover').checked = effective.canvasPauseOnHover !== false;
+    $('cfgShowBrandLogo').checked = effective.showBrandLogo !== false;
+    $('cfgPinLogo').checked = effective.pinLogo !== false;
+    $('cfgCanvasScrollSpeed').value = effective.canvasScrollSpeed ?? 24;
+    $('cfgBrandLogoSrc').value = effective.brandLogoSrc || '';
+    $('cfgBrandLogoWidth').value = effective.brandLogoWidth ?? 172;
+    $('cfgCanvasEdgeBlur').checked = effective.canvasEdgeBlur !== false;
+    syncBrandingPreview();
+    renderExtraSettings();
+    if ($('cfgColumns')) $('cfgColumns').value = effective.columns;
+    if ($('cfgRows')) $('cfgRows').value = effective.rows;
+    if ($('cfgIdleSeconds')) $('cfgIdleSeconds').value = effective.idleSeconds != null ? effective.idleSeconds : 120;
+    if ($('cfgCardGap')) $('cfgCardGap').value = effective.cardGap;
+    if ($('cfgCardRadius')) $('cfgCardRadius').value = effective.cardRadius;
+    if ($('cfgCardRowHeight')) $('cfgCardRowHeight').value = effective.cardRowHeight;
+    if ($('cfgPagePadding')) $('cfgPagePadding').value = effective.pagePadding;
+    if ($('cfgTitleScale')) $('cfgTitleScale').value = effective.titleScale;
+    if ($('cfgHeaderGap')) $('cfgHeaderGap').value = effective.headerGap;
+    if ($('cfgCardContentPadding')) $('cfgCardContentPadding').value = effective.cardContentPadding;
+    if ($('cfgKiosk')) $('cfgKiosk').checked = !!effective.kiosk;
+    if ($('cfgShowClock')) $('cfgShowClock').checked = effective.showClock !== false;
+    if ($('cfgShowAdmin')) $('cfgShowAdmin').checked = effective.showAdmin !== false;
+    if ($('cfgAdminPasswordRequired')) $('cfgAdminPasswordRequired').checked = effective.adminPasswordRequired !== false;
+    if ($('cfgShowDescriptions')) $('cfgShowDescriptions').checked = effective.showDescriptions !== false;
+    if ($('cfgShowCategories')) $('cfgShowCategories').checked = effective.showCategories !== false;
+    if ($('cfgShowGridDots')) $('cfgShowGridDots').checked = effective.showGridDots !== false;
+    if ($('cfgClock24Hour')) $('cfgClock24Hour').checked = !!effective.clock24Hour;
+    if ($('cfgShowClockIcon')) $('cfgShowClockIcon').checked = effective.showClockIcon !== false;
+    if ($('cfgShowSlidePager')) $('cfgShowSlidePager').checked = effective.showSlidePager !== false;
+    if ($('cfgShowProjectCount')) $('cfgShowProjectCount').checked = effective.showProjectCount !== false;
+    if ($('cfgMotion')) $('cfgMotion').checked = effective.motion !== false;
+    if ($('cfgIntroAnimation')) $('cfgIntroAnimation').checked = effective.introAnimation !== false;
+    if ($('cfgCardTilt')) $('cfgCardTilt').checked = effective.cardTilt !== false;
+    if ($('cfgTiltStrength')) $('cfgTiltStrength').value = effective.tiltStrength != null ? effective.tiltStrength : 7;
+    if ($('cfgHoverZoom')) $('cfgHoverZoom').value = effective.hoverZoom != null ? effective.hoverZoom : 107;
+    if ($('cfgTransitionSpeed')) $('cfgTransitionSpeed').value = effective.transitionSpeed != null ? effective.transitionSpeed : 100;
+    if ($('cfgAutoplaySlides')) $('cfgAutoplaySlides').checked = effective.autoplaySlides !== false;
+    if ($('cfgKioskHoldSeconds')) $('cfgKioskHoldSeconds').value = effective.kioskHoldSeconds != null ? effective.kioskHoldSeconds : 2;
+    if ($('cfgToolRevealSeconds')) $('cfgToolRevealSeconds').value = effective.toolRevealSeconds != null ? effective.toolRevealSeconds : 15;
+    if ($('cfgHideIdleCursor')) $('cfgHideIdleCursor').checked = effective.hideIdleCursor !== false;
+    if ($('cfgResetSlidesOnIdle')) $('cfgResetSlidesOnIdle').checked = effective.resetSlidesOnIdle !== false;
+    if ($('cfgDisableSelection')) $('cfgDisableSelection').checked = effective.disableSelection !== false;
+    syncSettingsDependencies();
   }
 
   function readSettingsForm(){
+    const sharedBefore = {...state.settings};
+    state.settings.canvasLoop = $('cfgCanvasLoop').checked;
+    state.settings.canvasAutoScroll = $('cfgCanvasAutoScroll').checked;
+    state.settings.canvasPauseOnHover = $('cfgCanvasPauseOnHover').checked;
+    state.settings.showBrandLogo = $('cfgShowBrandLogo').checked;
+    state.settings.pinLogo = $('cfgPinLogo').checked;
+    state.settings.canvasScrollSpeed = Math.min(100,Math.max(5,Number($('cfgCanvasScrollSpeed').value) || 24));
+    state.settings.brandLogoSrc = $('cfgBrandLogoSrc').value.trim();
+    state.settings.brandLogoWidth = Math.min(300,Math.max(80,Number($('cfgBrandLogoWidth').value) || 172));
+    state.settings.canvasEdgeBlur = $('cfgCanvasEdgeBlur').checked;
+    syncBrandingPreview();
     if ($('cfgColumns')) state.settings.columns = parseInt($('cfgColumns').value, 10) || 6;
     if ($('cfgRows')) state.settings.rows = parseInt($('cfgRows').value, 10) || 4;
     if ($('cfgIdleSeconds')) state.settings.idleSeconds = parseInt($('cfgIdleSeconds').value, 10) || 0;
@@ -983,11 +1200,47 @@
     if ($('cfgHideIdleCursor')) state.settings.hideIdleCursor = $('cfgHideIdleCursor').checked;
     if ($('cfgResetSlidesOnIdle')) state.settings.resetSlidesOnIdle = $('cfgResetSlidesOnIdle').checked;
     if ($('cfgDisableSelection')) state.settings.disableSelection = $('cfgDisableSelection').checked;
+    const mode = state.settings.presentationMode || 'commercial';
+    state.settings.presentationLayouts ||= {};
+    state.settings.presentationLayouts[mode] = Object.fromEntries(Object.keys(window.VASTU_SETTINGS.bounds).map(key => [key,$('cfg'+key[0].toUpperCase()+key.slice(1)).value]));
+    for (const field of window.VASTU_SETTINGS.fields){
+      const input = $(field.id);
+      if(input) state.settings[field.key] = field.type === 'boolean' ? input.checked : input.value;
+    }
+    state.settings.presentationOptions ||= {};
+    state.settings.presentationOptions[mode] = Object.fromEntries(window.VASTU_SETTINGS.collectionKeys.filter(key=>Object.hasOwn(state.settings,key)).map(key=>[key,state.settings[key]]));
+    for(const key of window.VASTU_SETTINGS.collectionKeys){
+      if(Object.hasOwn(sharedBefore,key))state.settings[key]=sharedBefore[key];else delete state.settings[key];
+    }
+    state.settings = window.VASTU_SETTINGS.normalize(state.settings);
+    syncSettingsDependencies();
   }
 
   // ---------------------------------------------------------------- Project Editor Modal
   let activeSlideList = [];
   let activeSpecsList = [];
+  let activeBrochurePages = [];
+
+  function renderBrochurePages(){
+    const list = $('brochurePagesList');
+    list.replaceChildren();
+    activeBrochurePages.forEach((page,index) => {
+      const row = document.createElement('div');row.className='brochure-page-editor';
+      row.innerHTML = `<div class="brochure-page-editor-head"><strong>${index===0 ? 'Front cover' : index===activeBrochurePages.length-1 ? 'Back cover' : 'Page '+(index+1)}</strong><div><button type="button" data-page-up aria-label="Move page ${index+1} earlier">↑</button><button type="button" data-page-down aria-label="Move page ${index+1} later">↓</button><button type="button" data-page-delete aria-label="Remove page ${index+1}">Remove</button></div></div><label>Page style<select class="form-select" data-field="layout"><option value="cover">Cover</option><option value="photo">Full image</option><option value="text">Text page</option><option value="plan">Plan · fit whole image</option></select></label><label>Small heading<input class="form-input" data-field="eyebrow"></label><label>Page title<textarea class="form-textarea" rows="2" data-field="title"></textarea></label><label>Page text<textarea class="form-textarea" rows="4" data-field="body"></textarea></label><label>Image URL<input class="form-input" data-field="src" placeholder="Choose an image or paste its URL"></label><button type="button" class="btn secondary sm" data-page-image>Choose page image</button>`;
+      row.querySelectorAll('[data-field]').forEach(field=>{
+        field.value=page[field.dataset.field] || (field.dataset.field==='layout' ? 'photo' : '');
+        field.addEventListener('input',()=>page[field.dataset.field]=field.value);
+      });
+      row.querySelector('[data-page-up]').disabled=index===0;
+      row.querySelector('[data-page-down]').disabled=index===activeBrochurePages.length-1;
+      row.querySelector('[data-page-delete]').disabled=activeBrochurePages.length===1;
+      row.querySelector('[data-page-up]').onclick=()=>{[activeBrochurePages[index-1],activeBrochurePages[index]]=[page,activeBrochurePages[index-1]];renderBrochurePages();};
+      row.querySelector('[data-page-down]').onclick=()=>{[activeBrochurePages[index],activeBrochurePages[index+1]]=[activeBrochurePages[index+1],page];renderBrochurePages();};
+      row.querySelector('[data-page-delete]').onclick=()=>{activeBrochurePages.splice(index,1);renderBrochurePages();};
+      row.querySelector('[data-page-image]').onclick=()=>openAssetPicker(src=>{page.src=src;renderBrochurePages();},'image');
+      list.appendChild(row);
+    });
+  }
   let activeIcon = 'cube';
   let activeAccent = 'cyan';
   let activeTile = { style:'image', gradient:'ember', frame:true, showTitle:true, showCategory:true, showDescription:true, logoSrc:'' };
@@ -995,6 +1248,7 @@
 
   function switchEditorSection(secName){
     state.activeEditorSection = secName;
+    rememberAdmin({editorSection:secName});
     document.querySelectorAll('.editor-pill').forEach(p => {
       p.classList.toggle('active', p.dataset.sec === secName);
     });
@@ -1174,6 +1428,8 @@
     activeTile = Object.assign({ style:'image', gradient:'ember', frame:true, showTitle:true, showCategory:true, showDescription:true, logoSrc:'' }, p.tile || {});
     if ($('fTileStyle')) $('fTileStyle').value = activeTile.style;
     if ($('fTileGradient')) $('fTileGradient').value = activeTile.gradient;
+    $('fTileSolid').checked = /^#[0-9a-f]{6}$/i.test(activeTile.color || '');
+    $('fTileColor').value = activeTile.color || '#ece6da';
     if ($('fTileFrame')) $('fTileFrame').checked = activeTile.frame !== false;
     if ($('fTileShowTitle')) $('fTileShowTitle').checked = activeTile.showTitle !== false;
     if ($('fTileShowCategory')) $('fTileShowCategory').checked = activeTile.showCategory !== false;
@@ -1238,16 +1494,22 @@
 
     // Specs
     activeSpecsList = Array.isArray(p.specs) ? JSON.parse(JSON.stringify(p.specs)) : [];
+    const isBrochure = p.clientKind === 'documents' || Array.isArray(p.brochurePages);
+    $('brochurePagesEditor').hidden = !isBrochure;
+    activeBrochurePages = isBrochure ? JSON.parse(JSON.stringify(p.brochurePages?.length ? p.brochurePages : window.VASTUCHITRA_BROCHURE_PAGES || [])) : [];
+    renderBrochurePages();
     renderSpecsList();
 
     updateActionPanels(selectedAction);
     updateLivePreview();
 
     $('editorModal').classList.add('open');
+    rememberAdmin({editId:state.isNew ? null : state.currentEdit.id,editorSection:'general'});
   }
 
   function closeEditor(){
     $('editorModal').classList.remove('open');
+    rememberAdmin({editId:null});
     $('previewThumb')?.querySelectorAll('video').forEach(video => video.pause());
   }
 
@@ -1382,8 +1644,58 @@
   // ---------------------------------------------------------------- Live Card Preview
   let previewCarouselTimer = null;
   let previewSlideIndex = 0;
+  let posterDrag = null;
+  let posterPauseUntil = 0;
+
+  function enablePosterDrag(image, slide){
+    image.draggable = false;
+    const overflow = () => Math.max(0, image.naturalHeight * Math.max(
+      image.clientWidth / image.naturalWidth, image.clientHeight / image.naturalHeight
+    ) - image.clientHeight);
+    function position(){
+      const [x = '50%', y = '50%'] = getComputedStyle(image).objectPosition.split(/\s+/);
+      return { x, y: y === 'top' ? 0 : y === 'bottom' ? 100 : y.endsWith('%') ? parseFloat(y) : 50 };
+    }
+    function setPosition(x, y){
+      slide.pos = `${x} ${Math.round(Math.max(0, Math.min(100, y)) * 10) / 10}%`;
+      image.style.objectPosition = slide.pos;
+      const input = $('slidesList')?.querySelectorAll('.slide-item-pos')[activeSlideList.indexOf(slide)];
+      if (input) input.value = slide.pos;
+    }
+    image.tabIndex = 0;
+    image.title = 'Drag up or down to position the image';
+    image.setAttribute('aria-label', 'Poster crop. Use Up or Down to reposition.');
+    image.addEventListener('keydown', event => {
+      if (!['ArrowUp', 'ArrowDown'].includes(event.key) || !(overflow() > 1)) return;
+      event.preventDefault();
+      const { x, y } = position();
+      setPosition(x, y + (event.key === 'ArrowUp' ? 5 : -5));
+      posterPauseUntil = Date.now() + 3000;
+    });
+    image.addEventListener('pointerdown', event => {
+      const range = overflow();
+      if (event.button !== 0 || !event.isPrimary || !(range > 1)) return;
+      const { x, y } = position();
+      posterDrag = { image, id:event.pointerId, start:event.clientY, x, y, range };
+      image.setPointerCapture(event.pointerId);
+      image.classList.add('is-dragging');
+    });
+    image.addEventListener('pointermove', event => {
+      if (posterDrag?.image !== image || posterDrag.id !== event.pointerId) return;
+      const { x, y, start, range } = posterDrag;
+      setPosition(x, y - (event.clientY - start) / range * 100);
+    });
+    image.addEventListener('lostpointercapture', () => {
+      if (posterDrag?.image !== image) return;
+      posterDrag = null;
+      posterPauseUntil = Date.now() + 3000;
+      image.classList.remove('is-dragging');
+    });
+  }
 
   function showPreviewMedia(thumb, slide){
+    const token = (Number(thumb.dataset.previewToken) || 0) + 1;
+    thumb.dataset.previewToken = String(token);
     thumb.querySelectorAll('video, img, .preview-media-fallback').forEach(node => node.remove());
     thumb.style.backgroundImage = 'none';
     if (isVideoPath(slide?.src)){
@@ -1397,12 +1709,11 @@
         thumb.innerHTML = '<span class="preview-media-fallback material-symbols-outlined" aria-hidden="true">image</span>';
         return;
       }
-      const token = (Number(thumb.dataset.previewToken) || 0) + 1;
-      thumb.dataset.previewToken = String(token);
       const image = new Image();
       image.className = 'preview-media-image';
       image.alt = '';
       image.style.objectPosition = slide?.pos || '50% 50%';
+      enablePosterDrag(image, slide);
       let candidateIndex = 0;
       const tryNext = () => {
         if (token !== Number(thumb.dataset.previewToken)) return;
@@ -1442,6 +1753,10 @@
       card.dataset.accent = activeAccent;
       card.dataset.gradient = $('fTileGradient')?.value || activeTile.gradient || 'ember';
       card.classList.toggle('tile-gradient', $('fTileStyle')?.value === 'gradient');
+      const solid = $('fTileSolid').checked && $('fTileStyle').value === 'gradient';
+      card.classList.toggle('tile-solid',solid);
+      card.style.setProperty('--tile-color',$('fTileColor').value);
+      card.dataset.clientKind = state.currentEdit?.clientKind || '';
       card.classList.toggle('tile-video', $('fTileStyle')?.value === 'video');
       card.classList.toggle('tile-logo', $('fTileStyle')?.value === 'logo');
       card.classList.toggle('no-frame', !$('fTileFrame')?.checked);
@@ -1451,10 +1766,25 @@
       card.dataset.cs = cols;
       card.dataset.rs = rows;
 
-      const baseW = 255;
-      const baseH = 210;
-      card.style.width = `${Math.min(620, baseW * cols)}px`;
-      card.style.height = `${Math.min(520, baseH * rows)}px`;
+      const baseW = 285;
+      const baseH = 235;
+      card.style.width = `${Math.min(690, baseW * cols)}px`;
+      const heritage = state.settings.presentationMode === 'heritage';
+      card.classList.toggle('preview-client-frame',state.settings.presentationMode === 'personal');
+      card.classList.toggle('preview-heritage-frame', heritage);
+      const client = state.settings.presentationMode === 'personal';
+      if (heritage || client){
+        const tracks = client ? (window.innerWidth <= 460 ? 2 : window.innerWidth <= 700 ? 4 : 8) : (window.innerWidth <= 520 ? 2 : window.innerWidth <= 900 ? 4 : 6);
+        const padding = client ? (window.innerWidth <= 460 ? 24 : window.innerWidth <= 1050 ? 36 : 48) : (window.innerWidth <= 520 ? 32 : 60);
+        const gap = client ? 12 : 18;
+        const colWidth = (window.innerWidth - padding - gap * (tracks - 1)) / tracks;
+        const rowHeight = client ? (window.innerWidth <= 700 ? 128 : Math.max(120,Math.floor((window.innerHeight - 130) / 6))) : (window.innerWidth <= 520 ? 150 : window.innerWidth <= 900 ? 145 : Math.max(142, Math.floor((window.innerHeight - 188) / 4)));
+        const frameWidth = colWidth * Math.min(cols,tracks) + gap * (Math.min(cols,tracks) - 1);
+        const frameHeight = rowHeight * rows + gap * (rows - 1);
+        card.style.aspectRatio = `${frameWidth} / ${frameHeight}`;
+        card.style.width = `${Math.min(690,baseW * cols,460 * frameWidth / frameHeight)}px`;
+      } else card.style.aspectRatio = '';
+      card.style.height = heritage || client ? '' : `${Math.min(520, baseH * rows)}px`;
     }
 
     if ($('previewIconWrap')) $('previewIconWrap').innerHTML = ICONS[activeIcon] || ICONS.cube;
@@ -1463,6 +1793,7 @@
     const thumb = $('previewThumb');
     if (thumb){
       const style = $('fTileStyle')?.value || 'image';
+      if (style === 'gradient' || style === 'logo') thumb.dataset.previewToken = String((Number(thumb.dataset.previewToken) || 0) + 1);
       if (style === 'gradient'){
         thumb.querySelectorAll('video, img, .preview-media-fallback').forEach(node => node.remove());
         thumb.style.backgroundImage = '';
@@ -1495,7 +1826,7 @@
 
         const interval = Math.max(1500, parseInt($('fInterval').value, 10) || 3000);
         previewCarouselTimer = setInterval(() => {
-          if (activeSlideList.length < 2) return;
+          if (activeSlideList.length < 2 || posterDrag || Date.now() < posterPauseUntil) return;
           previewSlideIndex = (previewSlideIndex + 1) % activeSlideList.length;
           const cur = activeSlideList[previewSlideIndex];
           showPreviewMedia(thumb, cur);
@@ -1570,7 +1901,7 @@
       showToast('Card ID and Title are required!', 'error');
       return;
     }
-    const otherProjects = state.settings.presentationMode === 'personal' ? state.commercialProjects : state.heritageProjects;
+    const otherProjects = [state.commercialProjects,state.heritageProjects,state.personalProjects].filter(collection => collection !== state.projects).flat();
     if (otherProjects.some(project => project.id === id) ||
         (state.isNew || id !== state.currentEdit.id) && state.projects.some(project => project.id === id)){
       showToast('That card ID is already in use. Choose a unique ID.', 'error');
@@ -1587,6 +1918,7 @@
     const selectedAction = document.querySelector('#actionTypeGrid input[type="radio"]:checked').value;
 
     const projectData = {
+      ...(!state.isNew ? state.currentEdit : {}),
       id,
       title,
       cat,
@@ -1605,6 +1937,8 @@
       showDescription: $('fTileShowDescription')?.checked !== false,
       ...(activeTile.logoSrc ? { logoSrc: activeTile.logoSrc } : {})
     };
+    if ($('fTileSolid').checked) projectData.tile.color = $('fTileColor').value;
+    else delete projectData.tile.color;
     if (state.currentEdit?.team) projectData.team = state.currentEdit.team;
     if (state.currentEdit?.source) projectData.source = state.currentEdit.source;
 
@@ -1619,9 +1953,12 @@
     }
 
     if (desc) projectData.desc = desc;
+    else delete projectData.desc;
+    if (!$('brochurePagesEditor').hidden) projectData.brochurePages = JSON.parse(JSON.stringify(activeBrochurePages));
 
     const cleanedSpecs = activeSpecsList.filter(s => s[0] && s[1]);
     if (cleanedSpecs.length > 0) projectData.specs = cleanedSpecs;
+    else delete projectData.specs;
 
     // Configure Action & apps.json
     if (selectedAction === 'exe'){
@@ -1646,9 +1983,9 @@
       if (appConfig.exe) state.apps[id] = appConfig;
     }
 
+    if (projectData.clientKind === 'colour' && !projectData.tile.showTitle && !projectData.tile.showCategory && !projectData.tile.showDescription) projectData.action = {type:'none'};
     if (state.isNew){
       state.projects.push(projectData);
-      showToast(`Added new card "${title}"`, 'success');
     } else {
       const idx = state.projects.findIndex(x => x.id === state.currentEdit.id);
       if (idx !== -1){
@@ -1656,7 +1993,6 @@
       } else {
         state.projects.push(projectData);
       }
-      showToast(`Updated card "${title}"`, 'success');
     }
 
     closeEditor();
@@ -1669,7 +2005,35 @@
   }
 
   // ---------------------------------------------------------------- Setup Event Listeners
+  function syncBrandingPreview(){
+    const image = $('settingsLogoPreview'), src = $('cfgBrandLogoSrc').value.trim();
+    const width = Math.min(300,Math.max(80,Number($('cfgBrandLogoWidth').value) || 172));
+    image.style.width = width + 'px';
+    if (image.getAttribute('src') !== (src || '/public/logo-ui.png')) image.src = src || '/public/logo-ui.png';
+    $('settingsLogoStatus').textContent = src ? 'Custom logo' : 'Studio logo';
+    $('cfgBrandLogoScale').value = width;
+  }
   function setupEvents(){
+    let scrollSave=0;
+    const savePosition=()=>rememberAdmin({scrollY:window.scrollY,mediaFolder:state.currentMediaFolder,editorScroll:document.querySelector('.project-editor-card .form-pane')?.scrollTop || 0});
+    document.addEventListener('scroll',()=>{clearTimeout(scrollSave);scrollSave=setTimeout(savePosition,150);},{capture:true,passive:true});
+    window.addEventListener('pagehide',()=>{clearTimeout(scrollSave);savePosition();});
+    $('settingsLogoPreview').addEventListener('error', () => {
+      $('settingsLogoPreview').src = '/public/logo-ui.png';
+      $('settingsLogoStatus').textContent = 'Image unavailable · showing studio logo';
+    });
+    function changeLogoWidth(value){
+      $('cfgBrandLogoWidth').value = Math.min(300,Math.max(80,value));
+      $('cfgBrandLogoWidth').dispatchEvent(new Event('input'));
+    }
+    $('btnLogoSmaller').addEventListener('click', () => changeLogoWidth((Number($('cfgBrandLogoWidth').value) || 172) - 8));
+    $('btnLogoLarger').addEventListener('click', () => changeLogoWidth((Number($('cfgBrandLogoWidth').value) || 172) + 8));
+    $('cfgBrandLogoScale').addEventListener('input', event => changeLogoWidth(Number(event.target.value)));
+    $('btnResetHeaderLogo').addEventListener('click', () => { $('cfgBrandLogoSrc').value = ''; autoSave(true); });
+    $('btnChooseHeaderLogo').addEventListener('click', () => openAssetPicker(src => {
+      $('cfgBrandLogoSrc').value = window.VASTUCHITRA_PREVIEWS?.[src] || src;
+      autoSave(true);
+    },'image'));
     enhanceEditorSelects();
     enhanceEditorNumberInputs();
     // Main Tab buttons
@@ -1680,6 +2044,7 @@
         btn.classList.add('active');
         const targetPane = $(`tab-${btn.dataset.tab}`);
         if (targetPane) targetPane.classList.add('active');
+        rememberAdmin({tab:btn.dataset.tab,scrollY:0});
       });
     });
 
@@ -1687,6 +2052,7 @@
     if ($('btnViewGrid')) {
       $('btnViewGrid').addEventListener('click', () => {
         state.viewMode = 'grid';
+        rememberAdmin({viewMode:'grid'});
         $('btnViewGrid').classList.add('active');
         $('btnViewList').classList.remove('active');
         renderProjectsList();
@@ -1696,6 +2062,7 @@
     if ($('btnViewList')) {
       $('btnViewList').addEventListener('click', () => {
         state.viewMode = 'list';
+        rememberAdmin({viewMode:'list'});
         $('btnViewList').classList.add('active');
         $('btnViewGrid').classList.remove('active');
         renderProjectsList();
@@ -1714,7 +2081,7 @@
 
     // Project Search
     if ($('projectSearch')) {
-      $('projectSearch').addEventListener('input', renderProjectsList);
+      $('projectSearch').addEventListener('input', () => {rememberAdmin({projectSearch:$('projectSearch').value});renderProjectsList();});
     }
 
     // Media library file upload
@@ -1878,6 +2245,9 @@
 
     $('fTileStyle')?.addEventListener('change', () => { updateTileEditorPanels(); updateLivePreview(); });
     $('fTileGradient')?.addEventListener('change', updateLivePreview);
+    $('btnAddBrochurePage').addEventListener('click',()=>{activeBrochurePages.push({layout:'text',title:'New page',body:'',src:'',eyebrow:''});renderBrochurePages();});
+    $('fTileSolid').addEventListener('change',updateLivePreview);
+    $('fTileColor').addEventListener('input',updateLivePreview);
     ['fTileFrame', 'fTileShowTitle', 'fTileShowCategory', 'fTileShowDescription'].forEach(id => $(id)?.addEventListener('change', updateLivePreview));
     $('btnPickTileLogo')?.addEventListener('click', () => openAssetPicker(src => {
       activeTile.logoSrc = src;
@@ -2042,9 +2412,13 @@
 
     document.querySelectorAll('[data-catalog]').forEach(button => button.addEventListener('click', () => {
       if (button.getAttribute('aria-pressed') === 'true') return;
+      readSettingsForm();
       state.settings.presentationMode = button.dataset.catalog;
+      rememberAdmin({settingsScope:'collection',settingsGroup:'layout',settingsSearch:'',editId:null});
+      $('settingsSearch').value='';
+      renderSettings();
       $('projectSearch').value = '';
-      document.querySelector('[data-tab="projects"]').click();
+      document.querySelector('[data-tab="'+(document.querySelector('#tab-settings.active') ? 'settings' : 'projects')+'"]').click();
       syncCatalogSwitch();
       updateMetrics();
       renderProjectsList();
@@ -2053,9 +2427,10 @@
       autoSave(false);
     }));
     // Settings input change — auto-save on change
-    ['cfgColumns', 'cfgRows', 'cfgCardGap', 'cfgCardRadius', 'cfgCardRowHeight', 'cfgPagePadding', 'cfgTitleScale',
+    [...window.VASTU_SETTINGS.fields.map(field=>field.id),'cfgColumns', 'cfgRows', 'cfgCardGap', 'cfgCardRadius', 'cfgCardRowHeight', 'cfgPagePadding', 'cfgTitleScale',
       'cfgHeaderGap', 'cfgCardContentPadding',
       'cfgShowClock', 'cfgShowAdmin', 'cfgAdminPasswordRequired', 'cfgShowDescriptions',
+      'cfgCanvasLoop','cfgCanvasAutoScroll','cfgCanvasPauseOnHover','cfgCanvasScrollSpeed','cfgShowBrandLogo','cfgPinLogo','cfgBrandLogoSrc','cfgBrandLogoWidth','cfgCanvasEdgeBlur',
       'cfgShowCategories', 'cfgShowGridDots', 'cfgClock24Hour', 'cfgShowClockIcon', 'cfgShowSlidePager', 'cfgShowProjectCount',
       'cfgMotion', 'cfgIntroAnimation', 'cfgCardTilt', 'cfgTiltStrength', 'cfgHoverZoom', 'cfgTransitionSpeed',
       'cfgAutoplaySlides', 'cfgIdleSeconds', 'cfgKiosk',
@@ -2079,6 +2454,7 @@
   function startAdmin(){
     if (adminInitialized) return;
     adminInitialized = true;
+    buildExtraSettings();
     setupEvents();
     loadConfig();
     if (hostedShowcase){

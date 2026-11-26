@@ -55,8 +55,9 @@
     <!-- Header Actions -->
     <div class="admin-actions">
       <div class="catalog-switch" role="group" aria-label="Project collection">
-        <button type="button" data-catalog="commercial" aria-pressed="true" disabled>Commercial</button>
-        <button type="button" data-catalog="personal" aria-pressed="false" disabled>Heritage</button>
+        <button type="button" data-catalog="commercial" aria-pressed="true" disabled>VastuChitra</button>
+        <button type="button" data-catalog="personal" aria-pressed="false" disabled>Client</button>
+        <button type="button" data-catalog="heritage" aria-pressed="false" disabled>Heritage</button>
       </div>
       <a href="index.html" class="btn secondary btn-launcher" target="_blank" title="View live launcher in new tab">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
@@ -208,6 +209,25 @@
 
       <div class="settings-layout">
         <section class="settings-section-card">
+          <div class="settings-section-head"><span class="settings-section-icon"><span class="material-symbols-outlined">all_inclusive</span></span><div><h3>Canvas & branding</h3><p>Control continuous browsing and the header logo.</p></div></div>
+          <div class="setting-row"><div class="setting-info"><label for="cfgCanvasLoop">Infinite canvas</label><p>Repeat the first projects as you scroll past the last row. Pauses while editing.</p></div><div class="setting-ctrl"><label class="switch"><input id="cfgCanvasLoop" type="checkbox" checked><span class="slider"></span></label></div></div>
+          <div class="setting-row"><div class="setting-info"><label for="cfgCanvasAutoScroll">Auto-scroll canvas</label><p>Move through the collection automatically. Manual scrolling pauses it briefly.</p></div><div class="setting-ctrl"><label class="switch"><input id="cfgCanvasAutoScroll" type="checkbox"><span class="slider"></span></label></div></div>
+          <div class="setting-row"><div class="setting-info"><label for="cfgCanvasScrollSpeed">Scroll speed</label><p>Pixels per second. Requires infinite canvas; respects reduced motion.</p></div><div class="setting-ctrl unit-input"><input id="cfgCanvasScrollSpeed" type="number" min="5" max="100" value="24" class="form-input num-input"><span>px/s</span></div></div>
+          <div class="setting-row"><div class="setting-info"><label for="cfgCanvasPauseOnHover">Pause on hover</label><p>Pause automatic movement while the pointer is over the canvas.</p></div><div class="setting-ctrl"><label class="switch"><input id="cfgCanvasPauseOnHover" type="checkbox" checked><span class="slider"></span></label></div></div>
+          <div class="setting-row"><div class="setting-info"><label for="cfgShowBrandLogo">Show header logo</label><p>When hidden, hold the small three-dot button to reveal Admin and Edit.</p></div><div class="setting-ctrl"><label class="switch"><input id="cfgShowBrandLogo" type="checkbox" checked><span class="slider"></span></label></div></div>
+          <div class="setting-row"><div class="setting-info"><label for="cfgPinLogo">Pin logo</label><p>Keep the logo visible over the canvas. Turn off to let it scroll away.</p></div><div class="setting-ctrl"><label class="switch"><input id="cfgPinLogo" type="checkbox" checked><span class="slider"></span></label></div></div>
+          <div class="setting-row logo-setting-row">
+            <div class="setting-info"><label for="cfgBrandLogoSrc">Header logo</label><p>Use your studio mark or choose another image.</p></div>
+            <div class="brand-logo-preview"><img id="settingsLogoPreview" src="/public/logo-ui.png" alt="Current header logo"><span id="settingsLogoStatus">Studio logo</span></div>
+            <div class="setting-ctrl"><input id="cfgBrandLogoSrc" type="text" class="form-input" placeholder="Image URL or local library path"><button id="btnChooseHeaderLogo" type="button" class="btn secondary">Choose image</button></div>
+            <button id="btnResetHeaderLogo" type="button" class="brand-reset">Use studio logo</button>
+          </div>
+          <div class="setting-row logo-size-row"><div class="setting-info"><label for="cfgBrandLogoWidth">Logo size</label><p>Adjust the mark without changing your canvas.</p></div>
+            <div class="brand-size-controls"><div class="brand-size-stepper"><button id="btnLogoSmaller" type="button" aria-label="Make logo smaller">−</button><input id="cfgBrandLogoWidth" aria-label="Logo width in pixels" type="number" min="80" max="300" value="172" class="form-input num-input"><span>px</span><button id="btnLogoLarger" type="button" aria-label="Make logo larger">+</button></div><input id="cfgBrandLogoScale" type="range" min="80" max="300" value="172" aria-label="Logo size slider"></div>
+          </div>
+          <div class="setting-row"><div class="setting-info"><label for="cfgCanvasEdgeBlur">Soft canvas edge</label><p>Fade and gently blur cards at the bottom while scrolling.</p></div><div class="setting-ctrl"><label class="switch"><input id="cfgCanvasEdgeBlur" type="checkbox" checked><span class="slider"></span></label></div></div>
+        </section>
+        <section class="settings-section-card">
           <div class="settings-section-head">
             <span class="settings-section-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 3v18"/></svg></span>
             <div><h3>Layout & spacing</h3><p>Control the launcher grid and card proportions.</p></div>
@@ -246,7 +266,7 @@
           </div>
           <div class="setting-row">
             <div class="setting-info"><label for="cfgCardContentPadding">Title inset</label><p>Distance between project titles and card edges.</p></div>
-            <div class="setting-ctrl unit-input"><input type="number" id="cfgCardContentPadding" min="12" max="32" value="20" class="form-input num-input"><span>px</span></div>
+            <div class="setting-ctrl unit-input"><input type="number" id="cfgCardContentPadding" min="12" max="40" value="20" class="form-input num-input"><span>px</span></div>
           </div>
         </section>
 
@@ -481,6 +501,7 @@
                     <option value="logo">Logo tile</option>
                   </select>
                 </label>
+                <label class="tile-control-field tile-style-panel" data-style="gradient"><span>Solid colour</span><span><input id="fTileSolid" type="checkbox"> Use a plain colour</span><input id="fTileColor" type="color" value="#ece6da" aria-label="Card solid colour"></label>
                 <label class="tile-control-field tile-style-panel" data-style="gradient" for="fTileGradient"><span>Gradient preset</span>
                   <select id="fTileGradient" class="form-select">
                     <option value="ember">Ember glow</option>
@@ -778,6 +799,12 @@
             </div>
           </div>
 
+          <div class="clean-card" id="brochurePagesEditor" hidden>
+            <div class="card-sec-head"><span>Brochure pages</span><button type="button" class="btn secondary sm" id="btnAddBrochurePage">+ Add page</button></div>
+            <p class="brochure-editor-help">Each page can hold an image and text. Choose Plan to show the full drawing without cropping.</p>
+            <div id="brochurePagesList"></div>
+          </div>
+
           <div class="clean-card">
             <div class="card-sec-head" style="justify-content:space-between;">
               <div style="display:flex; align-items:center; gap:8px;">
@@ -825,9 +852,6 @@
             </div>
           </div>
 
-          <div class="preview-tips">
-            <p>Apply saves this card to the launcher immediately.</p>
-          </div>
         </div>
       </div>
 
@@ -938,8 +962,10 @@
 <div class="toast-container" id="toastContainer"></div>
 
 <script src="js/portable-media.js"></script>
+<script src="js/client.js"></script>
 <script src="js/meeting.js"></script>
 <script src="js/heritage.js"></script>
+<script src="js/settings.js"></script>
 <script src="js/admin.js"></script>
 </body>
 </html>
