@@ -2700,7 +2700,7 @@
         "type": "exe"
       },
       "tile": {
-        "style": "gradient",
+        "style": "logo",
         "gradient": "ember",
         "frame": false,
         "showTitle": false,
