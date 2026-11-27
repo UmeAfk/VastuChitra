@@ -1855,39 +1855,43 @@
   }
 
   // ---------------------------------------------------------------- Asset Picker Modal
-  function openAssetPicker(callback, filter = 'all'){
-    state.assetPickerCallback = callback;
-    const grid = $('assetPickerGrid');
-    if (!grid) return;
-    grid.innerHTML = '';
-    
-    const mediaAssets = state.assets.filter(a => a.kind !== 'folder' && a.mediaType !== 'pdf' && (filter !== 'image' || a.mediaType !== 'video'));
-    if (mediaAssets.length === 0){
-      grid.innerHTML = `<p style="grid-column:1/-1; text-align:center; padding:20px; color:var(--muted);">No media found. Upload an image or video above.</p>`;
-    } else {
-      mediaAssets.forEach(a => {
-        const item = document.createElement('div');
-        item.className = `picker-item ${a.mediaType === 'video' ? 'is-video' : ''}`;
-        item.style.cursor = 'pointer';
-        item.innerHTML = `
-          <div class="picker-media">${a.mediaType === 'video' ? `<video src="${a.path}" muted preload="metadata"></video><span class="material-symbols-outlined">play_circle</span>` : `<img src="${a.thumbnailPath || a.previewPath || a.path}" alt="">`}</div>
-          <div style="font-size:12px; margin-top:6px; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${esc(a.name)}</div>
-        `;
-        item.addEventListener('click', () => {
-          if (state.assetPickerCallback) state.assetPickerCallback(a.previewPath || a.path);
-          closeAssetPicker();
-        });
-        grid.appendChild(item);
+  let pickerReturnFocus=null;
+  function openAssetPicker(callback, filter='all'){
+    state.assetPickerCallback=callback;pickerReturnFocus=document.activeElement;
+    const modal=$('assetPickerModal'),grid=$('assetPickerGrid');
+    const byPath=new Map();
+    function add(src,name){if(!src||typeof src!=='string'||byPath.has(src))return;byPath.set(src,{path:src,name:name||src.split('/').pop(),mediaType:isVideoPath(src)?'video':'image'});}
+    state.assets.filter(a=>a.kind!=='folder'&&a.mediaType!=='pdf').forEach(a=>{add(a.path,a.name);if(byPath.has(a.path))Object.assign(byPath.get(a.path),a);});
+    if(state.settings.presentationMode==='personal')for(let n=1;n<=17;n++)add('/public/shreesadhna/'+n+'.webp','Shree Sadhna · '+n);
+    for(const project of state.projects){
+      (project.slides||[]).forEach(slide=>add(typeof slide==='string'?slide:slide.src));add(project.poster);add(project.tile?.logoSrc);
+      (project.brochurePages||[]).forEach(page=>add(page.src));
+    }
+    const assets=[...byPath.values()].filter(a=>filter!=='image'||a.mediaType!=='video');
+    const search=$('pickerSearch'),type=$('pickerType');search.value='';type.value='all';type.hidden=filter==='image';
+    function render(){
+      grid.replaceChildren();const query=search.value.trim().toLowerCase();
+      const visible=assets.filter(a=>(a.name+' '+a.path).toLowerCase().includes(query)&&(type.value==='all'||a.mediaType===type.value));
+      $('pickerResultCount').textContent=visible.length+' assets';
+      if(!visible.length){const empty=document.createElement('p');empty.className='picker-empty';empty.textContent='No matching media. Try another search.';grid.appendChild(empty);}
+      visible.forEach(a=>{
+        const item=document.createElement('button');item.type='button';item.className='picker-item';item.setAttribute('aria-label','Select '+a.name);
+        const media=document.createElement('div');media.className='picker-media';
+        if(a.mediaType==='video'){const icon=document.createElement('span');icon.className='material-symbols-outlined';icon.textContent='play_circle';media.appendChild(icon);}
+        else{const img=document.createElement('img');img.src=a.thumbnailPath||a.previewPath||a.path;img.alt='';img.loading='lazy';img.decoding='async';media.appendChild(img);}
+        const name=document.createElement('span');name.className='picker-name';name.textContent=a.name;
+        item.append(media,name);item.addEventListener('click',()=>{const selected=state.assetPickerCallback;closeAssetPicker();selected?.(a.path);});grid.appendChild(item);
       });
     }
-
-    $('assetPickerModal').classList.add('open');
+    search.oninput=render;type.onchange=render;render();
+    $('pickerUploadInput').disabled=hostedShowcase;
+    modal.querySelector('.picker-upload-bar .hint').textContent=hostedShowcase?'Choose bundled media below. Uploads are available in local PC Admin.':'Choose an existing file or upload media.';
+    modal.classList.add('open');modal.setAttribute('aria-hidden','false');modal.setAttribute('aria-modal','true');search.focus();
   }
-
   function closeAssetPicker(){
-    $('assetPickerModal').classList.remove('open');
-    state.assetPickerCallback = null;
+    $('assetPickerModal').classList.remove('open');$('assetPickerModal').setAttribute('aria-hidden','true');state.assetPickerCallback=null;pickerReturnFocus?.focus();
   }
+  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&$('assetPickerModal').classList.contains('open')){event.preventDefault();event.stopImmediatePropagation();closeAssetPicker();}},true);
 
   // ---------------------------------------------------------------- Apply Editor Form
   function collectProgramConfig(appId){

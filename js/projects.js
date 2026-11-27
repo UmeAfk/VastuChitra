@@ -194,7 +194,8 @@ window.VASTUCHITRA = {
     "clientIconTilesVersion": 1,
     "clientSuppliedArtVersion": 1,
     "clientWalkthroughVersion": 2,
-    "clientReraDocumentVersion": 1
+    "clientReraDocumentVersion": 1,
+    "clientOverviewImageVersion": 1
   },
   "projects": [
     {
@@ -1679,7 +1680,12 @@ window.VASTUCHITRA = {
       "accent": "gold",
       "fx": "fade",
       "interval": 6500,
-      "slides": [],
+      "slides": [
+        {
+          "src": "/public/shreesadhna/8.webp",
+          "pos": "50% 50%"
+        }
+      ],
       "action": {
         "type": "detail"
       },

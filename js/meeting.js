@@ -169,6 +169,10 @@
       clientProjects=clientProjects.map(project=>project.id==='sadhna-rera' ? {...project,reraNumber:'FFDFH541316556854H',slides:[{src:'/public/shreesadhna/rera-document.webp'}],action:{type:'detail'}} : project);
       settings.clientReraDocumentVersion=1;
     }
+    if(settings.clientOverviewImageVersion!==1){
+      clientProjects=clientProjects.map(project=>project.id==='sadhna-overview' ? {...project,slides:[{src:'/public/shreesadhna/8.webp',pos:'50% 50%'}]} : project);
+      settings.clientOverviewImageVersion=1;
+    }
     return { ...config, settings, personalProjects:window.VASTUCHITRA_CLIENT_ASSETS ? window.VASTUCHITRA_CLIENT_ASSETS(clientProjects) : clientProjects };
   }
   window.VASTUCHITRA_COMMERCIAL = (config, offline = false) => {

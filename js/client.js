@@ -12,7 +12,7 @@
   });
   window.VASTUCHITRA_CLIENT = [
     make('overview','Shree Sadhna','The project','A place to make your own.',[3,2],'overview',{
-      icon:'home',tile:paper('#ece6da'),
+      icon:'home',slides:[image(8)],tile:paper('#ece6da'),
       desc:'Shree Sadhna brings every part of the project into one place: the architecture, the views, the people and the experiences. This is a presentation preview; project facts and final artwork will be added with the client.',
       specs:[['Project','Shree Sadhna'],['Location','To be added'],['Developer','To be added'],['Presentation','Preview artwork from the studio library']]
     }),
