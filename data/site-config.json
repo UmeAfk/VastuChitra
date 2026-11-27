@@ -1952,7 +1952,7 @@
       "interval": 6500,
       "slides": [
         {
-          "src": "/media/oculus.webp",
+          "src": "/api/admin?action=media&path=public%2Fuploads%2F1795779544147-9c2e86-vr-headset.webp",
           "pos": "50% 32.7%"
         }
       ],
