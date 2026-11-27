@@ -1,15 +1,15 @@
 {
   "settings": {
-    "columns": 8,
-    "rows": 6,
+    "columns": 6,
+    "rows": 4,
     "idleSeconds": 120,
     "kiosk": false,
-    "cardGap": 12,
-    "cardRadius": 14,
+    "cardGap": 18,
+    "cardRadius": 22,
     "showClock": false,
     "showAdmin": true,
-    "cardRowHeight": 120,
-    "pagePadding": 24,
+    "cardRowHeight": 142,
+    "pagePadding": 30,
     "titleScale": 100,
     "showBrandSubtitle": true,
     "showDescriptions": true,
@@ -27,14 +27,14 @@
     "hideIdleCursor": true,
     "resetSlidesOnIdle": true,
     "disableSelection": true,
-    "headerGap": 16,
-    "cardContentPadding": 22,
+    "headerGap": 22,
+    "cardContentPadding": 24,
     "introAnimation": true,
     "tiltStrength": 5,
     "hoverZoom": 110,
     "transitionSpeed": 50,
     "adminPasswordRequired": false,
-    "presentationMode": "personal",
+    "presentationMode": "heritage",
     "commercialCatalogVersion": 1,
     "canvasLoop": true,
     "canvasAutoScroll": false,
@@ -160,6 +160,7 @@
         "showGridDots": true
       },
       "heritage": {
+        "followGrid": true,
         "canvasLoop": true,
         "canvasAutoScroll": false,
         "canvasPauseOnHover": true,
@@ -2448,7 +2449,7 @@
       "interval": 6500,
       "slides": [
         {
-          "src": "/api/admin?action=media&path=public%2Fuploads%2F1795781215161-f28f1d-brand-partners-copy.webp",
+          "src": "/public/shreesadhna/17.webp",
           "pos": "50% 50%"
         }
       ],
@@ -2456,14 +2457,13 @@
         "type": "detail"
       },
       "tile": {
-        "style": "gradient",
+        "style": "image",
         "gradient": "ember",
         "frame": false,
         "showTitle": true,
         "showCategory": false,
         "showDescription": false,
         "logoSrc": "/public/shreesadhna/brand-partners.webp",
-        "color": "#ff0000",
         "logoIcon": null
       },
       "desc": "Credits for the brands and partners associated with Shree Sadhna. Add confirmed names, logos and links once supplied.",
