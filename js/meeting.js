@@ -180,6 +180,10 @@
     if(settings.clientWhiteIconsVersion!==2 && window.VASTUCHITRA_CLIENT_WHITE_ICONS){
       clientProjects=window.VASTUCHITRA_CLIENT_WHITE_ICONS(clientProjects);settings.clientWhiteIconsVersion=2;
     }
+    if(settings.clientPartnersArtworkVersion!==1){
+      clientProjects=clientProjects.map(project=>project.id==='sadhna-partners' ? {...project,tile:{...project.tile,style:'logo',logoSrc:'/public/shreesadhna/brand-partners-card.webp',logoIcon:null,color:'#623c78',iconArtwork:true,showTitle:true,showCategory:false,showDescription:false}} : project);
+      settings.clientPartnersArtworkVersion=1;
+    }
     if(settings.clientIpdsTileVersion!==1 && window.VASTUCHITRA_CLIENT){
       const tile=window.VASTUCHITRA_CLIENT.find(project=>project.id==='sadhna-ipds');
       if(tile&&clientProjects.some(project=>project.id.startsWith('sadhna-'))&&!clientProjects.some(project=>project.id===tile.id))clientProjects.push(JSON.parse(JSON.stringify(tile)));

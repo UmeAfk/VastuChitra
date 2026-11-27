@@ -141,12 +141,12 @@
     return {...project,tile:{...project.tile,style:'logo',color:colour,logoIcon:project.icon,logoSrc:null,showTitle:true,showCategory:false,showDescription:false}};
   });
   window.VASTUCHITRA_CLIENT_SUPPLIED_ART=projects=>projects.map(project=>{
-    const artwork={vr:'vr-headset.webp?v=2',rera:'maha rera.webp',people:'Team+forming.webp',partners:'brand-partners.webp'};
+    const artwork={vr:'vr-headset.webp?v=2',rera:'maha rera.webp',people:'Team+forming.webp',partners:'brand-partners-card.webp'};
     const image=artwork[project.id.replace('sadhna-','')];
     return image ? {...project,tile:{...project.tile,style:'logo',color:'#ffffff',logoIcon:null,logoSrc:'/public/shreesadhna/'+image,showTitle:true,showCategory:false,showDescription:false}} : project;
   });
   window.VASTUCHITRA_CLIENT_WHITE_ICONS=projects=>projects.map(project=>{
-    const icons={vr:['vr-icon.webp','#5737b0'],people:['team-icon.webp','#007e83'],rera:['rera-icon.webp','#bd4a2c'],ar:['ar-icon.svg','#007e83'],'360':['360-icon.svg','#1466b8'],tools:['immersive-icon.svg','#3853a5'],site:['construction-icon.svg','#155c6e']};
+    const icons={vr:['vr-icon.webp','#5737b0'],people:['team-icon.webp','#007e83'],partners:['brand-partners-card.webp','#623c78'],rera:['rera-icon.webp','#bd4a2c'],ar:['ar-icon.svg','#007e83'],'360':['360-icon.svg','#1466b8'],tools:['immersive-icon.svg','#3853a5'],site:['construction-icon.svg','#155c6e']};
     const artwork=icons[project.id.replace('sadhna-','')];
     return artwork ? {...project,tile:{...project.tile,style:'logo',logoSrc:'/public/shreesadhna/'+artwork[0],logoIcon:null,color:artwork[1],iconArtwork:true,showTitle:true,showCategory:false,showDescription:false}} : project;
   });
