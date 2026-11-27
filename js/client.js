@@ -140,7 +140,7 @@
     return {...project,tile:{...project.tile,style:'logo',color:colour,logoIcon:project.icon,logoSrc:null,showTitle:true,showCategory:false,showDescription:false}};
   });
   window.VASTUCHITRA_CLIENT_SUPPLIED_ART=projects=>projects.map(project=>{
-    const artwork={vr:'vr-headset.webp',rera:'maha rera.webp',people:'Team+forming.webp',partners:'brand-partners.webp'};
+    const artwork={vr:'vr-headset.webp?v=2',rera:'maha rera.webp',people:'Team+forming.webp',partners:'brand-partners.webp'};
     const image=artwork[project.id.replace('sadhna-','')];
     return image ? {...project,tile:{...project.tile,style:'logo',color:'#ffffff',logoIcon:null,logoSrc:'/public/shreesadhna/'+image,showTitle:true,showCategory:false,showDescription:false}} : project;
   });

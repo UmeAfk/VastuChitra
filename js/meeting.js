@@ -173,6 +173,10 @@
       clientProjects=clientProjects.map(project=>project.id==='sadhna-overview' ? {...project,slides:[{src:'/public/shreesadhna/8.webp',pos:'50% 50%'}]} : project);
       settings.clientOverviewImageVersion=1;
     }
+    if(settings.clientVrImageVersion!==1){
+      clientProjects=clientProjects.map(project=>project.id==='sadhna-vr' ? {...project,tile:{...project.tile,style:'logo',logoIcon:null,logoSrc:'/public/shreesadhna/vr-headset.webp?v=2'}} : project);
+      settings.clientVrImageVersion=1;
+    }
     return { ...config, settings, personalProjects:window.VASTUCHITRA_CLIENT_ASSETS ? window.VASTUCHITRA_CLIENT_ASSETS(clientProjects) : clientProjects };
   }
   window.VASTUCHITRA_COMMERCIAL = (config, offline = false) => {

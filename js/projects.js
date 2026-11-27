@@ -195,7 +195,8 @@ window.VASTUCHITRA = {
     "clientSuppliedArtVersion": 1,
     "clientWalkthroughVersion": 2,
     "clientReraDocumentVersion": 1,
-    "clientOverviewImageVersion": 1
+    "clientOverviewImageVersion": 1,
+    "clientVrImageVersion": 1
   },
   "projects": [
     {
@@ -1966,7 +1967,7 @@ window.VASTUCHITRA = {
         "showTitle": true,
         "showCategory": false,
         "showDescription": false,
-        "logoSrc": "/public/shreesadhna/vr-headset.webp",
+        "logoSrc": "/public/shreesadhna/vr-headset.webp?v=2",
         "color": "#ffffff",
         "logoIcon": null
       },

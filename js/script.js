@@ -9,8 +9,9 @@
 //  7. kiosk extras — idle reset, hidden admin tools
 //  8. one-time intro ripple
 // ================================================================
-(() => {
+(async() => {
 'use strict';
+await window.VASTU_CLOUD_READY;
 
 // ---------------------------------------------------------------- 1. setup
 const CONFIG = window.VASTUCHITRA || { settings: {}, projects: [] };

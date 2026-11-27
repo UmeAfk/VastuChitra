@@ -40,6 +40,8 @@
     mediaConfig: { rootPath: 'assets', mirrorPath: '', collisionPolicy: 'rename' },
     currentMediaFolder: '',
     selectedMedia: new Set(),
+    selectedProjects:new Set(),
+    projectSelectionAnchor:null,
     mediaEditMode: false,
     mediaViewMode: 'comfortable',
     pendingMediaFiles: [],
@@ -221,16 +223,25 @@
 
   // ---------------------------------------------------------------- API
   async function api(path, method = 'GET', body = null){
+    if(hostedShowcase && window.VASTU_CLOUD?.enabled){
+      let action=path==='/api/config'?'config':path==='/api/assets'?'assets':path==='/api/media/delete'?'delete':null;
+      if(!action)throw new Error('This operation is only available in local Admin.');
+      const response=await fetch('/api/admin?action='+action,{method,headers:{'Content-Type':'application/json'},...(body?{body:JSON.stringify(action==='config'?{config:body,revision:window.VASTU_CLOUD.revision}:body)}:{})});
+      const result=await response.json();if(!response.ok)throw new Error(result.error||'Shared save failed');
+      if(action==='config'){
+        window.VASTU_CLOUD.revision=result.revision;
+        if(method==='POST'){localStorage.removeItem('vastuchitra-showcase-config-v1');return result;}
+        const assets=await api('/api/assets');return {...(result.config?window.VASTUCHITRA_COMMERCIAL(result.config):window.VASTUCHITRA),assets:assets.assets,mediaConfig:{rootPath:'GitHub media library',mirrorPath:'',collisionPolicy:'rename'}};
+      }
+      return result;
+    }
     if (hostedShowcase){
       const assets = Array.from({ length:18 }, (_, i) => ({
         name:`project-${i + 1}.webp`, relativePath:`project-${i + 1}.webp`,
         path:`/public/demo/project-${i + 1}.webp`, kind:'file', mediaType:'image'
       }));
       if (path === '/api/config' && method === 'POST'){
-        const config = { settings: { ...body.settings, meetingPreview:true, showAdmin:true, showTools:false }, projects:body.projects, heritageProjects:body.heritageProjects, personalProjects:body.personalProjects, apps:body.apps || {} };
-        localStorage.setItem('vastuchitra-showcase-config-v1', JSON.stringify(config));
-        window.VASTUCHITRA = config;
-        return { success:true, heritageSaved:true, personalSaved:true };
+        throw new Error('Shared saving is not connected. Configure GitHub storage in Vercel before publishing edits.');
       }
       if (path === '/api/config') return { ...window.VASTUCHITRA, assets, mediaConfig:{ rootPath:'Bundled showcase images', mirrorPath:'', collisionPolicy:'rename' } };
       if (path === '/api/assets') return { assets };
@@ -326,7 +337,9 @@
         indicator.innerHTML = `<span style="color:var(--rose)">✕</span> <span>Save Failed</span>`;
       }
       if (sequence === saveSequence) showToast('Auto-save failed: ' + e.message, 'error');
+      return false;
     }
+    return true;
   }
 
   // ---------------------------------------------------------------- Rendering
@@ -407,6 +420,7 @@
     const list = $('projectsList');
     if (!list) return;
     list.className = `cards-grid-view ${state.viewMode === 'list' ? 'list-mode' : ''}`;
+    list.setAttribute('role','listbox');list.setAttribute('aria-multiselectable','true');list.setAttribute('aria-label','Project cards');
     
     const query = ($('projectSearch') ? $('projectSearch').value : '').trim().toLowerCase();
     const filtered = state.projects.filter(p => {
@@ -439,12 +453,16 @@
       item.style.setProperty('--card-glow', accentGlow);
       item.dataset.id = p.id;
       item.dataset.index = idx;
-      item.draggable = !query;
+      item.draggable = false;
+      item.tabIndex=0;item.setAttribute('role','option');
+      item.setAttribute('aria-label',p.title);
+      item.setAttribute('aria-selected',String(state.selectedProjects.has(p.id)));
+      item.classList.toggle('project-selected',state.selectedProjects.has(p.id));
 
       item.innerHTML = `
         <div class="project-art">
           <div class="project-art-scrim"></div>
-          <span class="project-drag-cue" aria-hidden="true"><span class="material-symbols-outlined">drag_indicator</span></span>
+          <button type="button" class="project-select-toggle" aria-label="Select ${esc(p.title)}" aria-pressed="${state.selectedProjects.has(p.id)}"><span class="material-symbols-outlined">check</span></button>
           <div class="project-card-actions">
             <button type="button" class="project-action-btn btn-edit" aria-label="Edit ${esc(p.title)}"><span class="material-symbols-outlined">edit_square</span></button>
             <button type="button" class="project-action-btn danger btn-del" aria-label="Delete ${esc(p.title)}"><span class="material-symbols-outlined">delete</span></button>
@@ -456,83 +474,41 @@
       renderProjectArtwork(item.querySelector('.project-art'),p);
 
       // Event listeners
-      item.querySelector('.btn-edit').addEventListener('click', () => openEditor(p));
-      item.querySelector('.btn-del').addEventListener('click', () => deleteProject(p));
-      if (!query) setupProjectDrag(item, list);
+      item.querySelector('.btn-edit').addEventListener('click', event => {event.stopPropagation();openEditor(p);});
+      item.querySelector('.btn-del').addEventListener('click', event => {event.stopPropagation();deleteProject(p);});
+      function select(event){
+        const index=filtered.findIndex(project=>project.id===state.projectSelectionAnchor);
+        if(event.shiftKey && index>=0){if(!event.ctrlKey&&!event.metaKey)state.selectedProjects.clear();filtered.slice(Math.min(index,idx),Math.max(index,idx)+1).forEach(project=>state.selectedProjects.add(project.id));}
+        else if(event.ctrlKey||event.metaKey||event.target.closest('.project-select-toggle')){if(state.selectedProjects.has(p.id))state.selectedProjects.delete(p.id);else state.selectedProjects.add(p.id);state.projectSelectionAnchor=p.id;}
+        else{state.selectedProjects.clear();state.selectedProjects.add(p.id);state.projectSelectionAnchor=p.id;}
+        updateProjectSelection();
+      }
+      item.addEventListener('click',select);
+      item.addEventListener('keydown',event=>{if(event.target!==item)return;if(event.key===' '){event.preventDefault();select(event);}if(event.key==='Enter'){event.preventDefault();openEditor(p);}});
 
       list.appendChild(item);
     });
+    updateProjectSelection();
   }
 
-  let draggedProjectCard = null;
-  let projectOrderChanged = false;
-
-  function animateProjectGrid(list, before){
-    [...list.children].forEach(card => {
-      if (card === draggedProjectCard) return;
-      const old = before.get(card);
-      if (!old) return;
-      const now = card.getBoundingClientRect();
-      const dx = old.left - now.left;
-      const dy = old.top - now.top;
-      if (Math.abs(dx) < 1 && Math.abs(dy) < 1) return;
-      card.animate(
-        [{ transform:`translate(${dx}px, ${dy}px)` }, { transform:'translate(0, 0)' }],
-        { duration:260, easing:'cubic-bezier(.2,.8,.2,1)' }
-      );
-    });
+  function updateProjectSelection(){
+    const ids=new Set(state.projects.map(project=>project.id));state.selectedProjects=new Set([...state.selectedProjects].filter(id=>ids.has(id)));
+    document.querySelectorAll('#projectsList .big-card-item').forEach(item=>{const selected=state.selectedProjects.has(item.dataset.id);item.classList.toggle('project-selected',selected);item.setAttribute('aria-selected',String(selected));item.querySelector('.project-select-toggle')?.setAttribute('aria-pressed',String(selected));});
+    $('projectSelectionCount').textContent=state.selectedProjects.size+' selected';$('btnDeleteProjects').disabled=!state.selectedProjects.size;$('btnClearProjectSelection').disabled=!state.selectedProjects.size;
+  }
+  async function deleteSelectedProjects(){
+    const count=state.selectedProjects.size;if(!count)return;
+    if(!confirm('Delete '+count+' selected cards?'))return;
+    const previous=[...state.projects];state.projects=state.projects.filter(project=>!state.selectedProjects.has(project.id));
+    if(await autoSave(true))state.selectedProjects.clear();else state.projects=previous;
+    renderProjectsList();updateMetrics();updateBadges();
   }
 
-  function commitProjectOrder(list){
-    if (!projectOrderChanged) return;
-    const ids = [...list.querySelectorAll('.big-card-item')].map(card => card.dataset.id);
-    const byId = new Map(state.projects.map(project => [project.id, project]));
-    if (ids.length === state.projects.length) state.projects = ids.map(id => byId.get(id)).filter(Boolean);
-    projectOrderChanged = false;
-    updateMetrics();
-    autoSave(false);
-    showToast('Project order updated', 'success');
-  }
-
-  function setupProjectDrag(item, list){
-    item.addEventListener('dragstart', e => {
-      draggedProjectCard = item;
-      projectOrderChanged = false;
-      e.dataTransfer.effectAllowed = 'move';
-      e.dataTransfer.setData('text/plain', item.dataset.id);
-      requestAnimationFrame(() => item.classList.add('is-dragging'));
-    });
-    item.addEventListener('dragover', e => {
-      if (!draggedProjectCard || draggedProjectCard === item) return;
-      e.preventDefault();
-      e.dataTransfer.dropEffect = 'move';
-      const before = new Map([...list.children].map(card => [card, card.getBoundingClientRect()]));
-      const target = item.getBoundingClientRect();
-      const source = draggedProjectCard.getBoundingClientRect();
-      const sameRow = Math.abs(source.top - target.top) < target.height * .45;
-      const placeBefore = sameRow ? e.clientX < target.left + target.width / 2 : e.clientY < target.top + target.height / 2;
-      list.insertBefore(draggedProjectCard, placeBefore ? item : item.nextSibling);
-      projectOrderChanged = true;
-      animateProjectGrid(list, before);
-    });
-    item.addEventListener('drop', e => {
-      e.preventDefault();
-      commitProjectOrder(list);
-    });
-    item.addEventListener('dragend', () => {
-      item.classList.remove('is-dragging');
-      commitProjectOrder(list);
-      draggedProjectCard = null;
-    });
-  }
-
-  function deleteProject(p){
+  async function deleteProject(p){
     if (!confirm(`Are you sure you want to delete "${p.title}"?`)) return;
-    state.projects = state.projects.filter(x => x.id !== p.id);
-    renderProjectsList();
-    updateMetrics();
-    updateBadges();
-    autoSave(true);
+    const previous=[...state.projects];state.projects=state.projects.filter(x=>x.id!==p.id);
+    if(!await autoSave(true))state.projects=previous;
+    renderProjectsList();updateMetrics();updateBadges();
   }
 
   // ---------------------------------------------------------------- Media Library
@@ -764,7 +740,17 @@
   }
 
   async function uploadFile(file, folder, collisionPolicy){
-    if (hostedShowcase) throw new Error('Uploads need the local PC server. The web editor can use the bundled image library.');
+    if(hostedShowcase){
+      if(!window.VASTU_CLOUD?.enabled)throw new Error('Shared media storage is not connected yet.');
+      let upload=file;
+      if(typeof createImageBitmap==='function'&&/^image\//.test(file.type)&&file.type!=='image/gif'&&file.type!=='image/svg+xml'){
+        const bitmap=await createImageBitmap(file),canvas=document.createElement('canvas');const scale=Math.min(1,1920/Math.max(bitmap.width,bitmap.height));canvas.width=Math.round(bitmap.width*scale);canvas.height=Math.round(bitmap.height*scale);canvas.getContext('2d').drawImage(bitmap,0,0,canvas.width,canvas.height);bitmap.close();
+        const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/webp',.85));if(blob)upload=new File([blob],file.name.replace(/\.[^.]+$/,'')+(blob.type==='image/webp'?'.webp':'.png'),{type:blob.type});
+      }
+      if(upload.size>3000000)throw new Error('Hosted uploads are limited to 3 MB. Images are optimized automatically; add larger videos through GitHub.');
+      const content=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result.split(',')[1]);reader.onerror=reject;reader.readAsDataURL(upload);});
+      const response=await fetch('/api/admin?action=upload',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:upload.name,content})});const result=await response.json();if(!response.ok)throw new Error(result.error||'Upload failed');return result;
+    }
     const response = await fetch('/api/upload-media', {
       method:'POST', body:file,
       headers:{
@@ -805,13 +791,14 @@
 
   function openMediaImport(){
     const modal = $('mediaImportModal');
+    modal.querySelector('.media-import-options').hidden=hostedShowcase;
     const destination = $('mediaImportDestination');
     const folders = mediaFolders();
     destination.innerHTML = `<option value="">Media (root)</option>${folders.map(folder => `<option value="${esc(folder.relativePath)}">${esc(folder.relativePath)}</option>`).join('')}`;
     destination.value = folders.some(folder => folder.relativePath === state.currentMediaFolder) ? state.currentMediaFolder : '';
     $('mediaImportCollision').value = state.mediaConfig.collisionPolicy || 'rename';
     const totalBytes = state.pendingMediaFiles.reduce((sum, file) => sum + (file.size || 0), 0);
-    $('mediaImportSummary').innerHTML = `<span class="material-symbols-outlined">collections</span><div><strong>${state.pendingMediaFiles.length} file${state.pendingMediaFiles.length === 1 ? '' : 's'}</strong><p>${formatBytes(totalBytes)} total · uploads stream directly to disk</p></div>`;
+    $('mediaImportSummary').innerHTML = `<span class="material-symbols-outlined">collections</span><div><strong>${state.pendingMediaFiles.length} file${state.pendingMediaFiles.length === 1 ? '' : 's'}</strong><p>${formatBytes(totalBytes)} total · ${hostedShowcase?'images are optimized and saved to GitHub':'uploads stream directly to disk'}</p></div>`;
     updateMediaImportConflicts();
     modal.classList.add('open'); modal.setAttribute('aria-hidden', 'false');
     document.body.classList.add('modal-open');
@@ -909,9 +896,9 @@
       confirm.textContent = 'Move items';
     } else {
       icon.textContent = 'delete_forever'; title.textContent = `Delete ${state.selectedMedia.size} item${state.selectedMedia.size === 1 ? '' : 's'}?`;
-      description.textContent = 'Folders and everything inside them will be removed from the media library. This cannot be undone.';
+      description.textContent=hostedShowcase?'Selected media files will be removed from the repository. Files in use by saved cards are protected.':'Selected files will be removed from the media library.';
       field.innerHTML = `<div class="delete-summary">${[...state.selectedMedia].slice(0,4).map(rel => `<span><span class="material-symbols-outlined">${state.assets.find(item => item.relativePath === rel)?.kind === 'folder' ? 'folder' : 'draft'}</span>${esc(rel)}</span>`).join('')}${state.selectedMedia.size > 4 ? `<small>and ${state.selectedMedia.size - 4} more…</small>` : ''}</div>`;
-      confirm.textContent = 'Delete permanently'; confirm.className = 'btn danger-solid';
+      confirm.textContent = 'Delete media'; confirm.className = 'btn danger-solid';
     }
     modal.classList.add('open'); modal.setAttribute('aria-hidden', 'false');
     setTimeout(() => field.querySelector('input,select')?.focus(), 0);
@@ -1517,12 +1504,12 @@
     updateActionPanels(selectedAction);
     updateLivePreview();
 
-    $('editorModal').classList.add('open');
+    $('editorModal').classList.add('open');$('editorModal').setAttribute('aria-hidden','false');
     rememberAdmin({editId:state.isNew ? null : state.currentEdit.id,editorSection:'general'});
   }
 
   function closeEditor(){
-    $('editorModal').classList.remove('open');
+    $('editorModal').classList.remove('open');$('editorModal').setAttribute('aria-hidden','true');
     rememberAdmin({editId:null});
     $('previewThumb')?.querySelectorAll('video').forEach(video => video.pause());
   }
@@ -1880,12 +1867,23 @@
         if(a.mediaType==='video'){const icon=document.createElement('span');icon.className='material-symbols-outlined';icon.textContent='play_circle';media.appendChild(icon);}
         else{const img=document.createElement('img');img.src=a.thumbnailPath||a.previewPath||a.path;img.alt='';img.loading='lazy';img.decoding='async';media.appendChild(img);}
         const name=document.createElement('span');name.className='picker-name';name.textContent=a.name;
-        item.append(media,name);item.addEventListener('click',()=>{const selected=state.assetPickerCallback;closeAssetPicker();selected?.(a.path);});grid.appendChild(item);
+        item.append(media,name);item.addEventListener('click',()=>{const selected=state.assetPickerCallback;closeAssetPicker();selected?.(a.path);});
+        const choice=document.createElement('div');choice.className='picker-choice';choice.appendChild(item);
+        const remove=document.createElement('button');remove.type='button';remove.className='picker-delete';remove.setAttribute('aria-label','Delete '+a.name);remove.innerHTML='<span class="material-symbols-outlined">delete</span>';
+        remove.addEventListener('click',async()=>{
+          if(!confirm('Delete '+a.name+' from the media library?'))return;
+          remove.disabled=true;
+          try{
+            const path=a.relativePath||(a.path.startsWith('/api/admin')?new URL(a.path,location.origin).searchParams.get('path'):a.path.replace(/^\//,''));
+            await api('/api/media/delete','POST',{paths:[path]});
+            byPath.delete(a.path);const index=assets.indexOf(a);if(index>=0)assets.splice(index,1);state.assets=state.assets.filter(asset=>asset.path!==a.path);render();showToast('Media deleted','success');
+          }catch(error){showToast(error.message,'error');remove.disabled=false;}
+        });choice.appendChild(remove);grid.appendChild(choice);
       });
     }
     search.oninput=render;type.onchange=render;render();
-    $('pickerUploadInput').disabled=hostedShowcase;
-    modal.querySelector('.picker-upload-bar .hint').textContent=hostedShowcase?'Choose bundled media below. Uploads are available in local PC Admin.':'Choose an existing file or upload media.';
+    $('pickerUploadInput').disabled=false;
+    modal.querySelector('.picker-upload-bar .hint').textContent='Choose an image or video, or upload a new file.';
     modal.classList.add('open');modal.setAttribute('aria-hidden','false');modal.setAttribute('aria-modal','true');search.focus();
   }
   function closeAssetPicker(){
@@ -2092,6 +2090,8 @@
       pill.addEventListener('click', () => switchEditorSection(pill.dataset.sec));
     });
 
+    $('btnDeleteProjects').addEventListener('click',deleteSelectedProjects);
+    $('btnClearProjectSelection').addEventListener('click',()=>{state.selectedProjects.clear();updateProjectSelection();});
     // New Project Button
     if ($('btnNewProject')) {
       $('btnNewProject').addEventListener('click', () => openEditor(null));
@@ -2432,6 +2432,7 @@
       if (button.getAttribute('aria-pressed') === 'true') return;
       readSettingsForm();
       state.settings.presentationMode = button.dataset.catalog;
+      state.selectedProjects.clear();state.projectSelectionAnchor=null;
       rememberAdmin({settingsScope:'collection',settingsGroup:'layout',settingsSearch:'',editId:null});
       $('settingsSearch').value='';
       renderSettings();
@@ -2474,14 +2475,9 @@
     adminInitialized = true;
     buildExtraSettings();
     setupEvents();
+    if(hostedShowcase){for(const id of ['btnToggleMediaStorage','btnNewMediaFolder','btnMoveSelectedMedia'])$(id).hidden=true;document.querySelectorAll('[data-media-action="move"],[data-media-action="new-folder"]').forEach(button=>button.hidden=true);}
     loadConfig();
-    if (hostedShowcase){
-      const note = document.createElement('p');
-      note.className = 'hosted-admin-note';
-      note.textContent = 'Web editor: changes save in this browser. Use the local PC Admin for shared configuration, uploads, and application controls.';
-      document.querySelector('.admin-main').prepend(note);
-      return;
-    }
+    if(hostedShowcase){if(!window.VASTU_CLOUD?.enabled){$('autoSaveIndicator').textContent='Shared storage not connected';}return;}
     const mediaEvents = new EventSource('/api/events');
     let mediaRefreshTimer = 0;
     mediaEvents.addEventListener('assets-updated', () => {
@@ -2491,6 +2487,7 @@
   }
 
   async function setupAdminLock(){
+    await window.VASTU_CLOUD_READY;
     const lock = $('adminLock');
     const form = $('adminLoginForm');
     const input = $('adminPassword');
@@ -2505,7 +2502,8 @@
       // Keep the password prompt when the saved setting cannot be read.
     }
     let unlocked = false;
-    try { unlocked = sessionStorage.getItem('vastuchitra-admin-unlocked') === 'yes'; } catch {}
+    if(hostedShowcase&&window.VASTU_CLOUD?.enabled){const response=await fetch('/api/admin?action=status');const status=await response.json();passwordRequired=true;unlocked=status.authenticated;}
+    try { if(!hostedShowcase||!window.VASTU_CLOUD?.enabled)unlocked=sessionStorage.getItem('vastuchitra-admin-unlocked')==='yes'; } catch {}
 
     if (!passwordRequired || unlocked){
       lock.classList.add('unlocked');
@@ -2522,9 +2520,11 @@
       toggle.setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
       input.focus();
     });
-    form.addEventListener('submit', e => {
+    form.addEventListener('submit', async e => {
       e.preventDefault();
-      if (input.value !== '0575'){
+      let correct=input.value==='0575';
+      if(hostedShowcase&&window.VASTU_CLOUD?.enabled){try{const response=await fetch('/api/admin?action=login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:input.value})});correct=response.ok;}catch{correct=false;}}
+      if (!correct){
         error.textContent = 'Incorrect password. Please try again.';
         form.classList.remove('shake');
         void form.offsetWidth;
