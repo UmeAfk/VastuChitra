@@ -2255,7 +2255,7 @@
     },
     {
       "id": "sadhna-green",
-      "title": "Green building status",
+      "title": "Green Building",
       "cat": "Green building status",
       "sub": "Green building status · Awaiting details",
       "size": [
@@ -2278,13 +2278,14 @@
       },
       "tile": {
         "style": "logo",
+        "gradient": "ember",
         "frame": false,
-        "color": "#167547",
-        "logoIcon": "garden",
-        "logoSrc": null,
         "showTitle": true,
         "showCategory": false,
-        "showDescription": false
+        "showDescription": false,
+        "logoSrc": null,
+        "color": "#167547",
+        "logoIcon": "garden"
       },
       "desc": "The project’s environmental goals, resource strategy and verified green building status belong here. No certification, rating or performance claim has been supplied yet.",
       "specs": [
