@@ -2697,8 +2697,8 @@
       "interval": 6500,
       "slides": [
         {
-          "src": "/public/shreesadhna/17.webp",
-          "pos": "50% 50%"
+          "src": "/api/admin?action=media&path=public%2Fuploads%2F1795780534895-4e12bf-057.webp",
+          "pos": "50% 46.1%"
         }
       ],
       "action": {
@@ -2706,7 +2706,12 @@
       },
       "tile": {
         "style": "image",
-        "frame": false
+        "gradient": "ember",
+        "frame": false,
+        "showTitle": true,
+        "showCategory": true,
+        "showDescription": true,
+        "logoSrc": ""
       },
       "desc": "A dedicated entry to the balcony simulator: explore the view from different floors, orientations and times of day once the experience is connected. Add the simulator URL or application in this card’s Action settings.",
       "specs": [
