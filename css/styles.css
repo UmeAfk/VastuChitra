@@ -1186,3 +1186,4 @@ body:is(.client-mode,.heritage-mode,.meeting-preview) .shell>.topbar{background:
 :root body.client-mode .brand .launcher-logo.client-developer-logo{background:transparent;border-radius:0;box-shadow:none;}
 :root:not([data-client-theme="dark"]) body.client-mode .brand .launcher-logo.client-developer-logo{filter:none!important;mix-blend-mode:multiply;}
 :root[data-client-theme="dark"] body.client-mode .brand .launcher-logo.client-developer-logo{filter:invert(1) grayscale(1)!important;mix-blend-mode:screen;}
+.editing .card.is-colour-copying::after{content:'Copy';position:absolute;z-index:8;right:12px;top:12px;padding:5px 9px;border-radius:7px;background:#102335e6;color:#fff;font:600 11px var(--font-ui);pointer-events:none;}

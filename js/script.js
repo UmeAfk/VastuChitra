@@ -181,6 +181,9 @@ if (CFG.pinLogo === false){
   }, {passive:true});
 }
 const byId = new Map();
+const COLOUR_COPY_KEY='vastuchitra-colour-copies-v1-'+(CFG.presentationMode||'commercial');
+const colourCopies=new Map();
+try{for(const copy of JSON.parse(localStorage.getItem(COLOUR_COPY_KEY)||'[]'))if(copy.id?.startsWith('colour-copy-')&&copy.clientKind==='colour'&&/^#[0-9a-f]{6}$/i.test(copy.tile?.color||''))colourCopies.set(copy.id,copy);}catch{}
 let editing = false;
 let loopingCanvas = null;
 
@@ -330,6 +333,7 @@ PROJECTS.forEach(p => {
   byId.set(p.id, p);
   grid.appendChild(buildCard(p));
 });
+for(const copy of colourCopies.values()){byId.set(copy.id,copy);grid.appendChild(buildCard(copy));}
 const allCards = () => [...grid.children].filter(node => node.classList.contains('card'));
 if ('IntersectionObserver' in window){
   const covers = new IntersectionObserver(entries => entries.forEach(({ target, isIntersecting }) => {
@@ -418,7 +422,7 @@ function pulse(card){
 }
 
 function captureLayout(){
-  return {order:allCards().map(card=>card.dataset.id),sizes:Object.fromEntries(allCards().map(card=>[card.dataset.id,sizeOf(card)])),positions:JSON.parse(JSON.stringify(layoutPositions))};
+  return {order:allCards().map(card=>card.dataset.id),sizes:Object.fromEntries(allCards().map(card=>[card.dataset.id,sizeOf(card)])),positions:JSON.parse(JSON.stringify(layoutPositions)),copies:JSON.parse(JSON.stringify([...colourCopies.values()]))};
 }
 function saveLayout(record=true){
   if(record && layoutHistory)layoutHistory.record(captureLayout());
@@ -426,7 +430,7 @@ function saveLayout(record=true){
   const sizes = {};
   allCards().forEach(c => { sizes[c.dataset.id] = sizeOf(c); });
   const catalogOrder = PROJECTS.map(project => project.id);
-  try { localStorage.setItem(LAYOUT_KEY, JSON.stringify({ order, sizes, positions:layoutPositions, catalogOrder })); } catch {}
+  try { localStorage.setItem(COLOUR_COPY_KEY,JSON.stringify([...colourCopies.values()]));localStorage.setItem(LAYOUT_KEY, JSON.stringify({ order, sizes, positions:layoutPositions, catalogOrder })); } catch {}
 }
 function loadLayout(){
   try { const raw = localStorage.getItem(LAYOUT_KEY); return raw ? JSON.parse(raw) : null; } catch { return null; }
@@ -503,6 +507,9 @@ function withFlip(mutate){
 function restoreLayoutSnapshot(snapshot){
   if(!snapshot || gestureBusy)return;
   withFlip(()=>{
+    const wanted=new Map((snapshot.copies||[]).map(copy=>[copy.id,copy]));
+    for(const id of colourCopies.keys())if(!wanted.has(id)){grid.querySelector('[data-id="'+id+'"]')?.remove();colourCopies.delete(id);byId.delete(id);}
+    for(const [id,copy]of wanted)if(!colourCopies.has(id)){colourCopies.set(id,copy);byId.set(id,copy);const card=buildCard(copy);grid.appendChild(card);bindCardInteractions(card);setSize(card,...copy.size);}
     const cards=new Map(allCards().map(card=>[card.dataset.id,card]));
     snapshot.order.forEach(id=>{if(cards.has(id))grid.appendChild(cards.get(id));});
     allCards().forEach(card=>{const size=snapshot.sizes[card.dataset.id];if(size)setSize(card,size.cs,size.rs);});
@@ -515,6 +522,7 @@ function redoLayout(){if(!gestureBusy)restoreLayoutSnapshot(layoutHistory.redo()
 function resetLayout(){
   if(gestureBusy)return;
   withFlip(()=>{
+    for(const id of colourCopies.keys()){grid.querySelector('[data-id="'+id+'"]')?.remove();byId.delete(id);}colourCopies.clear();
     const cards=new Map(allCards().map(card=>[card.dataset.id,card]));
     PROJECTS.forEach(project=>{const card=cards.get(project.id);if(card){grid.appendChild(card);setSize(card,...(project.size||[2,1]));}});
     const metrics=gridMetrics();
@@ -587,11 +595,12 @@ function settle(card, ph){
     if (anim) anim.cancel();                            // release the held end-state (fill: forwards) so the grid owns the layout again
     grid.classList.remove('is-editing-active');
     gestureBusy = false;
+    if(card._discardOnSettle){const snapshot=card._duplicateBaseline;colourCopies.delete(card.dataset.id);byId.delete(card.dataset.id);card.remove();restoreLayoutSnapshot(snapshot);return;}
     arrangeGrid(null,livePositions);
     commitGridOrder();
     pulse(card); saveLayout();
   };
-  card.classList.remove('is-dragging', 'is-resizing');           // scale/rotate ease back to rest while gliding
+  card.classList.remove('is-dragging', 'is-resizing','is-colour-copying');           // scale/rotate ease back to rest while gliding
   if (reduceMotion) return fin();
   const px = v => v + 'px';
   anim = card.animate(
@@ -604,14 +613,27 @@ function settle(card, ph){
 // ---- gestures (edit mode): press-and-move anywhere on a card to move it,
 // drag the corner handle to stretch it
 let gestureBusy = false;
+function isColourBlock(project){return !!project && project.tile?.style==='gradient' && !project.tile?.logoSrc && !project.tile?.logoIcon && project.action?.type==='none' && project.tile?.showTitle===false && project.tile?.showCategory===false && project.tile?.showDescription===false && /^#[0-9a-f]{6}$/i.test(project.tile?.color||'');}
+function duplicateColourBlock(source){
+  const original=byId.get(source.dataset.id),snapshot=captureLayout(),size=sizeOf(source);
+  const copy=structuredClone(original);copy.id='colour-copy-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8);copy.clientKind='colour';copy.size=[size.cs,size.rs];
+  colourCopies.set(copy.id,copy);byId.set(copy.id,copy);
+  const card=buildCard(copy);grid.appendChild(card);setSize(card,size.cs,size.rs);card.style.gridColumn=source.style.gridColumn;card.style.gridRow=source.style.gridRow;card.dataset.origIndex=allCards().length-1;card._duplicateBaseline=snapshot;card.classList.add('is-colour-copying');
+  livePositions[copy.id]={...livePositions[source.dataset.id]};bindCardInteractions(card);return card;
+}
 function beginGesture(card, e, kind){
+  const sourceCard=card;
   if (gestureBusy || !e.isPrimary) return;
   gestureBusy = true;
   e.preventDefault();
   const id = e.pointerId, sx = e.clientX, sy = e.clientY;
   let started = false, gesture = null;
 
-  const start = ev => { started = true; gesture = kind === 'resize' ? startResize(card, sx, sy, ev) : startDrag(card, sx, sy, ev); };
+  const start = ev => {
+    started=true;
+    if(kind==='drag'&&e.shiftKey&&isColourBlock(byId.get(sourceCard.dataset.id)))card=duplicateColourBlock(sourceCard);
+    gesture=kind==='resize'?startResize(card,sx,sy,ev):startDrag(card,sx,sy,ev);
+  };
   const move = ev => {
     if (ev.pointerId !== id) return;
     if (!started){
@@ -627,8 +649,8 @@ function beginGesture(card, e, kind){
     window.removeEventListener('pointercancel', up);
     window.removeEventListener('keydown', escape);
     window.removeEventListener('blur', cancel);
-    card.removeEventListener('lostpointercapture', cancel);
-    if (started){ gesture.move(ev); gesture.end(ev.type === 'pointercancel'); }
+    sourceCard.removeEventListener('lostpointercapture', cancel);
+    if(started){if(card!==sourceCard&&ev.type==='pointercancel')card._discardOnSettle=true;gesture.move(ev);gesture.end(ev.type==='pointercancel');}
     else gestureBusy = false;
   };
   const cancel = () => {
@@ -637,8 +659,8 @@ function beginGesture(card, e, kind){
     window.removeEventListener('pointercancel', up);
     window.removeEventListener('keydown', escape);
     window.removeEventListener('blur', cancel);
-    card.removeEventListener('lostpointercapture', cancel);
-    if (started) gesture.end(true); else gestureBusy = false;
+    sourceCard.removeEventListener('lostpointercapture', cancel);
+    if(started){if(card!==sourceCard)card._discardOnSettle=true;gesture.end(true);} else gestureBusy = false;
   };
   const escape = ev => { if (ev.key === 'Escape'){ ev.preventDefault(); cancel(); } };
   window.addEventListener('pointermove', move);
@@ -646,8 +668,8 @@ function beginGesture(card, e, kind){
   window.addEventListener('pointercancel', up);
   window.addEventListener('keydown', escape);
   window.addEventListener('blur', cancel);
-  card.addEventListener('lostpointercapture', cancel);
-  card.setPointerCapture(id);
+  sourceCard.addEventListener('lostpointercapture', cancel);
+  sourceCard.setPointerCapture(id);
   if (kind === 'resize') start(e);
 }
 
@@ -823,7 +845,7 @@ function killTilt(card){
   card.style.transform = ''; card.classList.remove('is-tilting'); tiltCards.delete(card);
 }
 
-allCards().forEach(card => {
+function bindCardInteractions(card){
   card._tilt = { x:0, y:0, tx:0, ty:0, gx:0, gy:-.5, hover:false };
 
   card.addEventListener('pointerenter', e => {
@@ -860,6 +882,7 @@ allCards().forEach(card => {
   card.tabIndex = 0;
   card.setAttribute('role', 'button');
   const p = byId.get(card.dataset.id);
+  if(isColourBlock(p))card.title='Shift-drag to duplicate this colour block. Shift + arrow key also duplicates in edit mode.';
   if (p.action?.type === 'none'){
     card.tabIndex = -1;
     card.setAttribute('role','presentation');
@@ -868,10 +891,11 @@ allCards().forEach(card => {
   card.addEventListener('keydown', e => {
     if(editing){
       if(!gestureBusy && ['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){
-        e.preventDefault();const pos=livePositions[card.dataset.id],metrics=gridMetrics(),size=sizeOf(card);
+        e.preventDefault();const target=e.shiftKey&&isColourBlock(byId.get(card.dataset.id))?duplicateColourBlock(card):card;
+        const pos=livePositions[card.dataset.id],metrics=gridMetrics(),size=sizeOf(target);
         const col=clamp(pos.col+(e.key==='ArrowRight'?1:e.key==='ArrowLeft'?-1:0),0,Math.max(0,metrics.columns-size.cs));
         const row=Math.max(0,pos.row+(e.key==='ArrowDown'?1:e.key==='ArrowUp'?-1:0));
-        withFlip(()=>{arrangeGrid({id:card.dataset.id,col,row});commitGridOrder();});saveLayout();
+        withFlip(()=>{arrangeGrid({id:target.dataset.id,col,row});commitGridOrder();});target.classList.remove('is-colour-copying');saveLayout();
       }
       return;
     }
@@ -881,7 +905,8 @@ allCards().forEach(card => {
     }
   });
   card.addEventListener('click', e => { if (!editing) activate(card, e); });
-});
+}
+allCards().forEach(bindCardInteractions);
 
 // ---------------------------------------------------------------- 5. swipe carousels
 // Every transition is ONE number, t (0 → 1), plus a direction d (+1 next / −1
