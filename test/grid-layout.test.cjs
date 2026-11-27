@@ -49,3 +49,5 @@ test('follow grid preserves tile proportions and stays bounded at all device col
  const {followGrid}=require('../js/grid-layout.js');
  for(const columns of [1,2,4,6,8,12]){const result=followGrid(items,columns);const adjusted=items.map(item=>({...item,...result.sizes[item.id]}));noOverlap(adjusted,result.positions,columns);const height=Math.max(...adjusted.map(item=>result.positions[item.id].row+item.rs));for(const item of adjusted)assert.equal(item.rs,items.find(original=>original.id===item.id).rs);}
 });
+
+test('Follow grid reserves the actual drop cell instead of packing a moved tile back into its old hole',()=>{const {followGrid}=require('../js/grid-layout.js');const result=followGrid(items,6,preferred,{id:'small',col:3,row:3});assert.deepEqual(result.positions.small,{col:3,row:3});noOverlap(items,result.positions,6);});

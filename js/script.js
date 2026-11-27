@@ -61,7 +61,8 @@ const root = document.documentElement;
 document.body.classList.toggle('hide-brand-logo',CFG.showBrandLogo === false);
 const headerLogo = document.querySelector('.launcher-logo');
 headerLogo.style.width = clamp(Number(CFG.brandLogoWidth) || 172,80,300) + 'px';
-if (CFG.brandLogoSrc){
+if(CLIENT){headerLogo.src='/public/dlogo.png';headerLogo.classList.add('client-developer-logo');}
+if (!CLIENT && CFG.brandLogoSrc){
   headerLogo.addEventListener('error', () => { headerLogo.src = '/public/logo-ui.png'; }, {once:true});
   headerLogo.src = CFG.brandLogoSrc;
 }
@@ -362,7 +363,7 @@ document.addEventListener('visibilitychange', () => videoCards.forEach(card => {
 const LAYOUT_KEY = CFG.presentationMode === 'personal' ? 'vastuchitra-client-canvas-v3' : PERSONAL ? 'vastuchitra-heritage-layout-v1' : CFG.meetingPreview ? 'vastuchitra-meeting-layout-v2' : 'vastuchitra-layout-v3';
 const CS_MIN = 1, CS_MAX = CFG.columns, RS_MIN = 1, RS_MAX = CFG.rows;
 const gapPx = () => parseFloat(getComputedStyle(grid).rowGap) || 16;
-let layoutPositions = {}, livePositions = {};
+let layoutPositions = {}, livePositions = {}, layoutHistory=null;
 function gridMetrics(){
   const style = getComputedStyle(grid);
   const columns = parseInt(style.getPropertyValue?.('--visible-columns')) || style.gridTemplateColumns.split(/\s+/).filter(Boolean).length || CFG.columns;
@@ -415,7 +416,11 @@ function pulse(card){
   setTimeout(() => card.classList.remove('just-moved'), 750);
 }
 
-function saveLayout(){
+function captureLayout(){
+  return {order:allCards().map(card=>card.dataset.id),sizes:Object.fromEntries(allCards().map(card=>[card.dataset.id,sizeOf(card)])),positions:JSON.parse(JSON.stringify(layoutPositions))};
+}
+function saveLayout(record=true){
+  if(record && layoutHistory)layoutHistory.record(captureLayout());
   const order = allCards().map(c => c.dataset.id);
   const sizes = {};
   allCards().forEach(c => { sizes[c.dataset.id] = sizeOf(c); });
@@ -449,18 +454,12 @@ initLayout();
   }]));
   arrangeGrid();
 }
+layoutHistory=window.VASTU_LAYOUT_HISTORY.create(captureLayout());
 function arrangeGrid(anchor = null, baseline = layoutPositions, placeholder = null, moving = null){
   const cards = allCards(), metrics = gridMetrics();
   let fitted=null;
   if(CFG.followGrid){
-    let ordered=cards;
-    if(anchor){
-      const movingCard=cards.find(card=>card.dataset.id===anchor.id);
-      ordered=cards.filter(card=>card!==movingCard);
-      const index=ordered.findIndex(card=>{const pos=baseline[card.dataset.id];return pos && (pos.row>anchor.row || pos.row===anchor.row && pos.col>=anchor.col);});
-      if(movingCard)ordered.splice(index<0?ordered.length:index,0,movingCard);
-    }
-    fitted=window.VASTU_GRID.followGrid(ordered.map(card=>({id:card.dataset.id,...sizeOf(card)})),metrics.columns,anchor || CLIENT && metrics.columns!==8 ? {} : baseline);
+    fitted=window.VASTU_GRID.followGrid(cards.map(card=>({id:card.dataset.id,...sizeOf(card)})),metrics.columns,CLIENT && metrics.columns!==8 ? {} : baseline,anchor);
   }
   livePositions = fitted?.positions || window.VASTU_GRID.packGrid(cards.map(card => ({ id:card.dataset.id,...sizeOf(card) })),metrics.columns,baseline,anchor);
   cards.forEach(card => {
@@ -500,23 +499,50 @@ function withFlip(mutate){
     .forEach(n => { const b = before.get(n); if (b) flipFromRect(n, b); });
 }
 
-function resetLayout(){
-  if (gestureBusy) return;
-  try { localStorage.removeItem(LAYOUT_KEY); } catch {}
-  const cards = allCards();
-  withFlip(() => {
-    [...cards].sort((a, b) => a.dataset.origIndex - b.dataset.origIndex).forEach(c => grid.appendChild(c));
-    applyDefaultSizes();
-    allCards().forEach(card => { card.style.gridColumn = ''; card.style.gridRow = ''; });
-    const metrics = gridMetrics();
-    layoutPositions = Object.fromEntries(allCards().map(card => [card.dataset.id,{
-      col:Math.round(card.offsetLeft / metrics.columnStep),row:Math.round(card.offsetTop / metrics.rowStep)
-    }]));
-    arrangeGrid();
+function restoreLayoutSnapshot(snapshot){
+  if(!snapshot || gestureBusy)return;
+  withFlip(()=>{
+    const cards=new Map(allCards().map(card=>[card.dataset.id,card]));
+    snapshot.order.forEach(id=>{if(cards.has(id))grid.appendChild(cards.get(id));});
+    allCards().forEach(card=>{const size=snapshot.sizes[card.dataset.id];if(size)setSize(card,size.cs,size.rs);});
+    layoutPositions=snapshot.positions;arrangeGrid();
   });
-  cards.forEach(pulse);
+  saveLayout(false);
 }
-$('resetLayout').addEventListener('click', resetLayout);
+function undoLayout(){if(!gestureBusy)restoreLayoutSnapshot(layoutHistory.undo());}
+function redoLayout(){if(!gestureBusy)restoreLayoutSnapshot(layoutHistory.redo());}
+function resetLayout(){
+  if(gestureBusy)return;
+  withFlip(()=>{
+    const cards=new Map(allCards().map(card=>[card.dataset.id,card]));
+    PROJECTS.forEach(project=>{const card=cards.get(project.id);if(card){grid.appendChild(card);setSize(card,...(project.size||[2,1]));}});
+    const metrics=gridMetrics();
+    layoutPositions=CLIENT && metrics.columns===8 ? Object.fromEntries(PROJECTS.filter(p=>p.canvasPosition).map(p=>[p.id,p.canvasPosition])) : {};
+    arrangeGrid();layoutPositions=livePositions;
+  });
+  saveLayout();allCards().forEach(pulse);
+}
+const resetControl=$('resetLayout');
+resetControl.title='Undo last layout change. Hold for 1 second to restore defaults.';
+resetControl.setAttribute('aria-label',resetControl.title);
+const redoControl=document.createElement('button');redoControl.type='button';redoControl.className='secret-tool layout-reset';redoControl.title='Redo layout change (Ctrl+Y)';redoControl.setAttribute('aria-label',redoControl.title);redoControl.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 4v6h-6M20 10a8 8 0 1 0 0 6"/></svg>';redoControl.addEventListener('click',redoLayout);resetControl.after(redoControl);
+let resetHoldTimer=0,resetHeld=false;
+function cancelResetHold(){clearTimeout(resetHoldTimer);resetControl.classList.remove('holding-reset');}
+resetControl.addEventListener('pointerdown',event=>{
+  if(event.button!==0)return;
+  resetHeld=false;resetControl.classList.add('holding-reset');
+  resetHoldTimer=setTimeout(()=>{resetHeld=true;cancelResetHold();resetLayout();},1000);
+});
+resetControl.addEventListener('pointerup',cancelResetHold);
+resetControl.addEventListener('pointercancel',()=>{resetHeld=true;cancelResetHold();});
+resetControl.addEventListener('pointerleave',cancelResetHold);
+resetControl.addEventListener('click',()=>{if(resetHeld){resetHeld=false;return;}undoLayout();});
+resetControl.addEventListener('keydown',event=>{if(event.key==='Enter'&&event.shiftKey){event.preventDefault();resetHeld=true;resetLayout();}});
+window.addEventListener('keydown',event=>{
+  if(!editing || gestureBusy || !(event.ctrlKey||event.metaKey) || event.target.closest('input,textarea,select,[contenteditable="true"]'))return;
+  const key=event.key.toLowerCase();
+  if(key==='z'||key==='y'){event.preventDefault();if(key==='y'||event.shiftKey)redoLayout();else undoLayout();}
+});
 
 // ---- lifting a card out of the grid (shared by move + stretch)
 // A dashed placeholder takes its slot straight away, so neighbours flow around
@@ -839,7 +865,15 @@ allCards().forEach(card => {
   }
   card.setAttribute('aria-label', p.title + ' — ' + p.cat);
   card.addEventListener('keydown', e => {
-    if (editing) return;
+    if(editing){
+      if(!gestureBusy && ['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){
+        e.preventDefault();const pos=livePositions[card.dataset.id],metrics=gridMetrics(),size=sizeOf(card);
+        const col=clamp(pos.col+(e.key==='ArrowRight'?1:e.key==='ArrowLeft'?-1:0),0,Math.max(0,metrics.columns-size.cs));
+        const row=Math.max(0,pos.row+(e.key==='ArrowDown'?1:e.key==='ArrowUp'?-1:0));
+        withFlip(()=>{arrangeGrid({id:card.dataset.id,col,row});commitGridOrder();});saveLayout();
+      }
+      return;
+    }
     if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); activate(card); }
     else if (card._slider && (e.key === 'ArrowRight' || e.key === 'ArrowLeft')){
       e.preventDefault(); card._slider.step(e.key === 'ArrowRight' ? 1 : -1);
