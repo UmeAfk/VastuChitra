@@ -160,6 +160,7 @@
         "showGridDots": true
       },
       "heritage": {
+        "followGrid": true,
         "canvasLoop": true,
         "canvasAutoScroll": false,
         "canvasPauseOnHover": true,
@@ -2448,7 +2449,7 @@
       "interval": 6500,
       "slides": [
         {
-          "src": "/api/admin?action=media&path=public%2Fuploads%2F1795781215161-f28f1d-brand-partners-copy.webp",
+          "src": "/public/shreesadhna/17.webp",
           "pos": "50% 50%"
         }
       ],
@@ -2456,14 +2457,13 @@
         "type": "detail"
       },
       "tile": {
-        "style": "gradient",
+        "style": "image",
         "gradient": "ember",
         "frame": false,
         "showTitle": true,
         "showCategory": false,
         "showDescription": false,
         "logoSrc": "/public/shreesadhna/brand-partners.webp",
-        "color": "#ff0000",
         "logoIcon": null
       },
       "desc": "Credits for the brands and partners associated with Shree Sadhna. Add confirmed names, logos and links once supplied.",
