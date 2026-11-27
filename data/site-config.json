@@ -1924,7 +1924,8 @@
       "interval": 6500,
       "slides": [
         {
-          "src": "/public/shreesadhna/Walkthrough.mp4"
+          "src": "/public/shreesadhna/Walkthrough.mp4",
+          "pos": "50% 50%"
         }
       ],
       "action": {
@@ -1936,7 +1937,13 @@
         "row": 3
       },
       "tile": {
-        "style": "image"
+        "style": "video",
+        "gradient": "ember",
+        "frame": true,
+        "showTitle": true,
+        "showCategory": true,
+        "showDescription": true,
+        "logoSrc": ""
       },
       "poster": "/public/shreesadhna/walkthrough-poster.webp"
     },
