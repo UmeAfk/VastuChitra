@@ -2450,6 +2450,10 @@
         {
           "src": "/api/admin?action=media&path=public%2Fuploads%2F1795781215161-f28f1d-brand-partners-copy.webp",
           "pos": "50% 50%"
+        },
+        {
+          "src": "/api/admin?action=media&path=public%2Fuploads%2F1795781215161-f28f1d-brand-partners-copy.webp",
+          "pos": "50% 50%"
         }
       ],
       "action": {
