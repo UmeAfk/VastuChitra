@@ -2414,7 +2414,7 @@
     },
     {
       "id": "sadhna-site",
-      "title": "Live site camera",
+      "title": "Live Construction Updates",
       "cat": "10 / Site camera",
       "sub": "Site camera · Not connected",
       "size": [
@@ -2437,13 +2437,14 @@
       },
       "tile": {
         "style": "logo",
+        "gradient": "ember",
         "frame": false,
-        "color": "#155c6e",
-        "logoIcon": "projector",
-        "logoSrc": null,
         "showTitle": true,
         "showCategory": false,
-        "showDescription": false
+        "showDescription": false,
+        "logoSrc": null,
+        "color": "#155c6e",
+        "logoIcon": "projector"
       },
       "desc": "The live site camera has not been connected. Add an authorized, embeddable camera URL in this card’s Action settings. This preview does not display a live feed.",
       "specs": [
