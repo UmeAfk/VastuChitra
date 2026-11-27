@@ -284,6 +284,7 @@ function buildCard(p){
     } else card.classList.add('tile-video-missing');
   }
   const imageList = tileStyle === 'image' ? list.filter(s => !isVideoSrc(s.src)) : [];
+  if(tileStyle==='image' && !imageList.length && p.poster)imageList.push({src:p.poster});
   const st = imageList.map(() => ({ ready: false, failed: false }));
   const slides = imageList.map((s, k) => {
     const slide = document.createElement('div'); slide.className = 'slide';
@@ -1303,7 +1304,9 @@ function selectDetailMedia(index){
 
 function openDetail(p){
   liveDetailIndex=0;
-  const list = normSlides(p);
+  const videoOnly=CLIENT && p.clientKind==='film' && normSlides(p).some(s=>isVideoSrc(s.src));
+  const list=videoOnly ? normSlides(p).filter(s=>isVideoSrc(s.src)).slice(0,1) : normSlides(p);
+  document.querySelector('.detail').classList.toggle('walkthrough-player',videoOnly);
   $('detailTag').innerHTML = (ICONS[p.icon] || '') + esc(p.cat);
   $('detailTitle').textContent = p.title;
   $('detailDesc').textContent = p.desc || p.sub || '';
@@ -1373,7 +1376,7 @@ function openDetail(p){
     const layer = document.createElement(isVideoSrc(s.src) ? 'video' : 'div');
     layer.className = 'layer' + (i === 0 ? ' on' : '');
     if (layer.tagName === 'VIDEO'){
-      layer.src = s.src; if(p.clientKind==='film')layer.poster='/public/shreesadhna/1.webp'; layer.controls = true; layer.playsInline = true; layer.preload = 'metadata';
+      layer.src = s.src; if(p.poster)layer.poster=p.poster; layer.controls = true; layer.playsInline = true; layer.preload = 'metadata';
       layer.setAttribute('aria-label', `${p.title} video ${i + 1}`);
     } else {
       layer.style.backgroundImage = cssUrl(s.src.startsWith('/media/') || s.src.startsWith('/api/media-preview') ? previewSrc(s.src) : s.src);

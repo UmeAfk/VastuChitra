@@ -1150,3 +1150,11 @@ body:is(.client-mode,.heritage-mode,.meeting-preview) .shell{padding-top:max(var
 .client-mode .card.tile-logo.client-image-logo .content{color:#183047;}
 .client-mode .card.tile-logo.client-image-logo .card-logo{top:40%;height:62%;width:76%;filter:none;}
 .client-mode .card.tile-logo.client-image-logo .thumb{background:#fff;}
+/* Invisible gallery layers must never intercept native video controls. */
+.detail-hero .layer{pointer-events:none;}
+.detail-hero .layer.on{pointer-events:auto;}
+.detail[data-layout="focus"].walkthrough-player{grid-template-columns:minmax(0,1fr);width:min(1440px,100%);height:auto;align-self:center;}
+.walkthrough-player .detail-copy,.walkthrough-player .detail-thumbs{display:none!important;}
+.detail[data-layout="focus"].walkthrough-player .detail-hero{flex:none;width:100%;height:auto;min-height:0;aspect-ratio:16/9;max-height:calc(100dvh - 120px);background:#000;border-radius:16px;}
+.walkthrough-player .detail-hero video.layer{width:100%;height:100%;object-fit:contain;transform:none;transition:none;}
+@media(max-width:700px){.detail[data-layout="focus"].walkthrough-player .detail-hero{border-radius:10px;max-height:calc(100dvh - 100px);}}

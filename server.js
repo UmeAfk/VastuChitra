@@ -427,11 +427,16 @@ function serveStatic(req, res){
     if (err || !st.isFile()) return json(res, 404, { error: 'Not found' });
     const ext = path.extname(file).toLowerCase();
     const isText = ['.html', '.css', '.js', '.json'].includes(ext);
+    const range=parseRange(req.headers.range,st.size);
+    if(range===false){res.writeHead(416,{'Content-Range':`bytes */${st.size}`});return res.end();}
+    if(range){const {start,end}=range;res.writeHead(206,{'Content-Type':MIME[ext]||'application/octet-stream','Content-Length':end-start+1,'Content-Range':`bytes ${start}-${end}/${st.size}`,'Accept-Ranges':'bytes'});if(req.method==='HEAD')return res.end();return fs.createReadStream(file,{start,end}).pipe(res);}
     res.writeHead(200, {
       'Content-Type': MIME[ext] || 'application/octet-stream',
       'Content-Length': st.size,
+      'Accept-Ranges':'bytes',
       'Cache-Control': isText ? 'no-cache' : 'public, max-age=3600'
     });
+    if(req.method==='HEAD')return res.end();
     fs.createReadStream(file).pipe(res);
   });
 }

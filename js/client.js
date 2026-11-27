@@ -25,7 +25,7 @@
       specs:[['RERA registration','To be added'],['Registered project name','To be confirmed'],['Authority / official record','To be added']]
     }),
     make('walkthrough','Step inside.','03 / Walkthrough film','The project, in motion.',[3,2],'film',{
-      slides:[{src:'/public/shreesadhna/Walkthrough.mp4'},image(1)],icon:'reel',desc:'Watch the Shree Sadhna architectural walkthrough.'
+      slides:[{src:'/public/shreesadhna/Walkthrough.mp4'}],poster:'/public/shreesadhna/walkthrough-poster.webp',icon:'reel',desc:'Watch the Shree Sadhna architectural walkthrough.'
     }),
     make('ar','Bring it into your space.','04 / Augmented reality','AR experience to be connected',[2,1],'ar',{
       tile:paper('#d9e0ce'),icon:'ar',desc:'A dedicated entry to the project’s augmented reality model. Add the hosted AR experience URL in this card’s Action settings.'

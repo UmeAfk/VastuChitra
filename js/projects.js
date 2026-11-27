@@ -193,7 +193,7 @@ window.VASTUCHITRA = {
     "followGrid": true,
     "clientIconTilesVersion": 1,
     "clientSuppliedArtVersion": 1,
-    "clientWalkthroughVersion": 1
+    "clientWalkthroughVersion": 2
   },
   "projects": [
     {
@@ -1914,10 +1914,6 @@ window.VASTUCHITRA = {
       "slides": [
         {
           "src": "/public/shreesadhna/Walkthrough.mp4"
-        },
-        {
-          "src": "/public/shreesadhna/1.webp",
-          "pos": "50% 50%"
         }
       ],
       "action": {
@@ -1930,7 +1926,8 @@ window.VASTUCHITRA = {
       },
       "tile": {
         "style": "image"
-      }
+      },
+      "poster": "/public/shreesadhna/walkthrough-poster.webp"
     },
     {
       "id": "sadhna-vr",
