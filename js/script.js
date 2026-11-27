@@ -200,7 +200,8 @@ function buildCard(p){
   const card = document.createElement('div');
   card.className = `card tile-${tileStyle}${tile.frame === false ? ' no-frame' : ''}${tile.showTitle === false ? ' no-title' : ''}${tile.showCategory === false ? ' no-category' : ''}${tile.showDescription === false ? ' no-description' : ''}`;
   card.dataset.id = p.id;
-  if(CLIENT && tile.logoSrc)card.classList.add('client-image-logo');
+  if(CLIENT && tile.logoSrc && !tile.iconArtwork)card.classList.add('client-image-logo');
+  if(CLIENT && tile.iconArtwork)card.classList.add('client-icon-artwork');
   if (CLIENT) card.dataset.clientKind = p.clientKind || 'custom';
   if (CLIENT){
     const palette = {'#ece6da':'paper','#e2ddcc':'stone','#d9e0ce':'mint','#382c40':'ink','#4a4151':'violet','#c5b48f':'blue','#e8d5ba':'peach','#d5d8cc':'slate','#bb623f':'coral','#899777':'green','#c3a471':'yellow'};

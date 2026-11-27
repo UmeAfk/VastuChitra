@@ -196,7 +196,8 @@ window.VASTUCHITRA = {
     "clientWalkthroughVersion": 2,
     "clientReraDocumentVersion": 1,
     "clientOverviewImageVersion": 1,
-    "clientVrImageVersion": 1
+    "clientVrImageVersion": 1,
+    "clientWhiteIconsVersion": 1
   },
   "projects": [
     {
@@ -1877,12 +1878,13 @@ window.VASTUCHITRA = {
       "tile": {
         "style": "logo",
         "frame": false,
-        "color": "#ffffff",
+        "color": "#bd4a2c",
         "logoIcon": null,
-        "logoSrc": "/public/shreesadhna/maha rera.webp",
+        "logoSrc": "/public/shreesadhna/rera-icon.webp",
         "showTitle": true,
         "showCategory": false,
-        "showDescription": false
+        "showDescription": false,
+        "iconArtwork": true
       },
       "desc": "The official project registration, approved details and relevant documents will live here. No registration number has been supplied.",
       "specs": [
@@ -1967,9 +1969,10 @@ window.VASTUCHITRA = {
         "showTitle": true,
         "showCategory": false,
         "showDescription": false,
-        "logoSrc": "/public/shreesadhna/vr-headset.webp?v=2",
-        "color": "#ffffff",
-        "logoIcon": null
+        "logoSrc": "/public/shreesadhna/vr-icon.webp",
+        "color": "#5737b0",
+        "logoIcon": null,
+        "iconArtwork": true
       },
       "desc": "Explore the development at full scale. Connect the VR application or hosted experience in this card’s Action settings.",
       "canvasPosition": {
@@ -2415,9 +2418,10 @@ window.VASTUCHITRA = {
         "showTitle": true,
         "showCategory": false,
         "showDescription": false,
-        "logoSrc": "/public/shreesadhna/Team+forming.webp",
-        "color": "#ffffff",
-        "logoIcon": null
+        "logoSrc": "/public/shreesadhna/team-icon.webp",
+        "color": "#007e83",
+        "logoIcon": null,
+        "iconArtwork": true
       },
       "desc": "Credits for the people who brought the project together. Add the actual names and roles in this card’s specifications.",
       "specs": [
