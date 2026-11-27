@@ -2289,7 +2289,7 @@
     },
     {
       "id": "sadhna-tools",
-      "title": "Software used",
+      "title": "Immersive Experience",
       "cat": "12 / Software & workflow",
       "sub": "Software & workflow",
       "size": [
@@ -2312,13 +2312,14 @@
       },
       "tile": {
         "style": "logo",
+        "gradient": "ember",
         "frame": false,
-        "color": "#3853a5",
-        "logoIcon": "cube",
-        "logoSrc": null,
         "showTitle": true,
         "showCategory": false,
-        "showDescription": false
+        "showDescription": false,
+        "logoSrc": null,
+        "color": "#3853a5",
+        "logoIcon": "cube"
       },
       "desc": "A place to credit the production software and tools actually used on this project. Add confirmed software names and their role in the specifications.",
       "canvasPosition": {
