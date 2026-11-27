@@ -24,6 +24,7 @@
       const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches || cfg.motion === false || cfg.clientThemeAnimation === false;
       if (!document.startViewTransition || reduced){ apply(next); return; }
       changing = true;
+      root.classList?.add('client-theme-changing');
       const rect = button.getBoundingClientRect();
       const x = rect.left + rect.width / 2, y = rect.top + rect.height / 2;
       const radius = Math.hypot(Math.max(x,innerWidth - x),Math.max(y,innerHeight - y));
@@ -34,7 +35,7 @@
           {duration:650,easing:'cubic-bezier(.22,.68,.15,1)',pseudoElement:'::view-transition-new(root)'}).finished;
         await transition.finished;
       } catch { apply(next); }
-      finally { changing = false; }
+      finally { root.classList?.remove('client-theme-changing');changing = false; }
     }
   };
   system.addEventListener('change',event => { if (!valid(preference) && !configured) apply(event.matches ? 'dark' : 'light'); });

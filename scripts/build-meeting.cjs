@@ -49,6 +49,7 @@ const images = [
   fs.mkdirSync(path.join(dist, 'public'), { recursive: true });
   fs.copyFileSync(path.join(root, 'public', 'logo-ui.png'), path.join(dist, 'public', 'logo-ui.png'));
   fs.copyFileSync(path.join(root,'public','dlogo.png'),path.join(dist,'public','dlogo.png'));
+  fs.copyFileSync(path.join(root,'public','sadhna-logo.webp'),path.join(dist,'public','sadhna-logo.webp'));
   fs.cpSync(path.join(root,'public','shreesadhna'),path.join(dist,'public','shreesadhna'),{recursive:true,filter:src=>!src.endsWith('.jpg')});
   fs.cpSync(output, path.join(dist, 'public', 'demo'), { recursive: true });
   fs.cpSync(path.join(root, 'public', 'temple'), path.join(dist, 'public', 'temple'), { recursive: true });

@@ -62,7 +62,7 @@ const root = document.documentElement;
 document.body.classList.toggle('hide-brand-logo',CFG.showBrandLogo === false);
 const headerLogo = document.querySelector('.launcher-logo');
 headerLogo.style.width = clamp(Number(CFG.brandLogoWidth) || 172,80,300) + 'px';
-if(CLIENT){headerLogo.src='/public/dlogo.png';headerLogo.classList.add('client-developer-logo');}
+if(CLIENT){headerLogo.src='/public/sadhna-logo.webp';headerLogo.classList.add('client-project-logo');}
 if (!CLIENT && CFG.brandLogoSrc){
   headerLogo.addEventListener('error', () => { headerLogo.src = '/public/logo-ui.png'; }, {once:true});
   headerLogo.src = CFG.brandLogoSrc;

@@ -1192,3 +1192,10 @@ body:is(.client-mode,.heritage-mode,.meeting-preview) .shell>.topbar{background:
 .client-mode .card[data-id="sadhna-ipds"] .card-logo{top:50%;width:82%;height:70%;filter:none;}
 .client-mode .card[data-id="sadhna-ipds"]{cursor:default;}
 .editing .card[data-id="sadhna-ipds"]{cursor:grab;}
+/* The project logo has native transparency; no blend layer is needed. */
+:root body.client-mode .brand .launcher-logo.client-project-logo{width:172px!important;height:58px;max-width:42vw;object-fit:contain;background:transparent;border-radius:0;mix-blend-mode:normal;transition:none!important;}
+:root:not([data-client-theme="dark"]) body.client-mode .brand .launcher-logo.client-project-logo{filter:brightness(0)!important;}
+:root[data-client-theme="dark"] body.client-mode .brand .launcher-logo.client-project-logo{filter:none!important;}
+/* Capture settled theme colours once; CSS fades must not fight the circular reveal. */
+:root.client-theme-changing body.client-mode,:root.client-theme-changing body.client-mode *{transition:none!important;}
+@media(max-width:700px){:root body.client-mode .brand .launcher-logo.client-project-logo{width:142px!important;height:46px;}}
