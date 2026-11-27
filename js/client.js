@@ -25,7 +25,7 @@
       specs:[['RERA registration','To be added'],['Registered project name','To be confirmed'],['Authority / official record','To be added']]
     }),
     make('walkthrough','Step inside.','03 / Walkthrough film','The project, in motion.',[3,2],'film',{
-      slides:[2,7].map(image),icon:'reel',desc:'The walkthrough film will appear here once supplied. The current images are still previews, not a playable project film.'
+      slides:[{src:'/public/shreesadhna/Walkthrough.mp4'},image(1)],icon:'reel',desc:'Watch the Shree Sadhna architectural walkthrough.'
     }),
     make('ar','Bring it into your space.','04 / Augmented reality','AR experience to be connected',[2,1],'ar',{
       tile:paper('#d9e0ce'),icon:'ar',desc:'A dedicated entry to the project’s augmented reality model. Add the hosted AR experience URL in this card’s Action settings.'
@@ -96,7 +96,7 @@
     'design-intent':{size:[4,2],col:0,row:9},'balcony-simulator':{size:[4,2],col:4,row:9}
   };
   const titles = {ar:'Augmented reality',vr:'Virtual reality','360':'Interactive 360°',projection:'Projection mapping',brochures:'Brochures & plans',people:'Project team',tools:'Software used',partners:'Brand partners',site:'Live site camera',renders:'Detailed renders',walkthrough:'Walkthrough video',balcony:'Balcony views',rera:'RERA & project facts'};
-  const labels={ar:'Augmented reality · Not connected',vr:'Virtual reality · Not connected','360':'Interactive 360° tour · Not connected',projection:'Projection mapping · Not connected',brochures:'Brochure & floor plans',people:'Project team & credits',tools:'Software & workflow',partners:'Associated brands',site:'Site camera · Not connected',renders:'Architectural render collection',walkthrough:'Walkthrough film · Preview stills',balcony:'Balcony views & perspectives',rera:'RERA & project facts · Awaiting details'};
+  const labels={ar:'Augmented reality · Not connected',vr:'Virtual reality · Not connected','360':'Interactive 360° tour · Not connected',projection:'Projection mapping · Not connected',brochures:'Brochure & floor plans',people:'Project team & credits',tools:'Software & workflow',partners:'Associated brands',site:'Site camera · Not connected',renders:'Architectural render collection',walkthrough:'Shree Sadhna walkthrough film',balcony:'Balcony views & perspectives',rera:'RERA & project facts · Awaiting details'};
   window.VASTUCHITRA_CLIENT_NAMES=titles;
   window.VASTUCHITRA_CLIENT_LABELS=labels;
   window.VASTUCHITRA_BROCHURE_PAGES = [

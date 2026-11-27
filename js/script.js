@@ -1373,7 +1373,7 @@ function openDetail(p){
     const layer = document.createElement(isVideoSrc(s.src) ? 'video' : 'div');
     layer.className = 'layer' + (i === 0 ? ' on' : '');
     if (layer.tagName === 'VIDEO'){
-      layer.src = s.src; layer.controls = true; layer.playsInline = true; layer.preload = 'metadata';
+      layer.src = s.src; if(p.clientKind==='film')layer.poster='/public/shreesadhna/1.webp'; layer.controls = true; layer.playsInline = true; layer.preload = 'metadata';
       layer.setAttribute('aria-label', `${p.title} video ${i + 1}`);
     } else {
       layer.style.backgroundImage = cssUrl(s.src.startsWith('/media/') || s.src.startsWith('/api/media-preview') ? previewSrc(s.src) : s.src);

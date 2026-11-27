@@ -192,7 +192,8 @@ window.VASTUCHITRA = {
     "clientMosaicVersion": 1,
     "followGrid": true,
     "clientIconTilesVersion": 1,
-    "clientSuppliedArtVersion": 1
+    "clientSuppliedArtVersion": 1,
+    "clientWalkthroughVersion": 1
   },
   "projects": [
     {
@@ -1900,7 +1901,7 @@ window.VASTUCHITRA = {
       "id": "sadhna-walkthrough",
       "title": "Walkthrough video",
       "cat": "03 / Walkthrough film",
-      "sub": "Walkthrough film · Preview stills",
+      "sub": "Shree Sadhna walkthrough film",
       "size": [
         4,
         2
@@ -1912,21 +1913,23 @@ window.VASTUCHITRA = {
       "interval": 6500,
       "slides": [
         {
-          "src": "/public/shreesadhna/2.webp",
-          "pos": "50% 50%"
+          "src": "/public/shreesadhna/Walkthrough.mp4"
         },
         {
-          "src": "/public/shreesadhna/7.webp",
+          "src": "/public/shreesadhna/1.webp",
           "pos": "50% 50%"
         }
       ],
       "action": {
         "type": "detail"
       },
-      "desc": "The walkthrough film will appear here once supplied. The current images are still previews, not a playable project film.",
+      "desc": "Watch the Shree Sadhna architectural walkthrough.",
       "canvasPosition": {
         "col": 0,
         "row": 3
+      },
+      "tile": {
+        "style": "image"
       }
     },
     {
