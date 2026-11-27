@@ -77,6 +77,7 @@
       desc:'A place for the architectural concept, site response, design decisions and material story. The current images are studio preview artwork; add the approved Shree Sadhna design narrative here.',
       specs:[['Architectural concept','To be added'],['Site response','To be added'],['Materials & character','To be added']]
     }),
+    make('ipds','IPDS','Studio logo','',[1,1],'brand',{tile:{style:'logo',color:'#ffffff',logoSrc:'/public/dlogo.png',showTitle:false,showCategory:false,showDescription:false,frame:false},action:{type:'none'}}),
     make('mep','MEP & coordination','MEP & coordination','Building systems, brought together',[2,2],'mep',{
       tile:paper('#d5d8cc'),icon:'model',
       desc:'Explore the mechanical, electrical and plumbing systems behind the project. Add approved diagrams, coordination views and system information, or connect a model viewer through this card’s Action settings.',
@@ -92,7 +93,7 @@
     balcony:{size:[3,2],col:0,row:5},brochures:{size:[3,2],col:3,row:5},projection:{size:[2,1],col:6,row:5},
     plum:{size:[1,1],col:6,row:6},tools:{size:[1,1],col:7,row:6},
     green:{size:[2,2],col:0,row:7},people:{size:[2,1],col:2,row:7},site:{size:[4,1],col:4,row:7},
-    partners:{size:[2,1],col:2,row:8},ochre:{size:[1,1],col:4,row:8},mep:{size:[3,1],col:5,row:8},
+    partners:{size:[2,1],col:2,row:8},ochre:{size:[1,1],col:4,row:8},ipds:{size:[1,1],col:5,row:8},mep:{size:[2,1],col:6,row:8},
     'design-intent':{size:[4,2],col:0,row:9},'balcony-simulator':{size:[4,2],col:4,row:9}
   };
   const titles = {ar:'Augmented reality',vr:'Virtual reality','360':'Interactive 360°',projection:'Projection mapping',brochures:'Brochures & plans',people:'Project team',tools:'Software used',partners:'Brand partners',site:'Live site camera',renders:'Detailed renders',walkthrough:'Walkthrough video',balcony:'Balcony views',rera:'RERA & project facts'};

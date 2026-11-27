@@ -180,6 +180,12 @@
     if(settings.clientWhiteIconsVersion!==1 && window.VASTUCHITRA_CLIENT_WHITE_ICONS){
       clientProjects=window.VASTUCHITRA_CLIENT_WHITE_ICONS(clientProjects);settings.clientWhiteIconsVersion=1;
     }
+    if(settings.clientIpdsTileVersion!==1 && window.VASTUCHITRA_CLIENT){
+      const tile=window.VASTUCHITRA_CLIENT.find(project=>project.id==='sadhna-ipds');
+      if(tile&&clientProjects.some(project=>project.id.startsWith('sadhna-'))&&!clientProjects.some(project=>project.id===tile.id))clientProjects.push(JSON.parse(JSON.stringify(tile)));
+      clientProjects=clientProjects.map(project=>project.id==='sadhna-mep'&&JSON.stringify(project.size)==='[3,1]'&&project.canvasPosition?.row===8&&project.canvasPosition?.col===5 ? {...project,size:[2,1],canvasPosition:{col:6,row:8}} : project);
+      settings.clientIpdsTileVersion=1;
+    }
     return { ...config, settings, personalProjects:window.VASTUCHITRA_CLIENT_ASSETS ? window.VASTUCHITRA_CLIENT_ASSETS(clientProjects) : clientProjects };
   }
   window.VASTUCHITRA_COMMERCIAL = (config, offline = false) => {

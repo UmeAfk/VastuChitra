@@ -196,7 +196,8 @@
     "clientReraDocumentVersion": 1,
     "clientOverviewImageVersion": 1,
     "clientVrImageVersion": 1,
-    "clientWhiteIconsVersion": 1
+    "clientWhiteIconsVersion": 1,
+    "clientIpdsTileVersion": 1
   },
   "projects": [
     {
@@ -2573,7 +2574,7 @@
       "cat": "MEP & coordination",
       "sub": "Building systems, brought together",
       "size": [
-        3,
+        2,
         1
       ],
       "clientKind": "mep",
@@ -2624,7 +2625,7 @@
         2
       ],
       "canvasPosition": {
-        "col": 5,
+        "col": 6,
         "row": 8
       }
     },
@@ -2728,6 +2729,42 @@
       "canvasPosition": {
         "col": 4,
         "row": 9
+      }
+    },
+    {
+      "id": "sadhna-ipds",
+      "title": "IPDS",
+      "cat": "Studio logo",
+      "sub": "",
+      "size": [
+        1,
+        1
+      ],
+      "clientKind": "brand",
+      "icon": "frames",
+      "accent": "gold",
+      "fx": "fade",
+      "interval": 6500,
+      "slides": [],
+      "action": {
+        "type": "none"
+      },
+      "tile": {
+        "style": "logo",
+        "color": "#ffffff",
+        "logoSrc": "/public/dlogo.png",
+        "showTitle": false,
+        "showCategory": false,
+        "showDescription": false,
+        "frame": false
+      },
+      "previousSize": [
+        1,
+        1
+      ],
+      "canvasPosition": {
+        "col": 5,
+        "row": 8
       }
     }
   ]

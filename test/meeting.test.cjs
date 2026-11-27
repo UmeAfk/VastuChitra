@@ -52,7 +52,7 @@ test('legacy Personal mode migrates to Heritage without losing temple projects',
   const { config } = load('', undefined, 'showcase.example.com', 'https:', saved);
   assert.equal(config.settings.presentationMode, 'heritage');
   assert.equal(config.heritageProjects[0].id, 'temple-kept');
-  assert.equal(config.personalProjects.length, 22);
+  assert.equal(config.personalProjects.length, 23);
   assert.ok(config.personalProjects.every(p => p.id.startsWith('sadhna-')));
 });
 
@@ -110,10 +110,10 @@ test('experience updates rename only stock titles and append the new cards once'
   const first=load('',undefined,'showcase.example.com','https:',saved).config;
   assert.equal(first.personalProjects.find(p=>p.id==='sadhna-360').title,'Interactive 360°');
   assert.equal(first.personalProjects.find(p=>p.id==='sadhna-vr').title,'Our custom VR room');
-  assert.equal(first.personalProjects.length,6);
+  assert.equal(first.personalProjects.length,7);
   const second=load('',undefined,'showcase.example.com','https:',JSON.parse(JSON.stringify(first))).config;
-  assert.equal(second.personalProjects.length,6);
-  assert.equal(new Set(second.personalProjects.map(p=>p.id)).size,6);
+  assert.equal(second.personalProjects.length,7);
+  assert.equal(new Set(second.personalProjects.map(p=>p.id)).size,7);
 });
 test('local and hosted meeting modes use the full image collection and safe detail actions', () => {
   for (const [search, flag] of [['?demo=1', undefined], ['', 'true']]) {
