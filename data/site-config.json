@@ -2183,45 +2183,6 @@
       ]
     },
     {
-      "id": "sadhna-projection",
-      "title": "Projection mapping",
-      "cat": "08 / Projection mapping",
-      "sub": "Projection mapping · Not connected",
-      "size": [
-        2,
-        1
-      ],
-      "clientKind": "projection",
-      "icon": "projector",
-      "accent": "gold",
-      "fx": "fade",
-      "interval": 6500,
-      "slides": [
-        {
-          "src": "/public/shreesadhna/15.webp",
-          "pos": "50% 50%"
-        }
-      ],
-      "action": {
-        "type": "detail"
-      },
-      "tile": {
-        "style": "logo",
-        "frame": false,
-        "color": "#a52d72",
-        "logoIcon": "projector",
-        "logoSrc": null,
-        "showTitle": true,
-        "showCategory": false,
-        "showDescription": false
-      },
-      "desc": "A home for the project’s projection mapping film or installation. Upload the film in Media or connect the installation application in Action settings.",
-      "canvasPosition": {
-        "col": 6,
-        "row": 5
-      }
-    },
-    {
       "id": "sadhna-plum",
       "title": "Colour study",
       "cat": "Palette",
