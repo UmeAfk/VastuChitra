@@ -193,7 +193,8 @@ window.VASTUCHITRA = {
     "followGrid": true,
     "clientIconTilesVersion": 1,
     "clientSuppliedArtVersion": 1,
-    "clientWalkthroughVersion": 2
+    "clientWalkthroughVersion": 2,
+    "clientReraDocumentVersion": 1
   },
   "projects": [
     {
@@ -1860,8 +1861,7 @@ window.VASTUCHITRA = {
       "interval": 6500,
       "slides": [
         {
-          "src": "/public/shreesadhna/2.webp",
-          "pos": "50% 50%"
+          "src": "/public/shreesadhna/rera-document.webp"
         }
       ],
       "action": {
@@ -1895,7 +1895,8 @@ window.VASTUCHITRA = {
       "canvasPosition": {
         "col": 1,
         "row": 2
-      }
+      },
+      "reraNumber": "FFDFH541316556854H"
     },
     {
       "id": "sadhna-walkthrough",

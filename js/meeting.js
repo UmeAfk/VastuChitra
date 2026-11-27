@@ -165,6 +165,10 @@
       clientProjects=clientProjects.map(project=>project.id==='sadhna-walkthrough' ? {...project,slides:[{src:'/public/shreesadhna/Walkthrough.mp4'}],poster:'/public/shreesadhna/walkthrough-poster.webp',sub:'Shree Sadhna walkthrough film',desc:'Watch the Shree Sadhna architectural walkthrough.',tile:{...project.tile,style:'image'},action:{type:'detail'}} : project);
       settings.clientWalkthroughVersion=2;
     }
+    if(settings.clientReraDocumentVersion!==1){
+      clientProjects=clientProjects.map(project=>project.id==='sadhna-rera' ? {...project,reraNumber:'FFDFH541316556854H',slides:[{src:'/public/shreesadhna/rera-document.webp'}],action:{type:'detail'}} : project);
+      settings.clientReraDocumentVersion=1;
+    }
     return { ...config, settings, personalProjects:window.VASTUCHITRA_CLIENT_ASSETS ? window.VASTUCHITRA_CLIENT_ASSETS(clientProjects) : clientProjects };
   }
   window.VASTUCHITRA_COMMERCIAL = (config, offline = false) => {

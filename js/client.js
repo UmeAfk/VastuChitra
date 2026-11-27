@@ -21,7 +21,7 @@
     }),
     block('clay','#bb623f'),
     make('rera','The details, on record.','02 / RERA & project facts','Registration details to be added',[2,1],'rera',{
-      tile:paper('#e2ddcc'),icon:'blueprint',desc:'The official project registration, approved details and relevant documents will live here. No registration number has been supplied.',
+      reraNumber:'FFDFH541316556854H',slides:[{src:'/public/shreesadhna/rera-document.webp'}],tile:paper('#e2ddcc'),icon:'blueprint',desc:'The official project registration, approved details and relevant documents will live here. No registration number has been supplied.',
       specs:[['RERA registration','To be added'],['Registered project name','To be confirmed'],['Authority / official record','To be added']]
     }),
     make('walkthrough','Step inside.','03 / Walkthrough film','The project, in motion.',[3,2],'film',{

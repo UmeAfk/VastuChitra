@@ -1307,6 +1307,14 @@ function openDetail(p){
   const videoOnly=CLIENT && p.clientKind==='film' && normSlides(p).some(s=>isVideoSrc(s.src));
   const list=videoOnly ? normSlides(p).filter(s=>isVideoSrc(s.src)).slice(0,1) : normSlides(p);
   document.querySelector('.detail').classList.toggle('walkthrough-player',videoOnly);
+  const reraOnly=CLIENT && p.clientKind==='rera' && p.reraNumber;
+  document.querySelector('.detail').classList.toggle('rera-document-view',!!reraOnly);
+  if(reraOnly){
+    detailHero.replaceChildren();detailThumbs.replaceChildren();
+    const image=document.createElement('img');image.className='rera-document-image';image.src=list[0]?.src || '/public/shreesadhna/rera-document.webp';image.alt='RERA document';image.decoding='async';
+    const number=document.createElement('p');number.className='rera-registration';number.textContent='RERA: '+p.reraNumber;
+    detailHero.append(image,number);showView('detail');return;
+  }
   $('detailTag').innerHTML = (ICONS[p.icon] || '') + esc(p.cat);
   $('detailTitle').textContent = p.title;
   $('detailDesc').textContent = p.desc || p.sub || '';
