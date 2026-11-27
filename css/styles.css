@@ -1181,3 +1181,8 @@ body:is(.client-mode,.heritage-mode,.meeting-preview) .shell>.topbar{background:
 :root:not([data-client-theme="dark"]) .client-mode .card.client-image-logo .thumb{background:#cedfe9;}
 @media(max-width:700px){body.tools-open .shell>.topbar{grid-template-areas:"brand status" "tools tools";grid-template-columns:minmax(0,1fr) auto;}body.tools-open .topbar>.tools{justify-self:end;flex-wrap:wrap;max-width:100%;}}
 body:is(.client-mode,.heritage-mode,.meeting-preview) .shell>.topbar{margin-bottom:14px;}
+/* A seamless header remains in normal flow, with no card-like frame. */
+body:is(.client-mode,.heritage-mode,.meeting-preview) .shell>.topbar{background:var(--bg);border:0;border-radius:0;box-shadow:none;padding-inline:0;backdrop-filter:none;-webkit-backdrop-filter:none;}
+:root body.client-mode .brand .launcher-logo.client-developer-logo{background:transparent;border-radius:0;box-shadow:none;}
+:root:not([data-client-theme="dark"]) body.client-mode .brand .launcher-logo.client-developer-logo{filter:none!important;mix-blend-mode:multiply;}
+:root[data-client-theme="dark"] body.client-mode .brand .launcher-logo.client-developer-logo{filter:invert(1) grayscale(1)!important;mix-blend-mode:screen;}
