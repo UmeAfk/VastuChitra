@@ -1094,6 +1094,34 @@ body:is(.client-mode,.heritage-mode,.meeting-preview) .shell{padding-top:max(var
   .book-page h3,.book-page[data-layout="cover"] h3{font-size:clamp(22px,5dvh,34px);margin:12px 0;}
   .book-page p{font-size:10px;}
 }
+
+/* Client / saturated accents with clear, readable surfaces in both appearances. */
+:root:not([data-client-theme="dark"]) .client-mode{
+  --panel:#f4f7fb;--panel-2:#e8f0f8;--line:#afc2d5;--text:#152b45;--muted:#435b73;--cyan:#215bc5;
+  --client-paper:#fff;--client-stone:#f5c96a;--client-mint:#64d5be;--client-ink:#2149a5;--client-violet:#6741be;--client-blue:#a8cafa;--client-peach:#ffbc9f;--client-slate:#d0e2f4;
+  --client-coral:#fa7155;--client-green:#21ad8b;--client-yellow:#ffd45b;--client-copy:#132e3f;--client-secondary:#435b73;--client-outline:#8da9c5;
+}
+:root[data-client-theme="dark"] .client-mode{
+  --panel:#1b2c46;--panel-2:#263d5c;--line:#3a5271;--text:#edf4ff;--muted:#bdcee4;--cyan:#8ccaff;
+  --client-paper:#1b2c46;--client-stone:#334fc4;--client-mint:#124d46;--client-ink:#244fbd;--client-violet:#6444a7;--client-blue:#174777;--client-peach:#683d32;--client-slate:#253c55;
+  --client-coral:#f27b61;--client-green:#2db792;--client-yellow:#e8bc50;--client-copy:#edf4ff;--client-secondary:#bdcee4;--client-outline:#466487;
+}
+.client-mode .card.tile-solid .sub{font-size:12px;opacity:.9;line-height:1.5;}
+.client-mode .card .tag{opacity:.9;}
+.client-mode .client-project-brief{color:var(--client-secondary);font-size:12px;}
+:root:not([data-client-theme="dark"]) .client-mode .card{box-shadow:inset 0 0 0 1px #173d641c,0 4px 12px #102e4d0d;}
+:root[data-client-theme="dark"] .client-mode .card{box-shadow:inset 0 0 0 1px #d1e6ff18;}
+.client-mode .status{gap:9px;}
+@media(max-width:460px){.client-mode .card.tile-solid .sub{font-size:12px;}}
+.canvas-at-end .canvas-edge{opacity:0;}
+@media(max-width:460px){
+  .client-mode .brand{min-width:0;}
+  .client-mode .launcher-logo{max-width:calc(100vw - 108px);}
+  .client-mode .status .clock{display:none;}
+  .client-mode .client-theme-toggle{width:44px;height:44px;min-height:44px;}
+}
+@media(hover:none),(pointer:coarse){.card .thumb{will-change:auto;}.client-mode .card:hover .content{transform:none;}}
+.slide:not(.is-on){will-change:auto;}
 @media(max-width:700px){.book-stage.book-single{max-height:var(--brochure-mobile-height,68vh);max-width:calc(var(--brochure-mobile-height,68vh) * .73);}}
 
 /* Soft outer edges; the binding remains straight on inside spreads. */
@@ -1102,3 +1130,23 @@ body:is(.client-mode,.heritage-mode,.meeting-preview) .shell{padding-top:max(var
 .book-stage:is(.book-front,.book-back)>.book-page:not(.book-blank),.book-stage.book-single>.book-page{border-radius:10px;}
 .book-leaf-face{border-radius:8px;overflow:hidden;}
 .brochure-heading{margin-bottom:18px;}
+/* Compact project introduction leaves clear space for the floating studio logo. */
+.client-mode .card[data-client-kind="overview"] .tag{display:none;}
+.client-mode .card[data-client-kind="overview"] .content{justify-content:center;padding-top:48px;box-sizing:border-box;}
+.client-mode .card[data-client-kind="overview"] h3{margin:0 0 12px;font-size:clamp(30px,4vw,64px);line-height:1.04;}
+.client-mode .card[data-client-kind="overview"] .client-project-brief{margin-top:12px;line-height:1.55;}
+@media(max-width:700px){.client-mode .card[data-client-kind="overview"] .content{padding-top:62px;}.client-mode .card[data-client-kind="overview"] h3{font-size:clamp(30px,7vw,44px);}}
+@media(max-width:460px){.client-mode .card[data-client-kind="overview"] .client-project-brief{display:none;}}
+/* Metro-inspired feature tiles: one strong colour, one clear symbol, one label. */
+.client-mode .card.tile-logo .scrim{display:none;}
+.client-mode .card.tile-logo .client-card-symbol{display:none;}
+.client-mode .card.tile-logo .content{color:#fff;padding:0;}
+.client-mode .card.tile-logo h3{font-size:clamp(15px,1.45vw,23px);line-height:1.15;font-weight:500;margin:0;}
+.client-mode .card.tile-logo .tile-symbol{bottom:24px;color:#fff;}
+.client-mode .card.tile-logo .tile-symbol svg{width:38%;height:46%;max-width:76px;max-height:76px;stroke-width:1.7;transition:transform .5s var(--ease-out);}
+.client-mode .card.tile-logo .thumb{transform:none!important;}
+@media(hover:hover){.client-mode .card.tile-logo:hover .tile-symbol svg{transform:translateY(-3px) scale(1.04);}}
+@media(prefers-reduced-motion:reduce){.client-mode .card.tile-logo .tile-symbol svg{transition:none;}}
+.client-mode .card.tile-logo.client-image-logo .content{color:#183047;}
+.client-mode .card.tile-logo.client-image-logo .card-logo{top:40%;height:62%;width:76%;filter:none;}
+.client-mode .card.tile-logo.client-image-logo .thumb{background:#fff;}

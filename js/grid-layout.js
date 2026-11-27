@@ -41,6 +41,13 @@
     }
     return positions;
   }
-  if(typeof module === 'object') module.exports = {packGrid};
-  else scope.VASTU_GRID = {packGrid};
+  // Dense placement preserves individual tile proportions instead of stretching a whole row.
+  function followGrid(items,columns,preferred={}){
+    columns=Math.max(1,Math.floor(columns)||1);
+    const sizes=Object.fromEntries(items.map(item=>[item.id,{cs:Math.min(columns,Math.max(1,Math.floor(item.cs)||1)),rs:Math.max(1,Math.floor(item.rs)||1)}]));
+    const positions=packGrid(items,columns,preferred);
+    return {positions,sizes};
+  }
+  if(typeof module === 'object') module.exports = {packGrid,followGrid};
+  else scope.VASTU_GRID = {packGrid,followGrid};
 })(typeof window === 'object' ? window : globalThis);

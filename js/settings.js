@@ -6,8 +6,10 @@
     heritage:{columns:6,rows:4,cardGap:18,cardRadius:22,cardRowHeight:142,pagePadding:30,cardContentPadding:24,titleScale:100,headerGap:22}
   };
   const bounds={columns:[2,12],rows:[2,8],cardGap:[6,40],cardRadius:[4,40],cardRowHeight:[90,220],pagePadding:[12,64],cardContentPadding:[12,40],titleScale:[80,140],headerGap:[8,48]};
-  const collectionKeys=['canvasLoop','canvasAutoScroll','canvasPauseOnHover','canvasScrollSpeed','canvasEdgeBlur','canvasSmoothScroll','canvasEdgeHeight','canvasEdgeStrength','hoverZoomEnabled','hoverZoomDuration','hoverZoom','cardTilt','tiltStrength','transitionSpeed','autoplaySlides','introAnimation','showClock','showClockIcon','clock24Hour','showProjectCount','showDescriptions','showCategories','showSlidePager','showGridDots'];
+  const collectionKeys=['followGrid','canvasLoop','canvasAutoScroll','canvasPauseOnHover','canvasScrollSpeed','canvasEdgeBlur','canvasSmoothScroll','canvasEdgeHeight','canvasEdgeStrength','hoverZoomEnabled','hoverZoomDuration','hoverZoom','cardTilt','tiltStrength','transitionSpeed','autoplaySlides','introAnimation','showClock','showClockIcon','clock24Hour','showProjectCount','showDescriptions','showCategories','showSlidePager','showGridDots'];
   const fields=[
+    ['followGrid','Follow grid','motion','boolean',true,'Align cards into complete rows without gaps. Turn off for free modular placement.'],
+    ['canvasLoop','Infinite scroll','canvas','boolean',false,'Repeat the collection after the last row. Off gives the canvas a natural end.'],
     ['hoverZoomEnabled','Hover image zoom','motion','boolean',true,'Gently enlarge image cards when using a mouse.'],
     ['hoverZoomDuration','Hover zoom duration','motion','number',1100,'Controls both zoom-in and zoom-out, without snapping.',150,2500,'ms'],
     ['canvasSmoothScroll','Smooth scrolling','motion','boolean',true,'Ease mouse-wheel movement on the infinite canvas.'],
@@ -18,8 +20,8 @@
     ['clientRememberTheme','Remember visitor appearance','client','boolean',true,'Keep the visitor’s light or dark choice after a reload.'],
     ['clientShowThemeToggle','Show appearance switch','client','boolean',true,'Show the sun and moon control on the Client canvas.'],
     ['clientThemeAnimation','Animate theme changes','client','boolean',true,'Use the circular reveal; reduced-motion preferences always take priority.'],
-    ['clientLightBackground','Light canvas colour','client','color','#cbd5cf','Background behind the cards in light mode.'],
-    ['clientDarkBackground','Dark canvas colour','client','color','#111816','Background behind the cards in dark mode.'],
+    ['clientLightBackground','Light canvas colour','client','color','#dce5ee','Background behind the cards in light mode.'],
+    ['clientDarkBackground','Dark canvas colour','client','color','#0c1423','Background behind the cards in dark mode.'],
     ['brochureSize','Brochure size','brochure','number',72,'Maximum book height relative to the screen. Mobile sizing fits the available space.',55,78,'%'],
     ['brochureCornerRadius','Brochure corners','brochure','number',9,'Round the outer edges while keeping a straight binding.',0,24,'px'],
     ['brochureFlipDuration','Page flip duration','brochure','number',850,'Length of the page-turn animation.',250,1600,'ms'],

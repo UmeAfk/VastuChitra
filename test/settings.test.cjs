@@ -17,7 +17,7 @@ test('invalid values are clamped and zero-valued controls are preserved',()=>{
   assert.equal(settings.hoverZoomDuration,2500);
   assert.equal(settings.brochureSize,72);
   assert.equal(settings.clientThemeDefault,'system');
-  assert.equal(settings.clientLightBackground,'#cbd5cf');
+  assert.equal(settings.clientLightBackground,'#dce5ee');
   assert.equal(layout(settings,'personal').columns,12);
   assert.equal(layout(settings,'personal').cardGap,6);
   assert.equal(layout(settings,'personal').rows,6);
@@ -40,4 +40,8 @@ test('collection options override defaults independently while universal motion 
   assert.equal(resolve(source,'commercial').hoverZoomDuration,1100);
   assert.equal(resolve(source,'personal').motion,false);
   assert.equal(resolve(source,'heritage').motion,false);
+});
+test('infinite scroll is off by default and can be enabled for a collection',()=>{
+  assert.equal(resolve({},'personal').canvasLoop,false);
+  assert.equal(resolve({presentationOptions:{personal:{canvasLoop:true}}},'personal').canvasLoop,true);
 });

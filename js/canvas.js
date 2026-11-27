@@ -30,12 +30,14 @@
         }
       }, {passive:true});
       grid.addEventListener('wheel', event => {
-        if (this.editing || !options.enabled || !this.length || event.ctrlKey || !event.deltaY) return;
+        if (this.editing || event.ctrlKey || !event.deltaY || (!options.enabled && options.smooth === false) || (options.enabled && !this.length)) return;
+        // High-resolution trackpads already provide smooth, inertial pixel input.
+        if(event.deltaMode===0 && Math.abs(event.deltaY)<24){this.stopMotion();return;}
         event.preventDefault();
         const unit = event.deltaMode === 1 ? 20 : event.deltaMode === 2 ? grid.clientHeight : 1;
         const delta = event.deltaY * unit;
         if (options.smooth === false){
-          grid.scrollTop = wrapScroll(Math.max(0,grid.scrollTop + delta),this.length);
+          grid.scrollTop = this.destination(grid.scrollTop + delta);
           return;
         }
         if (this.remaining * delta < 0) this.remaining = 0;
@@ -52,20 +54,28 @@
     }
     move(now){
       this.motionFrame = 0;
-      if (this.editing || !this.options.enabled) return this.stopMotion();
+      if (this.editing || (!this.options.enabled && this.options.smooth === false)) return this.stopMotion();
       const elapsed = Math.min(40,Math.max(1,now - this.lastMotion));
       this.lastMotion = now;
       const distance = Math.abs(this.remaining) < .35 ? this.remaining : this.remaining * (1 - Math.exp(-elapsed / 95));
       this.remaining -= distance;
-      this.position = wrapScroll(Math.max(0,this.position + distance),this.length);
+      this.position = this.destination(this.position + distance);
       this.grid.scrollTop = this.position;
       if (this.position === 0 && this.remaining < 0) this.remaining = 0;
+      if(!this.options.enabled && this.position>=Math.max(0,this.grid.scrollHeight-this.grid.clientHeight) && this.remaining>0)this.remaining=0;
       if (Math.abs(this.remaining) > .01) this.motionFrame = requestAnimationFrame(time => this.move(time));
     }
     stopMotion(){
       cancelAnimationFrame(this.motionFrame);
       this.motionFrame = 0;
       this.remaining = 0;
+    }
+    destination(top){
+      return this.options.enabled ? wrapScroll(Math.max(0,top),this.length) : Math.min(Math.max(0,(Number(this.grid.scrollHeight)||0)-this.grid.clientHeight),Math.max(0,top));
+    }
+    setEnabled(enabled){
+      const top=this.options.enabled ? wrapScroll(this.grid.scrollTop,this.length) : this.grid.scrollTop;
+      this.options.enabled=!!enabled;this.rebuild();this.grid.scrollTop=top;
     }
     clear(){
       this.media.disconnect();

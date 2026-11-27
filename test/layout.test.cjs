@@ -11,7 +11,7 @@ test('settling a resized tile applies its new cell span before saving', () => {
   const card = {dataset:{id:'small'},style:{left:'0px',top:'0px',width:'200px',height:'100px',gridColumn:'1 / span 2'},classList:{remove(){}}};
   const placeholder = {style:{},getBoundingClientRect:() => ({left:0,top:0,width:100,height:100}),before(){},remove(){}};
   let savedSpan = '';
-  const context = {window:{VASTU_GRID:{packGrid}},allCards:() => [card],
+  const context = {CFG:{followGrid:false},window:{VASTU_GRID:{packGrid}},allCards:() => [card],
     gridMetrics:() => ({columns:6}),sizeOf:() => ({cs:1,rs:1}),
     layoutPositions:{small:{col:2,row:0}},livePositions:{},
     cancelFlip(){},reduceMotion:true,grid:{classList:{remove(){}}},

@@ -2427,7 +2427,7 @@
       autoSave(false);
     }));
     // Settings input change — auto-save on change
-    [...window.VASTU_SETTINGS.fields.map(field=>field.id),'cfgColumns', 'cfgRows', 'cfgCardGap', 'cfgCardRadius', 'cfgCardRowHeight', 'cfgPagePadding', 'cfgTitleScale',
+    [...window.VASTU_SETTINGS.fields.filter(field=>field.key!=='canvasLoop').map(field=>field.id),'cfgColumns', 'cfgRows', 'cfgCardGap', 'cfgCardRadius', 'cfgCardRowHeight', 'cfgPagePadding', 'cfgTitleScale',
       'cfgHeaderGap', 'cfgCardContentPadding',
       'cfgShowClock', 'cfgShowAdmin', 'cfgAdminPasswordRequired', 'cfgShowDescriptions',
       'cfgCanvasLoop','cfgCanvasAutoScroll','cfgCanvasPauseOnHover','cfgCanvasScrollSpeed','cfgShowBrandLogo','cfgPinLogo','cfgBrandLogoSrc','cfgBrandLogoWidth','cfgCanvasEdgeBlur',

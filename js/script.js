@@ -195,6 +195,7 @@ function buildCard(p){
   const card = document.createElement('div');
   card.className = `card tile-${tileStyle}${tile.frame === false ? ' no-frame' : ''}${tile.showTitle === false ? ' no-title' : ''}${tile.showCategory === false ? ' no-category' : ''}${tile.showDescription === false ? ' no-description' : ''}`;
   card.dataset.id = p.id;
+  if(CLIENT && tile.logoSrc)card.classList.add('client-image-logo');
   if (CLIENT) card.dataset.clientKind = p.clientKind || 'custom';
   if (CLIENT){
     const palette = {'#ece6da':'paper','#e2ddcc':'stone','#d9e0ce':'mint','#382c40':'ink','#4a4151':'violet','#c5b48f':'blue','#e8d5ba':'peach','#d5d8cc':'slate','#bb623f':'coral','#899777':'green','#c3a471':'yellow'};
@@ -251,7 +252,7 @@ function buildCard(p){
     if (['renders','film','balcony'].includes(p.clientKind)){
       const label = document.createElement('span');
       label.className = 'client-media-note';
-      label.textContent = p.clientKind === 'film' && !normSlides(p).some(s => isVideoSrc(s.src)) ? 'Film to be added · Preview stills' : 'Studio preview collection';
+      label.textContent = p.clientKind === 'film' && !normSlides(p).some(s => isVideoSrc(s.src)) ? 'Film to be added · Preview stills' : 'Shree Sadhna collection';
       card.appendChild(label);
     }
   }
@@ -357,7 +358,7 @@ document.addEventListener('visibilitychange', () => videoCards.forEach(card => {
 }));
 
 // ---------------------------------------------------------------- 3. layout
-const LAYOUT_KEY = CFG.presentationMode === 'personal' ? 'vastuchitra-client-canvas-v2' : PERSONAL ? 'vastuchitra-heritage-layout-v1' : CFG.meetingPreview ? 'vastuchitra-meeting-layout-v2' : 'vastuchitra-layout-v3';
+const LAYOUT_KEY = CFG.presentationMode === 'personal' ? 'vastuchitra-client-canvas-v3' : PERSONAL ? 'vastuchitra-heritage-layout-v1' : CFG.meetingPreview ? 'vastuchitra-meeting-layout-v2' : 'vastuchitra-layout-v3';
 const CS_MIN = 1, CS_MAX = CFG.columns, RS_MIN = 1, RS_MAX = CFG.rows;
 const gapPx = () => parseFloat(getComputedStyle(grid).rowGap) || 16;
 let layoutPositions = {}, livePositions = {};
@@ -449,10 +450,21 @@ initLayout();
 }
 function arrangeGrid(anchor = null, baseline = layoutPositions, placeholder = null, moving = null){
   const cards = allCards(), metrics = gridMetrics();
-  livePositions = window.VASTU_GRID.packGrid(cards.map(card => ({ id:card.dataset.id,...sizeOf(card) })),metrics.columns,baseline,anchor);
+  let fitted=null;
+  if(CFG.followGrid){
+    let ordered=cards;
+    if(anchor){
+      const movingCard=cards.find(card=>card.dataset.id===anchor.id);
+      ordered=cards.filter(card=>card!==movingCard);
+      const index=ordered.findIndex(card=>{const pos=baseline[card.dataset.id];return pos && (pos.row>anchor.row || pos.row===anchor.row && pos.col>=anchor.col);});
+      if(movingCard)ordered.splice(index<0?ordered.length:index,0,movingCard);
+    }
+    fitted=window.VASTU_GRID.followGrid(ordered.map(card=>({id:card.dataset.id,...sizeOf(card)})),metrics.columns,anchor || CLIENT && metrics.columns!==8 ? {} : baseline);
+  }
+  livePositions = fitted?.positions || window.VASTU_GRID.packGrid(cards.map(card => ({ id:card.dataset.id,...sizeOf(card) })),metrics.columns,baseline,anchor);
   cards.forEach(card => {
     const target = card === moving && placeholder ? placeholder : card;
-    const pos = livePositions[card.dataset.id], size = sizeOf(card);
+    const pos = livePositions[card.dataset.id], size = fitted?.sizes[card.dataset.id] || sizeOf(card);
     target.style.gridColumn = `${pos.col + 1} / span ${Math.min(size.cs,metrics.columns)}`;
     target.style.gridRow = `${pos.row + 1} / span ${size.rs}`;
   });
@@ -1442,6 +1454,7 @@ if (CFG.canvasEdgeBlur !== false){
   alignEdge();
   window.addEventListener('resize',alignEdge);
   grid.addEventListener('scroll', () => {
+    shell.classList.toggle('canvas-at-end',!CFG.canvasLoop && grid.scrollTop+grid.clientHeight>=grid.scrollHeight-2);
     shell.classList.toggle('canvas-has-scrolled',grid.scrollTop > 2);
     shell.classList.add('canvas-is-scrolling');
     clearTimeout(fadeTimer);

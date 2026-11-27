@@ -8,7 +8,9 @@
       scrollTop:number(value.scrollTop,10000000),
       detailIndex:Math.floor(number(value.detailIndex,10000)),
       brochureIndex:Math.floor(number(value.brochureIndex,10000)),
-      detailScroll:number(value.detailScroll,10000000)
+      detailScroll:number(value.detailScroll,10000000),
+      canvasLoop:typeof value.canvasLoop==='boolean' ? value.canvasLoop : undefined,
+      canvasLoopDefault:typeof value.canvasLoopDefault==='boolean' ? value.canvasLoopDefault : undefined
     };
   }
   function create(storage,key){

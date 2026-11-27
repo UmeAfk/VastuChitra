@@ -48,6 +48,7 @@ const images = [
   for (const name of ['script.js', 'view-state.js', 'settings.js', 'client.js', 'client-theme.js', 'brochure.js', 'meeting.js', 'heritage.js', 'portable-media.js', 'canvas.js', 'grid-layout.js', 'admin.js']) fs.copyFileSync(path.join(root, 'js', name), path.join(dist, 'js', name));
   fs.mkdirSync(path.join(dist, 'public'), { recursive: true });
   fs.copyFileSync(path.join(root, 'public', 'logo-ui.png'), path.join(dist, 'public', 'logo-ui.png'));
+  fs.cpSync(path.join(root,'public','shreesadhna'),path.join(dist,'public','shreesadhna'),{recursive:true,filter:src=>!src.endsWith('.jpg')});
   fs.cpSync(output, path.join(dist, 'public', 'demo'), { recursive: true });
   fs.cpSync(path.join(root, 'public', 'temple'), path.join(dist, 'public', 'temple'), { recursive: true });
   fs.cpSync(path.join(root, 'public', 'previews'), path.join(dist, 'public', 'previews'), { recursive: true });

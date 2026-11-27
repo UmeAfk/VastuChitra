@@ -94,7 +94,7 @@ test('Client exhibition composition has no overlapping tiles or empty cells', ()
       occupied.add(key);
     }
   }
-  assert.equal(occupied.size,80);
+  assert.equal(occupied.size,88);
 });
 
 test('Client redesign preserves custom titles and sizes', () => {
@@ -108,7 +108,7 @@ test('Client redesign preserves custom titles and sizes', () => {
 test('experience updates rename only stock titles and append the new cards once',()=>{
   const saved={settings:{presentationMode:'personal',catalogModesVersion:1,clientCatalogVersion:1,clientDesignVersion:2},projects:[],personalProjects:[{id:'sadhna-360',title:'Interactive 360°',size:[2,1]},{id:'sadhna-vr',title:'Our custom VR room',size:[3,2]}]};
   const first=load('',undefined,'showcase.example.com','https:',saved).config;
-  assert.equal(first.personalProjects.find(p=>p.id==='sadhna-360').title,'Every Angle');
+  assert.equal(first.personalProjects.find(p=>p.id==='sadhna-360').title,'Interactive 360°');
   assert.equal(first.personalProjects.find(p=>p.id==='sadhna-vr').title,'Our custom VR room');
   assert.equal(first.personalProjects.length,6);
   const second=load('',undefined,'showcase.example.com','https:',JSON.parse(JSON.stringify(first))).config;

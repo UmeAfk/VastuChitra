@@ -48,6 +48,34 @@ test('cycles remain bounded after rebuilds and disappear during editing', () => 
   canvas.setEditing(false);
   assert.equal(cycles.length,4);
 });
+
+test('finite canvas eases wheel movement and stops at the natural end',()=>{
+  const {canvas,grid,cycles,events,tick}=harness();
+  grid.scrollHeight=1500;canvas.setEnabled(false);
+  assert.equal(cycles.length,0);
+  events.wheel({deltaY:600,deltaMode:0,preventDefault(){}});
+  tick();assert.ok(grid.scrollTop>0 && grid.scrollTop<600);
+  for(let i=0;i<100;i++)tick();
+  assert.ok(Math.abs(grid.scrollTop-600)<.02);
+  events.wheel({deltaY:9999,deltaMode:0,preventDefault(){}});
+  for(let i=0;i<100;i++)tick();
+  assert.equal(grid.scrollTop,1000);
+  assert.equal(canvas.remaining,0);
+});
+
+test('loop switch preserves the current project position and keeps clones bounded',()=>{
+  const {canvas,grid,cycles}=harness();
+  grid.scrollTop=250;canvas.setEnabled(false);
+  assert.equal(grid.scrollTop,30);assert.equal(cycles.length,0);
+  canvas.setEnabled(true);
+  assert.equal(grid.scrollTop,30);assert.equal(cycles.length,4);
+});
+
+test('high resolution trackpad input uses native scrolling',()=>{
+  const {events}=harness();let prevented=false;
+  events.wheel({deltaY:8,deltaMode:0,preventDefault(){prevented=true;}});
+  assert.equal(prevented,false);
+});
 test('large wheel input wraps before browser scroll limits clamp it', () => {
   const {grid,events,canvas,tick} = harness();
   let prevented = false;

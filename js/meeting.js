@@ -135,7 +135,32 @@
       if(clientProjects.length) clientProjects.push(...window.VASTUCHITRA_CLIENT.filter(project=>['green','balcony-simulator','design-intent','mep'].includes(project.clientKind) && !ids.has(project.id)).map(project=>JSON.parse(JSON.stringify(project))));
       settings.clientExperienceVersion=1;
     }
-    return { ...config, settings, personalProjects:clientProjects };
+    if(settings.clientPlainNamesVersion!==1){
+      const plainNames={"In Focus":"Detailed renders","In Motion":"Walkthrough video","Place It Here":"Augmented reality","Step Beyond":"Virtual reality","The Outlook":"Balcony views","Every Angle":"Interactive 360°","Afterglow":"Projection mapping","The Project Edit":"Brochures & plans","Ground Report":"Live site camera","The Makers":"Project team","The Toolkit":"Software used","In Company":"Brand partners","On Record":"RERA & project facts","A Lighter Footprint":"Green building status","Beyond the Balcony":"Balcony simulator","The Thinking Behind":"Design intent","Behind the Walls":"MEP & coordination"};
+      clientProjects=clientProjects.map(project=>plainNames[project.title] && project.id.startsWith('sadhna-') ? {...project,title:plainNames[project.title]} : project);
+      settings.clientPlainNamesVersion=1;
+    }
+    if(settings.clientCanvasDefaultsVersion!==1){
+      settings.presentationOptions={...settings.presentationOptions,personal:{...settings.presentationOptions?.personal,canvasLoop:false,canvasAutoScroll:false}};
+      if(!settings.clientLightBackground || settings.clientLightBackground==='#cbd5cf')settings.clientLightBackground='#dce5ee';
+      if(!settings.clientDarkBackground || settings.clientDarkBackground==='#111816')settings.clientDarkBackground='#0c1423';
+      settings.clientCanvasDefaultsVersion=1;
+    }
+    if(settings.clientMosaicVersion!==1 && window.VASTUCHITRA_CLIENT_COMPOSITION){
+      const previousSizes={overview:[3,3],renders:[5,3],clay:[1,1],rera:[2,1],walkthrough:[3,2],ar:[2,1],vr:[2,1],sage:[1,1],'360':[2,1],balcony:[4,2],projection:[2,1],brochures:[2,1],people:[2,1],tools:[1,1],partners:[1,1],site:[5,1],plum:[1,1],ochre:[2,1],green:[2,2],'balcony-simulator':[2,2],'design-intent':[2,2],mep:[2,2]};
+      clientProjects=clientProjects.map(project=>{const key=project.id.replace('sadhna-',''),slot=window.VASTUCHITRA_CLIENT_COMPOSITION[key];return slot && JSON.stringify(project.size)===JSON.stringify(previousSizes[key]) ? {...project,size:slot.size,canvasPosition:{col:slot.col,row:slot.row}} : project;});
+      clientProjects.sort((a,b)=>(a.canvasPosition?.row||0)-(b.canvasPosition?.row||0)||(a.canvasPosition?.col||0)-(b.canvasPosition?.col||0));
+      settings.clientMosaicVersion=1;
+    }
+    if(settings.clientIconTilesVersion!==1 && window.VASTUCHITRA_CLIENT_ICON_TILES){
+      clientProjects=window.VASTUCHITRA_CLIENT_ICON_TILES(clientProjects);
+      settings.clientIconTilesVersion=1;
+    }
+    if(settings.clientSuppliedArtVersion!==1 && window.VASTUCHITRA_CLIENT_SUPPLIED_ART){
+      clientProjects=window.VASTUCHITRA_CLIENT_SUPPLIED_ART(clientProjects);
+      settings.clientSuppliedArtVersion=1;
+    }
+    return { ...config, settings, personalProjects:window.VASTUCHITRA_CLIENT_ASSETS ? window.VASTUCHITRA_CLIENT_ASSETS(clientProjects) : clientProjects };
   }
   window.VASTUCHITRA_COMMERCIAL = (config, offline = false) => {
     config = normalizeCollections(config);

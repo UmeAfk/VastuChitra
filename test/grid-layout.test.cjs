@@ -44,3 +44,8 @@ test('saved positions reproduce the exact dropped cell', () => {
   const positions = packGrid(items,6,preferred,{id:'small',col:3,row:4});
   assert.deepEqual(packGrid(items,6,JSON.parse(JSON.stringify(positions))),positions);
 });
+
+test('follow grid preserves tile proportions and stays bounded at all device column counts',()=>{
+ const {followGrid}=require('../js/grid-layout.js');
+ for(const columns of [1,2,4,6,8,12]){const result=followGrid(items,columns);const adjusted=items.map(item=>({...item,...result.sizes[item.id]}));noOverlap(adjusted,result.positions,columns);const height=Math.max(...adjusted.map(item=>result.positions[item.id].row+item.rs));for(const item of adjusted)assert.equal(item.rs,items.find(original=>original.id===item.id).rs);}
+});
