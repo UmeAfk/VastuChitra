@@ -2751,18 +2751,24 @@
       "accent": "gold",
       "fx": "fade",
       "interval": 6500,
-      "slides": [],
+      "slides": [
+        {
+          "src": "/api/admin?action=media&path=public%2Fuploads%2F1795780571620-a50bfc-dlogo-copy.webp",
+          "pos": "50% 50%"
+        }
+      ],
       "action": {
-        "type": "none"
+        "type": "exe"
       },
       "tile": {
         "style": "logo",
-        "color": "#ffffff",
-        "logoSrc": "/public/dlogo.png",
+        "gradient": "ember",
+        "frame": false,
         "showTitle": false,
         "showCategory": false,
         "showDescription": false,
-        "frame": false
+        "logoSrc": "/public/dlogo.png",
+        "color": "#ffffff"
       },
       "previousSize": [
         1,
