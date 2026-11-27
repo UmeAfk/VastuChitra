@@ -375,11 +375,31 @@
   }
 
   function getProjectThumbnail(p){
-    if (p.slides && p.slides.length > 0){
-      const s0 = typeof p.slides[0] === 'string' ? p.slides[0] : p.slides[0].src;
-      return mediaCandidates(s0, true)[0] || '';
+    if(p.tile?.style==='logo')return p.tile.logoSrc || '';
+    if(p.tile?.style==='gradient')return '';
+    if(p.poster)return p.poster;
+    const slide=(p.slides||[]).find(slide=>!isVideoPath(typeof slide==='string'?slide:slide.src));
+    return slide ? (typeof slide==='string'?slide:slide.src) : '';
+  }
+  function renderProjectArtwork(art,p){
+    const tile=p.tile||{},solid=['logo','gradient'].includes(tile.style);
+    const palette={'#ece6da':'#1b2c46','#e2ddcc':'#334fc4','#d9e0ce':'#124d46','#382c40':'#244fbd','#4a4151':'#6444a7','#c5b48f':'#174777','#e8d5ba':'#683d32','#d5d8cc':'#253c55','#bb623f':'#f27b61','#899777':'#2db792','#c3a471':'#e8bc50'};
+    if(solid){
+      const colour=state.settings.presentationMode==='personal' ? palette[tile.color?.toLowerCase()]||tile.color : tile.color;
+      art.style.background=colour||'#172838';art.querySelector('.project-art-scrim').hidden=true;
+      const rgb=/^#[0-9a-f]{6}$/i.test(colour||'') ? [1,3,5].map(i=>parseInt(colour.slice(i,i+2),16)) : [0,0,0];
+      const light=rgb[0]*.2126+rgb[1]*.7152+rgb[2]*.0722>150;
+      art.style.color=light?'#183047':'#fff';
+      if(tile.style==='logo'){
+        if(tile.logoSrc){const image=document.createElement('img');image.className='admin-tile-logo';image.src=tile.logoSrc;image.alt='';image.loading='lazy';image.decoding='async';art.appendChild(image);}
+        else if(tile.logoIcon){const symbol=document.createElement('div');symbol.className='admin-tile-symbol';symbol.innerHTML=ICONS[tile.logoIcon]||ICONS[p.icon]||'';art.appendChild(symbol);}
+      }
+    }else{
+      const thumbnail=getProjectThumbnail(p);if(thumbnail)applyBackgroundWithFallback(art,thumbnail,true);
+      const first=(p.slides||[]).find(slide=>!isVideoPath(typeof slide==='string'?slide:slide.src));
+      if(first?.pos&&!p.poster)art.style.backgroundPosition=first.pos;
     }
-    return '';
+    if(tile.showTitle===false)art.querySelector('.project-title-overlay').hidden=true;
   }
 
   // ---------------------------------------------------------------- Big Nice Cards Rendering
@@ -433,13 +453,7 @@
         </div>
       `;
 
-      if (thumb) applyBackgroundWithFallback(item.querySelector('.project-art'), thumb, true);
-      if (p.tile?.style === 'gradient' && /^#[0-9a-f]{6}$/i.test(p.tile.color || '')){
-        const art = item.querySelector('.project-art');
-        art.style.background = p.tile.color;
-        art.querySelector('.project-art-scrim').style.display = 'none';
-        item.querySelector('.project-title-overlay').style.color = ['#382c40','#4a4151'].includes(p.tile.color) ? '#f4eee3' : '#352e35';
-      }
+      renderProjectArtwork(item.querySelector('.project-art'),p);
 
       // Event listeners
       item.querySelector('.btn-edit').addEventListener('click', () => openEditor(p));
@@ -1696,7 +1710,7 @@
   function showPreviewMedia(thumb, slide){
     const token = (Number(thumb.dataset.previewToken) || 0) + 1;
     thumb.dataset.previewToken = String(token);
-    thumb.querySelectorAll('video, img, .preview-media-fallback').forEach(node => node.remove());
+    thumb.querySelectorAll('video, img, .preview-media-fallback, .admin-preview-symbol').forEach(node => node.remove());
     thumb.style.backgroundImage = 'none';
     if (isVideoPath(slide?.src)){
       const video = document.createElement('video');
@@ -1807,7 +1821,7 @@
         if (activeTile.logoSrc){
           const logo = document.createElement('img'); logo.className = 'card-logo'; logo.src = activeTile.logoSrc; logo.alt = '';
           thumb.appendChild(logo);
-        }
+        }else if(activeTile.logoIcon){const mark=document.createElement('div');mark.className='admin-preview-symbol';mark.innerHTML=ICONS[activeTile.logoIcon]||ICONS[activeIcon]||'';thumb.appendChild(mark);}
       } else if (style === 'video'){
         const videoSlide = activeSlideList.find(slide => isVideoPath(slide.src));
         showPreviewMedia(thumb, videoSlide || null);
@@ -1817,7 +1831,7 @@
         showPreviewMedia(thumb, null);
         if (previewCarouselTimer) clearInterval(previewCarouselTimer);
       } else if (activeSlideList.length === 1){
-        showPreviewMedia(thumb, activeSlideList[0]);
+        showPreviewMedia(thumb,isVideoPath(activeSlideList[0].src)&&state.currentEdit?.poster ? {src:state.currentEdit.poster} : activeSlideList[0]);
         if (previewCarouselTimer) clearInterval(previewCarouselTimer);
       } else {
         if (previewCarouselTimer) clearInterval(previewCarouselTimer);
