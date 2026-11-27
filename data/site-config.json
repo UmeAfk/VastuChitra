@@ -2580,11 +2580,7 @@
       "interval": 6500,
       "slides": [
         {
-          "src": "/public/shreesadhna/3.webp",
-          "pos": "50% 50%"
-        },
-        {
-          "src": "/public/shreesadhna/14.webp",
+          "src": "/api/admin?action=media&path=public%2Fuploads%2F1795781194427-6a47b8-Gemini_Generated_Image_4k45kc4k45kc4k45.webp",
           "pos": "50% 50%"
         }
       ],
@@ -2613,6 +2609,15 @@
       "canvasPosition": {
         "col": 0,
         "row": 9
+      },
+      "tile": {
+        "style": "image",
+        "gradient": "ember",
+        "frame": true,
+        "showTitle": true,
+        "showCategory": true,
+        "showDescription": true,
+        "logoSrc": ""
       }
     },
     {
