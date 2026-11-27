@@ -2091,43 +2091,6 @@
       }
     },
     {
-      "id": "sadhna-balcony",
-      "title": "Balcony views",
-      "cat": "06 / Balcony views",
-      "sub": "Balcony views & perspectives",
-      "size": [
-        3,
-        2
-      ],
-      "clientKind": "balcony",
-      "icon": "landscape",
-      "accent": "gold",
-      "fx": "fade",
-      "interval": 6500,
-      "slides": [
-        {
-          "src": "/public/shreesadhna/8.webp",
-          "pos": "50% 50%"
-        },
-        {
-          "src": "/public/shreesadhna/9.webp",
-          "pos": "50% 50%"
-        },
-        {
-          "src": "/public/shreesadhna/4.webp",
-          "pos": "50% 50%"
-        }
-      ],
-      "action": {
-        "type": "detail"
-      },
-      "desc": "A gallery for views from individual balconies and floors. Current images are preview artwork; approved floor and direction labels can be added as specifications.",
-      "canvasPosition": {
-        "col": 0,
-        "row": 5
-      }
-    },
-    {
       "id": "sadhna-brochures",
       "title": "Brochures & plans",
       "cat": "09 / Brochures & plans",
