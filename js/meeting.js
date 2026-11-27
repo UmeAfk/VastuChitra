@@ -89,6 +89,7 @@
       })
     ]
   };
+  showcase.personalProjects=window.VASTUCHITRA?.personalProjects || window.VASTUCHITRA_CLIENT;
   const artwork = { 'meeting-about':14, 'meeting-journal':13, 'meeting-team':11 };
   showcase.projects.forEach(project => {
     if (!project.slides.length){
@@ -104,7 +105,7 @@
       .filter(project => ['meeting-selected','meeting-residences','meeting-outdoors','meeting-process','meeting-detail','meeting-interior'].includes(project.id))
       .map(project => ({ ...JSON.parse(JSON.stringify(project)), id:project.id.replace('meeting-','personal-') }));
     let clientProjects = personalProjects;
-    if (settings.clientCatalogVersion !== 1 && window.VASTUCHITRA_CLIENT){
+    if ((settings.clientCatalogVersion !== 1 || !Array.isArray(config.personalProjects) || personalProjects.length>0 && personalProjects.every(project=>/^personal-(selected|residences|outdoors|process|detail|interior)$/.test(project.id))) && window.VASTUCHITRA_CLIENT){
       const oldSeeds = showcase.projects.filter(project => ['meeting-selected','meeting-residences','meeting-outdoors','meeting-process','meeting-detail','meeting-interior'].includes(project.id));
       const isStarter = project => oldSeeds.some(seed => project.id === seed.id.replace('meeting-','personal-') && project.title === seed.title && project.desc === seed.desc);
       // Replace the previous sample portfolio, retaining any custom client cards.

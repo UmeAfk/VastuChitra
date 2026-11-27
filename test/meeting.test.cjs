@@ -145,3 +145,10 @@ test('all heritage photographs have bundled lightweight previews', () => {
     }
   }
 });
+
+test('hosted Client recovers its video catalogue when saved version flags have no Client collection',()=>{
+ const saved={settings:{presentationMode:'personal',catalogModesVersion:1,clientCatalogVersion:1,clientWalkthroughVersion:1},projects:[]};
+ const {config}=load('',undefined,'vastuchitraa.vercel.app','https:',saved);
+ const walkthrough=config.personalProjects.find(project=>project.id==='sadhna-walkthrough');
+ assert.ok(walkthrough);assert.equal(walkthrough.slides[0].src,'/public/shreesadhna/Walkthrough.mp4');
+});
