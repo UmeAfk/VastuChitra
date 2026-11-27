@@ -106,6 +106,7 @@
     },
     "presentationOptions": {
       "commercial": {
+        "followGrid": true,
         "canvasLoop": false,
         "canvasAutoScroll": false,
         "canvasPauseOnHover": true,
@@ -1693,8 +1694,13 @@
       },
       "tile": {
         "style": "gradient",
-        "color": "#ece6da",
-        "frame": false
+        "gradient": "ember",
+        "frame": false,
+        "showTitle": true,
+        "showCategory": true,
+        "showDescription": true,
+        "logoSrc": "",
+        "color": "#ece6da"
       },
       "desc": "Shree Sadhna brings every part of the project into one place: the architecture, the views, the people and the experiences. This is a presentation preview; project facts and final artwork will be added with the client.",
       "specs": [
@@ -1704,15 +1710,11 @@
         ],
         [
           "Location",
-          "To be added"
+          "Vile Parle East, Mumbai"
         ],
         [
           "Developer",
-          "To be added"
-        ],
-        [
-          "Presentation",
-          "Preview artwork from the studio library"
+          "IPDS"
         ]
       ],
       "canvasPosition": {
@@ -1910,8 +1912,8 @@
     {
       "id": "sadhna-walkthrough",
       "title": "Walkthrough video",
-      "cat": "03 / Walkthrough film",
-      "sub": "Shree Sadhna walkthrough film",
+      "cat": "",
+      "sub": "",
       "size": [
         4,
         2
@@ -1923,7 +1925,8 @@
       "interval": 6500,
       "slides": [
         {
-          "src": "/public/shreesadhna/Walkthrough.mp4"
+          "src": "/public/shreesadhna/Walkthrough.mp4",
+          "pos": "50% 50%"
         }
       ],
       "action": {
@@ -1935,7 +1938,13 @@
         "row": 3
       },
       "tile": {
-        "style": "image"
+        "style": "video",
+        "gradient": "ember",
+        "frame": true,
+        "showTitle": true,
+        "showCategory": true,
+        "showDescription": true,
+        "logoSrc": ""
       },
       "poster": "/public/shreesadhna/walkthrough-poster.webp"
     },
@@ -2090,43 +2099,6 @@
       }
     },
     {
-      "id": "sadhna-balcony",
-      "title": "Balcony views",
-      "cat": "06 / Balcony views",
-      "sub": "Balcony views & perspectives",
-      "size": [
-        3,
-        2
-      ],
-      "clientKind": "balcony",
-      "icon": "landscape",
-      "accent": "gold",
-      "fx": "fade",
-      "interval": 6500,
-      "slides": [
-        {
-          "src": "/public/shreesadhna/8.webp",
-          "pos": "50% 50%"
-        },
-        {
-          "src": "/public/shreesadhna/9.webp",
-          "pos": "50% 50%"
-        },
-        {
-          "src": "/public/shreesadhna/4.webp",
-          "pos": "50% 50%"
-        }
-      ],
-      "action": {
-        "type": "detail"
-      },
-      "desc": "A gallery for views from individual balconies and floors. Current images are preview artwork; approved floor and direction labels can be added as specifications.",
-      "canvasPosition": {
-        "col": 0,
-        "row": 5
-      }
-    },
-    {
       "id": "sadhna-brochures",
       "title": "Brochures & plans",
       "cat": "09 / Brochures & plans",
@@ -2142,7 +2114,7 @@
       "interval": 6500,
       "slides": [
         {
-          "src": "/public/shreesadhna/1.webp",
+          "src": "/public/shreesadhna/15.webp",
           "pos": "50% 50%"
         }
       ],
@@ -2219,45 +2191,6 @@
       ]
     },
     {
-      "id": "sadhna-projection",
-      "title": "Projection mapping",
-      "cat": "08 / Projection mapping",
-      "sub": "Projection mapping · Not connected",
-      "size": [
-        2,
-        1
-      ],
-      "clientKind": "projection",
-      "icon": "projector",
-      "accent": "gold",
-      "fx": "fade",
-      "interval": 6500,
-      "slides": [
-        {
-          "src": "/public/shreesadhna/15.webp",
-          "pos": "50% 50%"
-        }
-      ],
-      "action": {
-        "type": "detail"
-      },
-      "tile": {
-        "style": "logo",
-        "frame": false,
-        "color": "#a52d72",
-        "logoIcon": "projector",
-        "logoSrc": null,
-        "showTitle": true,
-        "showCategory": false,
-        "showDescription": false
-      },
-      "desc": "A home for the project’s projection mapping film or installation. Upload the film in Media or connect the installation application in Action settings.",
-      "canvasPosition": {
-        "col": 6,
-        "row": 5
-      }
-    },
-    {
       "id": "sadhna-plum",
       "title": "Colour study",
       "cat": "Palette",
@@ -2330,7 +2263,7 @@
     },
     {
       "id": "sadhna-green",
-      "title": "Green building status",
+      "title": "Green Building",
       "cat": "Green building status",
       "sub": "Green building status · Awaiting details",
       "size": [
@@ -2353,13 +2286,14 @@
       },
       "tile": {
         "style": "logo",
+        "gradient": "ember",
         "frame": false,
-        "color": "#167547",
-        "logoIcon": "garden",
-        "logoSrc": null,
         "showTitle": true,
         "showCategory": false,
-        "showDescription": false
+        "showDescription": false,
+        "logoSrc": null,
+        "color": "#167547",
+        "logoIcon": "garden"
       },
       "desc": "The project’s environmental goals, resource strategy and verified green building status belong here. No certification, rating or performance claim has been supplied yet.",
       "specs": [
@@ -2450,7 +2384,7 @@
     },
     {
       "id": "sadhna-site",
-      "title": "Live site camera",
+      "title": "Live Construction Updates",
       "cat": "10 / Site camera",
       "sub": "Site camera · Not connected",
       "size": [
@@ -2473,13 +2407,14 @@
       },
       "tile": {
         "style": "logo",
+        "gradient": "ember",
         "frame": false,
-        "color": "#155c6e",
-        "logoIcon": "projector",
-        "logoSrc": null,
         "showTitle": true,
         "showCategory": false,
-        "showDescription": false
+        "showDescription": false,
+        "logoSrc": null,
+        "color": "#155c6e",
+        "logoIcon": "projector"
       },
       "desc": "The live site camera has not been connected. Add an authorized, embeddable camera URL in this card’s Action settings. This preview does not display a live feed.",
       "specs": [
@@ -2513,7 +2448,7 @@
       "interval": 6500,
       "slides": [
         {
-          "src": "/media/Indian%20Brands%20Logo%20Collage_1.png",
+          "src": "/api/admin?action=media&path=public%2Fuploads%2F1795781215161-f28f1d-brand-partners-copy.webp",
           "pos": "50% 50%"
         }
       ],
@@ -2521,14 +2456,14 @@
         "type": "detail"
       },
       "tile": {
-        "style": "logo",
+        "style": "gradient",
         "gradient": "ember",
         "frame": false,
         "showTitle": true,
         "showCategory": false,
         "showDescription": false,
         "logoSrc": "/public/shreesadhna/brand-partners.webp",
-        "color": "#ffffff",
+        "color": "#ff0000",
         "logoIcon": null
       },
       "desc": "Credits for the brands and partners associated with Shree Sadhna. Add confirmed names, logos and links once supplied.",
@@ -2645,11 +2580,7 @@
       "interval": 6500,
       "slides": [
         {
-          "src": "/public/shreesadhna/3.webp",
-          "pos": "50% 50%"
-        },
-        {
-          "src": "/public/shreesadhna/14.webp",
+          "src": "/api/admin?action=media&path=public%2Fuploads%2F1795781194427-6a47b8-Gemini_Generated_Image_4k45kc4k45kc4k45.webp",
           "pos": "50% 50%"
         }
       ],
@@ -2678,6 +2609,15 @@
       "canvasPosition": {
         "col": 0,
         "row": 9
+      },
+      "tile": {
+        "style": "image",
+        "gradient": "ember",
+        "frame": true,
+        "showTitle": true,
+        "showCategory": true,
+        "showDescription": true,
+        "logoSrc": ""
       }
     },
     {
@@ -2696,8 +2636,8 @@
       "interval": 6500,
       "slides": [
         {
-          "src": "/public/shreesadhna/17.webp",
-          "pos": "50% 50%"
+          "src": "/api/admin?action=media&path=public%2Fuploads%2F1795780534895-4e12bf-057.webp",
+          "pos": "50% 46.1%"
         }
       ],
       "action": {
@@ -2705,7 +2645,12 @@
       },
       "tile": {
         "style": "image",
-        "frame": false
+        "gradient": "ember",
+        "frame": false,
+        "showTitle": true,
+        "showCategory": true,
+        "showDescription": true,
+        "logoSrc": ""
       },
       "desc": "A dedicated entry to the balcony simulator: explore the view from different floors, orientations and times of day once the experience is connected. Add the simulator URL or application in this card’s Action settings.",
       "specs": [
@@ -2742,21 +2687,27 @@
       ],
       "clientKind": "brand",
       "icon": "frames",
-      "accent": "gold",
+      "accent": "aqua",
       "fx": "fade",
       "interval": 6500,
-      "slides": [],
+      "slides": [
+        {
+          "src": "/api/admin?action=media&path=public%2Fuploads%2F1795780571620-a50bfc-dlogo-copy.webp",
+          "pos": "50% 50%"
+        }
+      ],
       "action": {
-        "type": "none"
+        "type": "exe"
       },
       "tile": {
         "style": "logo",
-        "color": "#ffffff",
-        "logoSrc": "/public/dlogo.png",
+        "gradient": "ember",
+        "frame": false,
         "showTitle": false,
         "showCategory": false,
         "showDescription": false,
-        "frame": false
+        "logoSrc": "/api/admin?action=media&path=public%2Fuploads%2F1795780571620-a50bfc-dlogo-copy.webp",
+        "color": "#008080"
       },
       "previousSize": [
         1,
