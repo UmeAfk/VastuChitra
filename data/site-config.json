@@ -1693,8 +1693,13 @@
       },
       "tile": {
         "style": "gradient",
-        "color": "#ece6da",
-        "frame": false
+        "gradient": "ember",
+        "frame": false,
+        "showTitle": true,
+        "showCategory": true,
+        "showDescription": true,
+        "logoSrc": "",
+        "color": "#ece6da"
       },
       "desc": "Shree Sadhna brings every part of the project into one place: the architecture, the views, the people and the experiences. This is a presentation preview; project facts and final artwork will be added with the client.",
       "specs": [
@@ -1704,15 +1709,11 @@
         ],
         [
           "Location",
-          "To be added"
+          "Vile Parle East, Mumbai"
         ],
         [
           "Developer",
-          "To be added"
-        ],
-        [
-          "Presentation",
-          "Preview artwork from the studio library"
+          "IPDS"
         ]
       ],
       "canvasPosition": {
