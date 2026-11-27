@@ -19,7 +19,7 @@
     ['clientThemeDefault','Default appearance','client','select','system','Used when no remembered visitor choice applies.',null,null,null,['system','light','dark']],
     ['clientRememberTheme','Remember visitor appearance','client','boolean',true,'Keep the visitor’s light or dark choice after a reload.'],
     ['clientShowThemeToggle','Show appearance switch','client','boolean',true,'Show the sun and moon control on the Client canvas.'],
-    ['clientThemeAnimation','Animate theme changes','client','boolean',true,'Use the circular reveal; reduced-motion preferences always take priority.'],
+    ['clientThemeAnimation','Animate theme changes','client','boolean',true,'Smoothly transition theme colours; reduced-motion preferences always take priority.'],
     ['clientLightBackground','Light canvas colour','client','color','#dce5ee','Background behind the cards in light mode.'],
     ['clientDarkBackground','Dark canvas colour','client','color','#0c1423','Background behind the cards in dark mode.'],
     ['brochureSize','Brochure size','brochure','number',72,'Maximum book height relative to the screen. Mobile sizing fits the available space.',55,78,'%'],

@@ -52,10 +52,10 @@ test('system changes follow automatic mode and other tabs synchronize saved choi
   assert.equal(page.root.dataset.clientTheme,'dark');
 });
 
-test('an interrupted theme reveal always releases the settled-colour guard and allows another toggle',async()=>{
- const classes=new Set();let guarded=false;const root={dataset:{},classList:{add:name=>classes.add(name),remove:name=>classes.delete(name)},animate(){guarded=classes.has('client-theme-changing');return {finished:Promise.reject(new Error('interrupted'))};}};
- const sandbox={document:{documentElement:root,startViewTransition(callback){callback();return {ready:Promise.resolve(),finished:Promise.resolve()};}},window:{VASTU_SETTINGS:require('../js/settings.js'),VASTUCHITRA:{settings:{}},dispatchEvent(){},addEventListener(){}},Event:class{},innerWidth:1000,innerHeight:800,matchMedia:()=>({matches:false,addEventListener(){}}),localStorage:{getItem:()=> 'light',setItem(){}}};
- vm.runInNewContext(source,sandbox);const button={getBoundingClientRect:()=>({left:900,top:20,width:44,height:44})};
- await sandbox.window.VASTU_CLIENT_THEME.toggle(button);assert.equal(guarded,true);assert.equal(classes.size,0);assert.equal(root.dataset.clientTheme,'dark');
- await sandbox.window.VASTU_CLIENT_THEME.toggle(button);assert.equal(classes.size,0);assert.equal(root.dataset.clientTheme,'light');
+test('theme changes do not snapshot video or header layers and rapid toggles stay consistent',async()=>{
+ const root={dataset:{}};let snapshots=0;
+ const sandbox={document:{documentElement:root,startViewTransition(){snapshots++;throw Error('Unexpected snapshot');}},window:{VASTU_SETTINGS:require('../js/settings.js'),VASTUCHITRA:{settings:{}},dispatchEvent(){},addEventListener(){}},Event:class{},matchMedia:()=>({matches:false,addEventListener(){}}),localStorage:{getItem:()=> 'light',setItem(){}}};
+ vm.runInNewContext(source,sandbox);
+ for(let i=0;i<6;i++)await sandbox.window.VASTU_CLIENT_THEME.toggle();
+ assert.equal(snapshots,0);assert.equal(root.dataset.clientTheme,'light');
 });

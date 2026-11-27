@@ -504,6 +504,11 @@ const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://x');
   if (url.pathname.startsWith('/api/')){
     try {
+      if(url.pathname==='/api/chat'){
+        req.body=req.method==='POST'?await parseJsonBody(req):{};
+        const adapter={setHeader:(key,value)=>res.setHeader(key,value),status(code){this.code=code;return this;},json(data){return json(res,this.code||200,data);}};
+        await require('./api/chat')(req,adapter);return;
+      }
       if(url.pathname==='/api/contact'){
         const {validateContact}=require('./js/contact-store.cjs');const directory=path.join(ROOT,'.data'),file=path.join(directory,'enquiries.jsonl');
         if(req.headers['x-requested-with']!=='vastuchitra')return json(res,403,{error:'Forbidden'});

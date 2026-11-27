@@ -1219,3 +1219,22 @@ body:has(.overlay.show) .contact-fab{opacity:0;pointer-events:none;}
 .client-mode .card[data-id="sadhna-ipds"] .thumb{background:#007e83!important;}
 .client-mode .card[data-id="sadhna-ipds"] .card-logo{filter:brightness(0) invert(1);}
 @media(max-width:700px){:root body.client-mode .brand .launcher-logo.client-project-logo{width:190px!important;height:62px;}}
+
+/* Theme colours transition on live layers: no snapshot cross-fade or video flash. */
+@media(prefers-reduced-motion:no-preference){
+ .client-mode,.client-mode .shell>.topbar,.client-mode .card,.client-mode .card .thumb,.client-mode .contact-dialog,.client-mode .contact-form input{transition:background-color .36s ease,color .36s ease,border-color .36s ease,box-shadow .36s ease;}
+}
+:root:has(.client-mode){background:#dce5ee;color-scheme:light;}
+:root[data-client-theme="dark"]:has(.client-mode){background:#0c1524;color-scheme:dark;}
+:root:has(.client-mode.reduce-effects) .client-mode,:root:has(.client-mode.reduce-effects) .client-mode *{transition:none!important;}
+.contact-tabs{display:flex;gap:5px;padding:5px;background:var(--bg);border-radius:13px;margin:20px 0;}
+.contact-tabs button{flex:1;min-height:44px;border:0;border-radius:9px;color:var(--muted);background:transparent;font:600 13px var(--font-ui);cursor:pointer;}
+.contact-tabs button[aria-selected="true"]{background:#1765b5;color:#fff;box-shadow:0 3px 10px #0002;}
+.contact-dialog [hidden]{display:none!important;}
+.contact-chat-log{height:clamp(160px,32dvh,300px);overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:3px 3px 12px;overscroll-behavior:contain;}
+.contact-chat-message{max-width:94%;padding:12px 14px;border-radius:14px 14px 14px 4px;background:var(--bg);font-size:13px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere;}
+.contact-chat-message[data-role="user"]{align-self:flex-end;border-radius:14px 14px 4px 14px;background:#1765b5;color:#fff;}
+.contact-chat-form{display:flex;gap:8px;margin-top:10px;}.contact-chat-form input{min-width:0;flex:1;height:46px;border:1px solid var(--line);border-radius:10px;padding:0 12px;background:var(--bg);color:var(--text);font:16px var(--font-ui);}.contact-chat-form button{padding:0 15px;}
+.contact-chat-note{font-size:11px;color:var(--muted);line-height:1.5;margin:14px 0 0;}
+
+:root[data-client-theme-motion="off"] .client-mode,:root[data-client-theme-motion="off"] .client-mode *{transition:none!important;}
