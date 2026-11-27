@@ -2761,14 +2761,14 @@
         "type": "exe"
       },
       "tile": {
-        "style": "logo",
+        "style": "gradient",
         "gradient": "ember",
         "frame": false,
         "showTitle": false,
         "showCategory": false,
         "showDescription": false,
         "logoSrc": "/public/dlogo.png",
-        "color": "#ffffff"
+        "color": "#008080"
       },
       "previousSize": [
         1,
