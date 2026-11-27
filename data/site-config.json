@@ -2687,7 +2687,7 @@
       ],
       "clientKind": "brand",
       "icon": "frames",
-      "accent": "gold",
+      "accent": "aqua",
       "fx": "fade",
       "interval": 6500,
       "slides": [
@@ -2706,7 +2706,7 @@
         "showTitle": false,
         "showCategory": false,
         "showDescription": false,
-        "logoSrc": "/public/dlogo.png",
+        "logoSrc": "/api/admin?action=media&path=public%2Fuploads%2F1795780571620-a50bfc-dlogo-copy.webp",
         "color": "#008080"
       },
       "previousSize": [
