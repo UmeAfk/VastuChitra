@@ -504,6 +504,15 @@ const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://x');
   if (url.pathname.startsWith('/api/')){
     try {
+      if(url.pathname==='/api/contact'){
+        const {validateContact}=require('./js/contact-store.cjs');const directory=path.join(ROOT,'.data'),file=path.join(directory,'enquiries.jsonl');
+        if(req.headers['x-requested-with']!=='vastuchitra')return json(res,403,{error:'Forbidden'});
+        if(req.method==='GET'){let enquiries=[];try{enquiries=fs.readFileSync(file,'utf8').trim().split(String.fromCharCode(10)).filter(Boolean).map(line=>JSON.parse(line)).reverse();}catch(error){if(error.code!=='ENOENT')throw error;}return json(res,200,{enquiries});}
+        if(req.method!=='POST')return json(res,405,{error:'Method not allowed'});
+        const body=await parseJsonBody(req);if(body.website)return json(res,201,{success:true});
+        let contact;try{contact=validateContact(body);}catch(error){return json(res,400,{error:error.message});}
+        const record={id:require('node:crypto').randomUUID(),createdAt:new Date().toISOString(),...contact};fs.mkdirSync(directory,{recursive:true});fs.appendFileSync(file,JSON.stringify(record)+String.fromCharCode(10));return json(res,201,{success:true});
+      }
       if (req.method === 'GET' && url.pathname === '/api/events'){
         res.writeHead(200, {
           'Content-Type': 'text/event-stream',

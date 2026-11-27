@@ -177,8 +177,8 @@
       clientProjects=clientProjects.map(project=>project.id==='sadhna-vr' ? {...project,tile:{...project.tile,style:'logo',logoIcon:null,logoSrc:'/public/shreesadhna/vr-headset.webp?v=2'}} : project);
       settings.clientVrImageVersion=1;
     }
-    if(settings.clientWhiteIconsVersion!==1 && window.VASTUCHITRA_CLIENT_WHITE_ICONS){
-      clientProjects=window.VASTUCHITRA_CLIENT_WHITE_ICONS(clientProjects);settings.clientWhiteIconsVersion=1;
+    if(settings.clientWhiteIconsVersion!==2 && window.VASTUCHITRA_CLIENT_WHITE_ICONS){
+      clientProjects=window.VASTUCHITRA_CLIENT_WHITE_ICONS(clientProjects);settings.clientWhiteIconsVersion=2;
     }
     if(settings.clientIpdsTileVersion!==1 && window.VASTUCHITRA_CLIENT){
       const tile=window.VASTUCHITRA_CLIENT.find(project=>project.id==='sadhna-ipds');
@@ -186,10 +186,20 @@
       clientProjects=clientProjects.map(project=>project.id==='sadhna-mep'&&JSON.stringify(project.size)==='[3,1]'&&project.canvasPosition?.row===8&&project.canvasPosition?.col===5 ? {...project,size:[2,1],canvasPosition:{col:6,row:8}} : project);
       settings.clientIpdsTileVersion=1;
     }
+    clientProjects=clientProjects.map(project=>project.id==='sadhna-ipds' ? {...project,action:{type:'none'},tile:{...project.tile,color:'#007e83',style:'logo',logoSrc:'/public/ipds-white.webp',iconArtwork:true,showTitle:false,showCategory:false,showDescription:false}} : project);
     return { ...config, settings, personalProjects:window.VASTUCHITRA_CLIENT_ASSETS ? window.VASTUCHITRA_CLIENT_ASSETS(clientProjects) : clientProjects };
   }
   window.VASTUCHITRA_COMMERCIAL = (config, offline = false) => {
     config = normalizeCollections(config);
+    if(config.settings?.commercialAccentsVersion!==1){
+      const ids=new Set((config.projects||[]).map(project=>project.id));
+      const accents=showcase.projects.filter(project=>['meeting-brand','meeting-cube','meeting-palette','meeting-leaf','meeting-plan','meeting-blue'].includes(project.id)&&!ids.has(project.id));
+      if((config.projects||[]).some(project=>project.id.startsWith('meeting-'))){
+        const projects=[...config.projects];
+        for(const accent of accents){const seedIndex=showcase.projects.findIndex(project=>project.id===accent.id);const predecessor=showcase.projects.slice(0,seedIndex).reverse().find(seed=>projects.some(project=>project.id===seed.id));const index=predecessor?projects.findIndex(project=>project.id===predecessor.id)+1:projects.length;projects.splice(index,0,accent);}
+        config={...config,projects,settings:{...config.settings,commercialAccentsVersion:1}};
+      }
+    }
     if (config.settings?.commercialCatalogVersion === 1) return config;
     const primary = config.projects || [];
     const startsWithShowcase = primary.some(project => showcase.projects.some(tile => tile.id === project.id));
@@ -221,3 +231,4 @@
   if (!/\/admin(?:\.html)?\/?$/.test(location.pathname || '')) document.title = 'VastuChitra — Studio Showcase';
   document.body.classList.add('meeting-preview');
 })();
+

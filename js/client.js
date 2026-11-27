@@ -77,7 +77,7 @@
       desc:'A place for the architectural concept, site response, design decisions and material story. The current images are studio preview artwork; add the approved Shree Sadhna design narrative here.',
       specs:[['Architectural concept','To be added'],['Site response','To be added'],['Materials & character','To be added']]
     }),
-    make('ipds','IPDS','Studio logo','',[1,1],'brand',{tile:{style:'logo',color:'#ffffff',logoSrc:'/public/dlogo.png',showTitle:false,showCategory:false,showDescription:false,frame:false},action:{type:'none'}}),
+    make('ipds','IPDS','Studio logo','',[1,1],'brand',{tile:{style:'logo',color:'#007e83',logoSrc:'/public/ipds-white.webp',iconArtwork:true,showTitle:false,showCategory:false,showDescription:false,frame:false},action:{type:'none'}}),
     make('mep','MEP & coordination','MEP & coordination','Building systems, brought together',[2,2],'mep',{
       tile:paper('#d5d8cc'),icon:'model',
       desc:'Explore the mechanical, electrical and plumbing systems behind the project. Add approved diagrams, coordination views and system information, or connect a model viewer through this card’s Action settings.',
@@ -146,9 +146,10 @@
     return image ? {...project,tile:{...project.tile,style:'logo',color:'#ffffff',logoIcon:null,logoSrc:'/public/shreesadhna/'+image,showTitle:true,showCategory:false,showDescription:false}} : project;
   });
   window.VASTUCHITRA_CLIENT_WHITE_ICONS=projects=>projects.map(project=>{
-    const icons={vr:['vr-icon.webp','#5737b0'],people:['team-icon.webp','#007e83'],rera:['rera-icon.webp','#bd4a2c']};
+    const icons={vr:['vr-icon.webp','#5737b0'],people:['team-icon.webp','#007e83'],rera:['rera-icon.webp','#bd4a2c'],ar:['ar-icon.svg','#007e83'],'360':['360-icon.svg','#1466b8'],tools:['immersive-icon.svg','#3853a5'],site:['construction-icon.svg','#155c6e']};
     const artwork=icons[project.id.replace('sadhna-','')];
     return artwork ? {...project,tile:{...project.tile,style:'logo',logoSrc:'/public/shreesadhna/'+artwork[0],logoIcon:null,color:artwork[1],iconArtwork:true,showTitle:true,showCategory:false,showDescription:false}} : project;
   });
   window.VASTUCHITRA_CLIENT=window.VASTUCHITRA_CLIENT_WHITE_ICONS(window.VASTUCHITRA_CLIENT_SUPPLIED_ART(window.VASTUCHITRA_CLIENT_ICON_TILES(window.VASTUCHITRA_CLIENT_ASSETS(window.VASTUCHITRA_CLIENT))));
 })();
+

@@ -1199,3 +1199,23 @@ body:is(.client-mode,.heritage-mode,.meeting-preview) .shell>.topbar{background:
 /* Capture settled theme colours once; CSS fades must not fight the circular reveal. */
 :root.client-theme-changing body.client-mode,:root.client-theme-changing body.client-mode *{transition:none!important;}
 @media(max-width:700px){:root body.client-mode .brand .launcher-logo.client-project-logo{width:142px!important;height:46px;}}
+.contact-fab{position:fixed;z-index:30;right:max(24px,env(safe-area-inset-right));bottom:max(24px,env(safe-area-inset-bottom));display:flex;align-items:center;gap:9px;min-height:52px;padding:0 18px;border:1px solid #ffffff30;border-radius:30px;background:#1765b5;color:#fff;box-shadow:0 8px 28px #00162b40;font:600 13px var(--font-ui);cursor:pointer;transition:transform .25s ease,box-shadow .25s ease;}
+.contact-fab svg,.contact-symbol svg{width:23px;height:23px;}.contact-fab:hover{transform:translateY(-3px);box-shadow:0 12px 30px #00162b55;}.contact-fab:focus-visible,.contact-close:focus-visible{outline:3px solid #6bbcff;outline-offset:4px;}
+body:has(.overlay.show) .contact-fab{opacity:0;pointer-events:none;}
+.contact-dialog{width:min(440px,calc(100vw - 32px));max-height:calc(100dvh - 40px);overflow-y:auto;box-sizing:border-box;padding:30px;border:1px solid var(--line,#546474);border-radius:22px;background:var(--panel,#18283d);color:var(--text,#eff5ff);box-shadow:0 24px 80px #0005;}
+.contact-dialog::backdrop{background:#07111d88;backdrop-filter:blur(7px);}.contact-dialog[open]{animation:contactAppear .25s ease-out;}
+.contact-close{position:absolute;right:14px;top:14px;width:40px;height:40px;border:0;border-radius:12px;background:transparent;color:inherit;font-size:27px;cursor:pointer;}
+.contact-symbol{display:grid;place-items:center;width:46px;height:46px;background:#1765b51c;color:var(--text);border-radius:14px;margin-bottom:18px;}
+.contact-dialog h2{font:600 30px/1.1 var(--font-ui);margin:0 0 9px;}.contact-dialog>p{font-size:13px;line-height:1.6;color:var(--muted);margin:0 0 22px;}
+.contact-form{display:grid;gap:14px;}.contact-form label{display:grid;gap:7px;font:500 12px var(--font-ui);}.contact-form input{min-width:0;box-sizing:border-box;width:100%;height:46px;border:1px solid var(--line);border-radius:10px;padding:0 12px;background:var(--bg);color:var(--text);font:400 16px var(--font-ui);}.contact-form input:focus{outline:2px solid #328add;outline-offset:1px;}
+.contact-form .contact-honeypot{display:none;}.contact-privacy{margin:0;font-size:11px;line-height:1.5;color:var(--muted);}.contact-result{margin:0;font-size:13px;line-height:1.5;}.contact-result:empty{display:none;}.contact-error{color:#ef766f;}
+.contact-submit{min-height:48px;border:0;border-radius:11px;background:#1765b5;color:#fff;font:600 13px var(--font-ui);cursor:pointer;}.contact-submit:disabled{opacity:.6;cursor:wait;}
+@keyframes contactAppear{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:none}}
+@media(max-width:500px){.contact-fab{right:max(16px,env(safe-area-inset-right));bottom:max(16px,env(safe-area-inset-bottom));padding:0 15px;min-height:50px;}.contact-dialog{padding:25px 20px;}}
+@media(prefers-reduced-motion:reduce){.contact-fab{transition:none;}.contact-dialog[open]{animation:none;}}
+
+/* Project identity and monochrome feature artwork. */
+:root body.client-mode .brand .launcher-logo.client-project-logo{width:240px!important;height:78px;max-width:52vw;}
+.client-mode .card[data-id="sadhna-ipds"] .thumb{background:#007e83!important;}
+.client-mode .card[data-id="sadhna-ipds"] .card-logo{filter:brightness(0) invert(1);}
+@media(max-width:700px){:root body.client-mode .brand .launcher-logo.client-project-logo{width:190px!important;height:62px;}}

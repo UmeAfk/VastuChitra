@@ -152,3 +152,20 @@ test('hosted Client recovers its video catalogue when saved version flags have n
  const walkthrough=config.personalProjects.find(project=>project.id==='sadhna-walkthrough');
  assert.ok(walkthrough);assert.equal(walkthrough.slides[0].src,'/public/shreesadhna/Walkthrough.mp4');
 });
+test('merged studio catalogue restores accents once and preserves edited cards',()=>{
+  const saved={settings:{commercialCatalogVersion:1,catalogModesVersion:1},projects:[{id:'meeting-selected',title:'Edited project',slides:[]}],personalProjects:[]};
+  const {config}=load('',undefined,'example.com','https:',saved);
+  assert.equal(config.projects[0].title,'Edited project');
+  for(const id of ['meeting-brand','meeting-cube','meeting-palette','meeting-leaf','meeting-plan','meeting-blue'])assert.equal(config.projects.filter(project=>project.id===id).length,1);
+  assert.equal(config.settings.commercialAccentsVersion,1);
+});
+test('client feature icons and passive IPDS identity use monochrome artwork',()=>{
+  const {config}=load('',undefined,'example.com','https:');
+  for(const id of ['ar','360','tools','site']){
+    const project=config.personalProjects.find(project=>project.id==='sadhna-'+id);
+    assert.equal(project.tile.iconArtwork,true);
+    assert.match(project.tile.logoSrc,/\.svg$/);
+  }
+  const ipds=config.personalProjects.find(project=>project.id==='sadhna-ipds');
+  assert.equal(ipds.tile.color,'#007e83');assert.equal(ipds.tile.logoSrc,'/public/ipds-white.webp');assert.equal(ipds.action.type,'none');
+});

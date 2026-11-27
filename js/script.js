@@ -62,7 +62,7 @@ const root = document.documentElement;
 document.body.classList.toggle('hide-brand-logo',CFG.showBrandLogo === false);
 const headerLogo = document.querySelector('.launcher-logo');
 headerLogo.style.width = clamp(Number(CFG.brandLogoWidth) || 172,80,300) + 'px';
-if(CLIENT){headerLogo.src='/public/sadhna-logo.webp';headerLogo.classList.add('client-project-logo');}
+if(CLIENT){headerLogo.src='/public/sadhna-header.webp';headerLogo.classList.add('client-project-logo');}
 if (!CLIENT && CFG.brandLogoSrc){
   headerLogo.addEventListener('error', () => { headerLogo.src = '/public/logo-ui.png'; }, {once:true});
   headerLogo.src = CFG.brandLogoSrc;
@@ -447,7 +447,7 @@ function initLayout(){
   const rest = allCards().filter(c => !ordered.includes(c));        // cards added since the layout was saved
   [...ordered, ...rest].forEach(c => grid.appendChild(c));
   allCards().forEach(c => {
-    const s = saved.sizes && saved.sizes[c.dataset.id];
+    const s = catalogMatches && saved.sizes && saved.sizes[c.dataset.id];
     if (s) setSize(c, clamp(s.cs, CS_MIN, CS_MAX), clamp(s.rs, RS_MIN, RS_MAX));
   });
 }
@@ -455,7 +455,8 @@ initLayout();
 {
   const saved = loadLayout();
   const metrics = gridMetrics();
-  layoutPositions = saved?.positions || (CLIENT && metrics.columns === 8 ? Object.fromEntries(PROJECTS.filter(p=>p.canvasPosition).map(p=>[p.id,p.canvasPosition])) : null) || Object.fromEntries(allCards().map(card => [card.dataset.id,{
+  const validSaved = saved?.catalogOrder?.join('|') === PROJECTS.map(project=>project.id).join('|');
+  layoutPositions = (validSaved ? saved?.positions : null) || (CLIENT && metrics.columns === 8 ? Object.fromEntries(PROJECTS.filter(p=>p.canvasPosition).map(p=>[p.id,p.canvasPosition])) : null) || Object.fromEntries(allCards().map(card => [card.dataset.id,{
     col:Math.round(card.offsetLeft / metrics.columnStep),row:Math.round(card.offsetTop / metrics.rowStep)
   }]));
   arrangeGrid();
@@ -1685,3 +1686,4 @@ requestAnimationFrame(()=>{
 })();
 
 })();
+

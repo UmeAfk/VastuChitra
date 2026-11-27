@@ -17,3 +17,7 @@ yarn-error.log*
 coverage/
 meeting-dist/
 .vercel/
+
+.vercel
+
+.data/
